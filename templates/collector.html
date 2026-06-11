@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NqiZbali - Collecteur</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+</head>
+<body>
+<div class="app-container">
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <a href="/" class="back-btn">← Home</a>
+        <span class="top-bar-title">🌿 NQIZBALI</span>
+        <span class="top-bar-time" id="clock">21:15</span>
+    </div>
+
+    <div class="content">
+
+        <!-- Profile Card -->
+        <div class="card card-dark">
+            <div class="profile-row">
+                <div class="avatar avatar-teal">YB</div>
+                <div>
+                    <div class="profile-name" style="color:white">Youssef Benaissa</div>
+                    <div class="profile-sub" style="color:#ffffff88">🚛 Collecteur · Zone M'hamid–Massira</div>
+                </div>
+                <div style="margin-left:auto">
+                    <span class="badge badge-green">
+                        <span class="pulse-dot"></span> Fi khidma
+                    </span>
+                </div>
+            </div>
+            <div class="info-row">
+                <div class="info-pill" style="background:#ffffff18;color:#ffffffcc">📍 Massira II</div>
+                <div class="info-pill" style="background:#ffffff18;color:#ffffffcc">🕐 <span id="clock2">21:15</span></div>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">🏠</div>
+                <div class="stat-val" id="stat-total">30</div>
+                <div class="stat-label">Dyor / Maisons</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-val" id="stat-collected" style="color:#2E7D32">18</div>
+                <div class="stat-label">Mjmoa / Collectées</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⚠️</div>
+                <div class="stat-val" id="stat-violations" style="color:#C62828">3</div>
+                <div class="stat-label">Mshakil / Violations</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-val" id="stat-pending" style="color:#E65100">9</div>
+                <div class="stat-label">Bqyin / En attente</div>
+            </div>
+        </div>
+
+        <!-- Live Map -->
+        <div class="card">
+            <div class="card-title">🗺️ Carte live · خريطة المسار</div>
+            <div id="collector-map"></div>
+            <div class="legend">
+                <div class="legend-item"><div class="legend-dot" style="background:#2E7D32"></div> Collecté</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#C62828"></div> Violation</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#CFD8DC"></div> En attente</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#00695C"></div> Camion</div>
+            </div>
+        </div>
+
+        <!-- QR Scanner -->
+        <div class="card">
+            <div class="card-title">📷 Scanner QR · قارئ الكود</div>
+            <div class="scanner-box" id="scanner-box">
+                <div class="scan-corner scan-corner-tl"></div>
+                <div class="scan-corner scan-corner-tr"></div>
+                <div class="scan-corner scan-corner-bl"></div>
+                <div class="scan-corner scan-corner-br"></div>
+                <div id="scan-content">
+                    <div class="scan-idle">
+                        <div class="scan-idle-icon">▦</div>
+                        <div>Pointer vers l'autocollant</div>
+                    </div>
+                </div>
+                <div id="scan-line" class="scan-line" style="display:none;top:20%"></div>
+                <div id="scan-label" style="position:absolute;bottom:8px;left:0;right:0;text-align:center;color:#ffffff88;font-size:11px"></div>
+            </div>
+
+            <!-- Scan Button -->
+            <div id="scan-btn-area">
+                <button class="btn btn-teal" id="scan-btn" onclick="startScan()">
+                    📷 Simuler Scan / محاكاة الكاميرا
+                </button>
+            </div>
+
+            <!-- Action Buttons (shown after scan) -->
+            <div id="action-buttons" style="display:none">
+                <div class="action-row">
+                    <button class="btn btn-green" onclick="markCollected()">✅ Mjmoa / Collecté</button>
+                    <button class="btn btn-red" onclick="openViolModal()">📸 Mshkil / Violation</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Unit Grid -->
+        <div class="card">
+            <div class="card-title">🏠 Grille d-dyor / شبكة البيوت</div>
+            <div class="unit-grid" id="unit-grid"></div>
+            <div class="legend">
+                <div class="legend-item"><div class="legend-sq" style="background:#2E7D32"></div> Collecté</div>
+                <div class="legend-item"><div class="legend-sq" style="background:#C62828"></div> Violation</div>
+                <div class="legend-item"><div class="legend-sq" style="background:#CFD8DC"></div> En attente</div>
+            </div>
+        </div>
+
+        <!-- Performance -->
+        <div class="card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                <div class="card-title" style="margin-bottom:0">🏆 Performance / تقييم</div>
+                <span class="badge badge-amber">Niveau Or 🥇</span>
+            </div>
+            <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:5px">
+                <span style="font-size:26px;font-weight:900;color:#2E7D32" id="points-display">810</span>
+                <span style="font-size:12px;color:#607D8B">pts aujourd'hui</span>
+            </div>
+            <div class="progress-label">
+                <span id="progress-text">18 / 30</span>
+                <span style="color:#2E7D32" id="progress-pct">60%</span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill" id="progress-fill" style="width:60%"></div>
+            </div>
+            <div style="font-size:11px;color:#607D8B;margin-top:4px;margin-bottom:12px">
+                Objectif: 30 dyor pour bonus complet
+            </div>
+            <div class="bonus-row">
+                <div>
+                    <div class="bonus-label">Bonus vitesse / سرعة</div>
+                    <div class="bonus-desc">Terminer avant 22h</div>
+                </div>
+                <span class="badge badge-teal">+15 DH</span>
+            </div>
+            <div class="bonus-row">
+                <div>
+                    <div class="bonus-label">Bonus qualité / جودة</div>
+                    <div class="bonus-desc">0 plainte cette semaine</div>
+                </div>
+                <span class="badge badge-green">+10 DH</span>
+            </div>
+            <div class="bonus-row">
+                <div>
+                    <div class="bonus-label">Bonus complétion / اكتمال</div>
+                    <div class="bonus-desc">100% dyor collectées</div>
+                </div>
+                <span class="badge" id="completion-badge" style="background:#F2F5F0;color:#607D8B">Verrouillé</span>
+            </div>
+            <div class="total-row">
+                <span class="total-label">Bonus total / مجموع</span>
+                <span class="total-val" id="bonus-total">+25 DH</span>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Violation Modal -->
+<div class="modal-overlay" id="viol-modal" style="display:none">
+    <div class="modal-box">
+        <div class="modal-header">
+            <div>
+                <div class="modal-title">⚠️ Mshkil / Violation</div>
+                <div class="modal-sub" id="viol-unit-name">Dar —</div>
+            </div>
+            <button class="close-btn" onclick="closeViolModal()">✕</button>
+        </div>
+
+        <div style="background:#0a0f1e;border-radius:11px;height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;margin-bottom:11px;position:relative">
+            <span style="font-size:24px;opacity:.4">📷</span>
+            <span style="color:#ffffff44;font-size:11px">Capture simulée</span>
+            <div style="position:absolute;top:6px;right:8px;background:#C62828;color:#fff;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px">● REC</div>
+        </div>
+
+        <div style="font-weight:700;font-size:12px;color:#1A2332;margin-bottom:8px">Sabab / Raison :</div>
+
+        <button class="viol-option" onclick="selectViol(this,'leaking')">
+            <span class="viol-option-icon">💧</span>
+            <span class="viol-option-label">Zbel katshel / Fuite</span>
+        </button>
+        <button class="viol-option" onclick="selectViol(this,'oversized')">
+            <span class="viol-option-icon">📦</span>
+            <span class="viol-option-label">Kbir bzaf / Trop volumineux</span>
+        </button>
+        <button class="viol-option" onclick="selectViol(this,'early')">
+            <span class="viol-option-icon">⏰</span>
+            <span class="viol-option-label">Khrej bkri / Trop tôt</span>
+        </button>
+        <button class="viol-option" onclick="selectViol(this,'wrong_bag')">
+            <span class="viol-option-icon">🗑️</span>
+            <span class="viol-option-label">Sac ghalt / Mauvais sac</span>
+        </button>
+        <button class="viol-option" onclick="selectViol(this,'bio')">
+            <span class="viol-option-icon">⚠️</span>
+            <span class="viol-option-label">Matière dangereuse / خطر</span>
+        </button>
+
+        <button class="btn btn-red" id="submit-viol-btn" style="margin-top:12px;opacity:0.4" onclick="submitViol()" disabled>
+            Signaler / بلّغ
+        </button>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{{ url_for('static', filename='js/collector.js') }}"></script>
+</body>
+</html>

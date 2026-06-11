@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NqiZbali - Client</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+</head>
+<body>
+<div class="app-container">
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <a href="/" class="back-btn">← Home</a>
+        <span class="top-bar-title">🌿 NQIZBALI</span>
+        <span class="top-bar-time" id="clock">21:15</span>
+    </div>
+
+    <div class="content">
+
+        <!-- Profile Card -->
+        <div class="card card-dark">
+            <div class="profile-row">
+                <div class="avatar avatar-green">KF</div>
+                <div>
+                    <div class="profile-name" style="color:white">Karima Fahim</div>
+                    <div class="profile-sub" style="color:#ffffff88">📍 Massira II, Marrakech</div>
+                </div>
+                <div style="margin-left:auto">
+                    <span class="badge badge-green">
+                        <span class="pulse-dot"></span> Mochtarik
+                    </span>
+                </div>
+            </div>
+            <div style="background:#ffffff14;border-radius:9px;padding:9px 12px;font-size:12px;color:#ffffffcc;font-weight:600">
+                💰 60 DH/mois · <span style="color:#4CAF50">Renouvellement: 15 Août</span>
+            </div>
+        </div>
+
+        <!-- Status Wheel -->
+        <div class="card">
+            <div class="card-title">Hal d-zbel / Statut ce soir</div>
+            <div class="wheel-container">
+                <div class="wheel-wrapper">
+                    <svg class="wheel-svg" width="130" height="130" viewBox="0 0 130 130">
+                        <circle cx="65" cy="65" r="52" fill="none" stroke="#CFD8DC" stroke-width="9"/>
+                        <circle id="wheel-circle" cx="65" cy="65" r="52" fill="none"
+                            stroke="#607D8B" stroke-width="9" stroke-linecap="round"
+                            stroke-dasharray="326.7"
+                            stroke-dashoffset="217.8"
+                            style="transition: stroke-dashoffset 0.8s ease, stroke 0.4s"/>
+                    </svg>
+                    <div class="wheel-inner">
+                        <span class="wheel-emoji" id="wheel-emoji">🕐</span>
+                        <span class="wheel-pct" id="wheel-pct" style="color:#607D8B">33%</span>
+                    </div>
+                </div>
+
+                <!-- Step dots -->
+                <div class="step-dots">
+                    <div class="step-dot" id="dot-0" style="width:24px;background:#607D8B"></div>
+                    <div class="step-dot" id="dot-1" style="width:12px"></div>
+                    <div class="step-dot" id="dot-2" style="width:12px"></div>
+                </div>
+
+                <!-- Status Box -->
+                <div class="status-box" id="status-box" style="background:#607D8B12;border:0.5px solid #607D8B30">
+                    <div class="status-box-title" id="status-title" style="color:#607D8B">Zbel mazal ma wdach</div>
+                    <div class="status-box-desc" id="status-desc">Wdi s-sac barra qbel 21h. / Mettez votre sac avant 21h.</div>
+                </div>
+
+                <!-- Action Button -->
+                <button class="btn btn-green" id="action-btn" onclick="advanceStep()">
+                    🗑️ Zbel Wajd! — Marquer Prêt
+                </button>
+            </div>
+        </div>
+
+        <!-- Live Map -->
+        <div class="card">
+            <div class="card-title">📍 Ma position live · موقعي</div>
+            <div id="client-map"></div>
+            <div class="legend">
+                <div class="legend-item"><div class="legend-dot" style="background:#2E7D32"></div> Ma maison</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#00695C"></div> Collecteur</div>
+            </div>
+        </div>
+
+        <!-- QR Code -->
+        <div class="card">
+            <div class="card-title">🏷️ Mon QR Code · باب ديالك</div>
+            <div class="qr-row">
+                <svg width="90" height="90" viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="90" height="90" rx="6" fill="white"/>
+                    <rect x="5" y="5" width="30" height="30" rx="2" fill="none" stroke="#2E7D32" stroke-width="2.5"/>
+                    <rect x="11" y="11" width="18" height="18" rx="1" fill="#2E7D32"/>
+                    <rect x="55" y="5" width="30" height="30" rx="2" fill="none" stroke="#2E7D32" stroke-width="2.5"/>
+                    <rect x="61" y="11" width="18" height="18" rx="1" fill="#2E7D32"/>
+                    <rect x="5" y="55" width="30" height="30" rx="2" fill="none" stroke="#2E7D32" stroke-width="2.5"/>
+                    <rect x="11" y="61" width="18" height="18" rx="1" fill="#2E7D32"/>
+                    <rect x="42" y="7" width="5" height="5" fill="#2E7D32"/>
+                    <rect x="42" y="14" width="5" height="5" fill="#2E7D32"/>
+                    <rect x="42" y="28" width="5" height="5" fill="#2E7D32"/>
+                    <rect x="55" y="42" width="5" height="5" fill="#2E7D32"/>
+                    <rect x="63" y="42" width="5" height="5" fill="#2E7D32"/>
+                    <rect x="71" y="42" width="5" height="5" fill="#2E7D32"/>
+                    <rect x="42" y="42" width="5" height="5" fill="#2E7D32"/>
+                    <rect x="42" y="58" width="5" height="5" fill="#2E7D32"/>
+                    <rect x="42" y="74" width="5" height="5" fill="#2E7D32"/>
+                </svg>
+                <div class="qr-info">
+                    <div class="qr-code">NQZ-MRK-0001</div>
+                    <div class="qr-addr">Karima Fahim · Massira II</div>
+                    <div class="qr-addr">Apt 7B · Marrakech</div>
+                    <button class="btn btn-green btn-sm" style="margin-top:10px" onclick="showToast('📄 QR prêt pour impression!')">
+                        📥 Télécharger
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendar -->
+        <div class="card">
+            <div class="card-title">🗓️ Calendrier Juillet 2025</div>
+            <div class="cal-header">
+                <div class="cal-day-name">Lu</div>
+                <div class="cal-day-name">Ma</div>
+                <div class="cal-day-name">Me</div>
+                <div class="cal-day-name">Je</div>
+                <div class="cal-day-name">Ve</div>
+                <div class="cal-day-name">Sa</div>
+                <div class="cal-day-name" style="color:#EF5350">Di</div>
+            </div>
+            <div class="cal-grid" id="cal-grid"></div>
+            <div class="legend" style="margin-top:9px">
+                <div class="legend-item"><div class="legend-sq" style="background:#2E7D32"></div> Aujourd'hui</div>
+                <div class="legend-item"><div class="legend-sq" style="background:#E8F5E9;border:0.5px solid #2E7D32"></div> Collecté</div>
+                <div class="legend-item"><div class="legend-sq" style="background:#F2F5F0"></div> Planifié</div>
+            </div>
+        </div>
+
+        <!-- History -->
+        <div class="card">
+            <div class="card-title">📋 Historique / سجل التجميع</div>
+            <div id="history-list">
+                <div class="log-item"><div class="log-dot"></div><div class="log-text">Auj. 21h15 · Youssef B.</div><div class="log-status">✓ Collecté</div></div>
+                <div class="log-item"><div class="log-dot"></div><div class="log-text">Hier 20h58 · Khalid M.</div><div class="log-status">✓ Collecté</div></div>
+                <div class="log-item"><div class="log-dot"></div><div class="log-text">Jeu 21h12 · Youssef B.</div><div class="log-status">✓ Collecté</div></div>
+                <div class="log-item"><div class="log-dot"></div><div class="log-text">Mer 21h30 · Hassan R.</div><div class="log-status">✓ Collecté</div></div>
+                <div class="log-item"><div class="log-dot"></div><div class="log-text">Mar 20h47 · Khalid M.</div><div class="log-status">✓ Collecté</div></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{{ url_for('static', filename='js/client.js') }}"></script>
+</body>
+</html>

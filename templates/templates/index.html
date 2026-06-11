@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NqiZbali - مراكش</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="theme-color" content="#2E7D32">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="NqiZbali">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192.png') }}">
+</head>
+<body>
+    <div class="home-container">
+        <div class="home-logo">🌿</div>
+        <h1 class="home-title">NqiZbali</h1>
+        <p class="home-subtitle">خدمة جمع الزبالة الذكية · مراكش</p>
+        <p class="home-desc">Smart Trash Collection · Marrakech</p>
+
+        <div class="home-buttons">
+            <a href="/client" class="btn-home btn-client">
+                <span class="btn-icon">🏠</span>
+                <span class="btn-text">
+                    <strong>Client / كليان</strong>
+                    <small>Voir mon statut de collecte</small>
+                </span>
+            </a>
+            <a href="/collector" class="btn-home btn-collector">
+                <span class="btn-icon">🚛</span>
+                <span class="btn-text">
+                    <strong>Collecteur / خدام</strong>
+                    <small>Dashboard du collecteur</small>
+                </span>
+            </a>
+        </div>
+
+        <!-- Install PWA Button -->
+        <button id="install-btn" style="
+            display:none;
+            margin-top:20px;
+            padding:13px 28px;
+            background:#2E7D32;
+            color:white;
+            border:none;
+            border-radius:50px;
+            font-size:14px;
+            font-weight:700;
+            cursor:pointer;
+            font-family:inherit;
+        ">
+            📲 Installer l'app sur mon téléphone
+        </button>
+
+        <div class="home-footer">
+            60 DH/mois · 24 collectes · Lundi–Samedi
+        </div>
+
+        <!-- PWA Status -->
+        <div id="pwa-status" style="
+            margin-top:12px;
+            font-size:11px;
+            color:#ffffff44;
+        "></div>
+    </div>
+
+    <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/static/sw.js')
+                    .then(reg => {
+                        console.log('SW registered!', reg.scope);
+                        document.getElementById('pwa-status').textContent = '✅ App prête pour installation';
+                    })
+                    .catch(err => {
+                        console.log('SW error:', err);
+                    });
+            });
+        }
+
+        // Install prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', e => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const btn = document.getElementById('install-btn');
+            btn.style.display = 'block';
+        });
+
+        document.getElementById('install-btn').addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                document.getElementById('pwa-status').textContent = '🎉 App installée!';
+            }
+            deferredPrompt = null;
+            document.getElementById('install-btn').style.display = 'none';
+        });
+
+        window.addEventListener('appinstalled', () => {
+            document.getElementById('pwa-status').textContent = '🎉 NqiZbali installée sur votre téléphone!';
+        });
+    </script>
+</body>
+</html>
