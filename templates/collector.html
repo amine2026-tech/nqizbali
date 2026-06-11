@@ -158,4 +158,330 @@
         <div class="legend-item"><div class="legend-dot" style="background:#2E7D32"></div> Collected</div>
         <div class="legend-item"><div class="legend-dot" style="background:#C62828"></div> Violation</div>
         <div class="legend-item"><div class="legend-dot" style="background:#CFD8DC"></div> Waiting</div>
-        <div class="legend-item"><div
+        <div class="legend-item"><div class="legend-dot" style="background:#00695C"></div> You</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🏠 Homes on your route</div>
+      <div class="client-list" id="client-list">
+        <div style="text-align:center;color:#607D8B;font-size:13px;padding:20px">Loading...</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📷 QR Scanner</div>
+      <div class="scanner-box" id="scanner-box">
+        <div class="scan-corner scan-corner-tl"></div>
+        <div class="scan-corner scan-corner-tr"></div>
+        <div class="scan-corner scan-corner-bl"></div>
+        <div class="scan-corner scan-corner-br"></div>
+        <div id="scan-content">
+          <div class="scan-idle">
+            <div class="scan-idle-icon">▦</div>
+            <div>Point at the QR sticker</div>
+          </div>
+        </div>
+        <div id="scan-line" class="scan-line" style="display:none;top:20%"></div>
+      </div>
+      <div id="scan-btn-area">
+        <button class="btn btn-teal" id="scan-btn" onclick="startScan()">
+          📷 Simulate QR Scan
+        </button>
+      </div>
+      <div id="action-buttons" style="display:none">
+        <div class="action-row">
+          <button class="btn btn-green" onclick="markCollected()">✅ Collected</button>
+          <button class="btn btn-red" onclick="openViolModal()">📸 Violation</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div class="card-title" style="margin-bottom:0">🏆 Performance</div>
+        <span class="badge badge-amber">Gold level 🥇</span>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:5px">
+        <span style="font-size:26px;font-weight:900;color:#2E7D32" id="points-display">0</span>
+        <span style="font-size:12px;color:#607D8B">pts today</span>
+      </div>
+      <div class="progress-label">
+        <span id="progress-text">0 / 0</span>
+        <span style="color:#2E7D32" id="progress-pct">0%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+      <div style="font-size:11px;color:#607D8B;margin-top:4px;margin-bottom:12px">
+        Goal: collect all homes for full bonus
+      </div>
+      <div class="bonus-row">
+        <div><div class="bonus-label">Speed bonus</div><div class="bonus-desc">Finish before 22h</div></div>
+        <span class="badge badge-teal">+15 DH</span>
+      </div>
+      <div class="bonus-row">
+        <div><div class="bonus-label">Quality bonus</div><div class="bonus-desc">0 complaints this week</div></div>
+        <span class="badge badge-green">+10 DH</span>
+      </div>
+      <div class="total-row">
+        <span class="total-label">Total bonus</span>
+        <span class="total-val">+25 DH</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="modal-overlay" id="viol-modal" style="display:none">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">⚠️ Report Violation</div>
+        <div class="modal-sub" id="viol-unit-name">—</div>
+      </div>
+      <button class="close-btn" onclick="closeViolModal()">✕</button>
+    </div>
+    <div style="background:#0a0f1e;border-radius:11px;height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;margin-bottom:11px;position:relative">
+      <span style="font-size:24px;opacity:.4">📷</span>
+      <span style="color:#ffffff44;font-size:11px">Simulated capture</span>
+      <div style="position:absolute;top:6px;right:8px;background:#C62828;color:#fff;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px">● REC</div>
+    </div>
+    <div style="font-weight:700;font-size:12px;color:#1A2332;margin-bottom:8px">Reason:</div>
+    <button class="viol-option" onclick="selectViol(this,'leaking')"><span class="viol-option-icon">💧</span><span class="viol-option-label">Leaking bag</span></button>
+    <button class="viol-option" onclick="selectViol(this,'oversized')"><span class="viol-option-icon">📦</span><span class="viol-option-label">Too bulky</span></button>
+    <button class="viol-option" onclick="selectViol(this,'early')"><span class="viol-option-icon">⏰</span><span class="viol-option-label">Put out too early</span></button>
+    <button class="viol-option" onclick="selectViol(this,'wrong_bag')"><span class="viol-option-icon">🗑️</span><span class="viol-option-label">Wrong bag type</span></button>
+    <button class="viol-option" onclick="selectViol(this,'bio')"><span class="viol-option-icon">⚠️</span><span class="viol-option-label">Hazardous material</span></button>
+    <button class="btn btn-red" id="submit-viol-btn" style="margin-top:12px;opacity:0.4" onclick="submitViol()" disabled>Report violation</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+function updateClock() {
+  const t = new Date();
+  const s = t.getHours().toString().padStart(2,'0')+':'+t.getMinutes().toString().padStart(2,'0');
+  document.getElementById('clock').textContent = s;
+  document.getElementById('clock2').textContent = s;
+}
+updateClock(); setInterval(updateClock, 10000);
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+let clients = [];
+let map = null;
+let markers = {};
+let collectorMarker = null;
+let collectorPos = [31.6258, -8.0038];
+let showReadyOnly = false;
+let currentScanId = null;
+let selectedViol = null;
+
+async function loadClients() {
+  try {
+    const res = await fetch('/api/clients');
+    clients = await res.json();
+    updateStats();
+    updateClientList();
+    updateRoute();
+    if (!map) initMap();
+    else updateMapMarkers();
+  } catch(e) { console.error(e); }
+}
+
+function updateStats() {
+  const total      = clients.length;
+  const ready      = clients.filter(c => c.trash_ready).length;
+  const collected  = clients.filter(c => c.status === 'collected').length;
+  const violations = clients.filter(c => c.status === 'violation').length;
+  document.getElementById('stat-total').textContent      = total;
+  document.getElementById('stat-ready').textContent      = ready;
+  document.getElementById('stat-collected').textContent  = collected;
+  document.getElementById('stat-violations').textContent = violations;
+  const pts = collected * 45;
+  document.getElementById('points-display').textContent  = pts;
+  document.getElementById('progress-text').textContent   = collected + ' / ' + total;
+  const pct = total ? Math.round(collected/total*100) : 0;
+  document.getElementById('progress-pct').textContent    = pct + '%';
+  document.getElementById('progress-fill').style.width   = pct + '%';
+}
+
+function updateRoute() {
+  const ready = clients.filter(c => c.trash_ready).length;
+  const card  = document.getElementById('route-card');
+  if (ready > 0) {
+    card.style.display = 'flex';
+    document.getElementById('route-text').textContent = ready + ' home'+(ready>1?'s':'')+' ready for collection';
+    document.getElementById('route-badge').textContent = ready + ' stop'+(ready>1?'s':'');
+  } else {
+    card.style.display = 'none';
+  }
+}
+
+function updateClientList() {
+  const list = document.getElementById('client-list');
+  if (!clients.length) {
+    list.innerHTML = '<div style="text-align:center;color:#607D8B;font-size:13px;padding:20px">No homes on your route yet.</div>';
+    return;
+  }
+  list.innerHTML = clients.map(c => {
+    const dot   = c.trash_ready ? '#ffd54f' : c.status==='collected' ? '#2E7D32' : c.status==='violation' ? '#C62828' : '#CFD8DC';
+    const rowCls= c.trash_ready ? 'ready'   : c.status==='collected' ? 'collected' : c.status==='violation' ? 'violation' : '';
+    const sub   = c.subscription_active ? '✅' : '❌';
+    let btn = '';
+    if (c.trash_ready)             btn = `<button class="mini-btn mini-btn-green" onclick="event.stopPropagation();quickCollect(${c.id})">✅ Collect</button>`;
+    else if (c.status==='collected') btn = `<button class="mini-btn mini-btn-gray" disabled>Done</button>`;
+    else                             btn = `<button class="mini-btn mini-btn-gray" style="opacity:.5" disabled>Waiting</button>`;
+    return `<div class="client-row ${rowCls}" onclick="focusClient(${c.id})">
+      <div class="client-status-dot" style="background:${dot}"></div>
+      <div class="client-info">
+        <div class="client-name">${c.name} ${sub}</div>
+        <div class="client-addr">${c.address} · ${c.neighborhood}</div>
+      </div>
+      <div>${btn}</div>
+    </div>`;
+  }).join('');
+}
+
+async function quickCollect(id) {
+  try {
+    await fetch('/api/collect/'+id, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({collector:'Youssef B.'})});
+    showToast('✅ Collected!');
+    await loadClients();
+  } catch(e) { showToast('❌ Error'); }
+}
+
+function initMap() {
+  const center = clients.length ? [clients[0].lat, clients[0].lng] : [31.6258, -8.0038];
+  map = L.map('collector-map').setView(center, 14);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'© OpenStreetMap', maxZoom:19}).addTo(map);
+
+  const truckIcon = L.divIcon({
+    html:`<div style="background:#00695C;color:white;border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 2px 10px rgba(0,0,0,.35);border:3px solid white">🚛</div>`,
+    className:'', iconSize:[44,44], iconAnchor:[22,22]
+  });
+  collectorMarker = L.marker(collectorPos, {icon:truckIcon, zIndexOffset:1000}).addTo(map).bindPopup('<b>Youssef B.</b><br>Collector · On duty');
+
+  updateMapMarkers();
+
+  let step = 0;
+  const path = clients.slice(0,5).map(c=>[c.lat+(Math.random()-.5)*.002, c.lng+(Math.random()-.5)*.002]);
+  if (path.length) setInterval(()=>{ step=(step+1)%path.length; collectorPos=path[step]; collectorMarker.setLatLng(collectorPos); }, 3500);
+}
+
+function getMarkerHtml(c) {
+  if (c.trash_ready)           return `<div style="background:#ffd54f;color:#111;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 2px 8px rgba(0,0,0,.25);border:2px solid white">🗑️</div>`;
+  if (c.status==='collected')  return `<div style="background:#2E7D32;color:white;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 2px 6px rgba(0,0,0,.2);border:2px solid white">✅</div>`;
+  if (c.status==='violation')  return `<div style="background:#C62828;color:white;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 2px 6px rgba(0,0,0,.2);border:2px solid white">⚠️</div>`;
+  return `<div style="background:#CFD8DC;color:#607D8B;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:12px;box-shadow:0 1px 4px rgba(0,0,0,.15);border:2px solid white">🏠</div>`;
+}
+
+function updateMapMarkers() {
+  if (!map) return;
+  clients.forEach(c => {
+    if (showReadyOnly && !c.trash_ready) { if (markers[c.id]) { map.removeLayer(markers[c.id]); delete markers[c.id]; } return; }
+    const icon = L.divIcon({html:getMarkerHtml(c), className:'', iconSize:[34,34], iconAnchor:[17,17]});
+    const popup = `<b>${c.name}</b><br>${c.address}<br>Status: <b>${c.status}</b><br>${c.subscription_active?'✅ Subscribed':'❌ Not subscribed'}`;
+    if (markers[c.id]) markers[c.id].setIcon(icon);
+    else markers[c.id] = L.marker([c.lat,c.lng],{icon}).addTo(map).bindPopup(popup);
+  });
+}
+
+function focusClient(id) {
+  const c = clients.find(x=>x.id===id);
+  if (c && map) map.flyTo([c.lat,c.lng], 17, {duration:0.6});
+  if (markers[id]) markers[id].openPopup();
+}
+
+function toggleFilter() {
+  showReadyOnly = !showReadyOnly;
+  document.getElementById('filter-btn').textContent = showReadyOnly ? '🏠 Show all' : '🗑️ Ready only';
+  Object.values(markers).forEach(m=>map.removeLayer(m));
+  markers = {};
+  updateMapMarkers();
+}
+
+function centerMap() {
+  if (map) map.flyTo(collectorPos, 15, {duration:0.8});
+}
+
+let scanInterval = null;
+
+function startScan() {
+  const ready = clients.filter(c=>c.trash_ready || c.status==='not_ready');
+  if (!ready.length) { showToast('No homes to scan'); return; }
+  const line = document.getElementById('scan-line');
+  document.getElementById('scan-btn-area').style.display = 'none';
+  document.getElementById('scan-content').innerHTML = '<div style="color:#4CAF50;font-size:11px;font-weight:700">Scanning...</div>';
+  line.style.display = 'block';
+  let pos=20, dir=1;
+  scanInterval = setInterval(()=>{ pos+=dir*3; if(pos>80||pos<20) dir*=-1; line.style.top=pos+'%'; }, 40);
+  setTimeout(()=>completeScan(ready), 2000);
+}
+
+function completeScan(list) {
+  clearInterval(scanInterval);
+  const c = list[Math.floor(Math.random()*list.length)];
+  currentScanId = c.id;
+  document.getElementById('scan-line').style.display = 'none';
+  document.getElementById('scan-content').innerHTML = `<div style="color:white;text-align:center;padding:8px"><div style="font-size:16px;margin-bottom:4px">✅ QR Detected</div><div style="font-size:12px;font-weight:700;color:#4CAF50">${c.qr_code}</div><div style="font-size:11px;color:#ffffff88;margin-top:2px">${c.name}</div></div>`;
+  document.getElementById('viol-unit-name').textContent = c.name+' · '+c.address;
+  document.getElementById('action-buttons').style.display = 'block';
+  showToast('📱 '+c.qr_code+' scanned!');
+}
+
+async function markCollected() {
+  if (!currentScanId) return;
+  try {
+    await fetch('/api/collect/'+currentScanId, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({collector:'Youssef B.'})});
+    showToast('✅ Marked as collected!');
+    resetScanner(); await loadClients();
+  } catch(e) { showToast('❌ Error'); }
+}
+
+function resetScanner() {
+  currentScanId = null;
+  document.getElementById('scan-content').innerHTML = `<div class="scan-idle"><div class="scan-idle-icon">▦</div><div>Point at the QR sticker</div></div>`;
+  document.getElementById('action-buttons').style.display = 'none';
+  document.getElementById('scan-btn-area').style.display = 'block';
+}
+
+function openViolModal() {
+  if (!currentScanId) return;
+  document.querySelectorAll('.viol-option').forEach(b=>b.classList.remove('selected'));
+  selectedViol = null;
+  document.getElementById('submit-viol-btn').disabled = true;
+  document.getElementById('submit-viol-btn').style.opacity = '0.4';
+  document.getElementById('viol-modal').style.display = 'flex';
+}
+
+function closeViolModal() { document.getElementById('viol-modal').style.display = 'none'; }
+
+function selectViol(btn, reason) {
+  document.querySelectorAll('.viol-option').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected'); selectedViol = reason;
+  document.getElementById('submit-viol-btn').disabled = false;
+  document.getElementById('submit-viol-btn').style.opacity = '1';
+}
+
+async function submitViol() {
+  if (!currentScanId || !selectedViol) return;
+  try {
+    await fetch('/api/violation/'+currentScanId, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({collector:'Youssef B.', reason:selectedViol})});
+    showToast('⚠️ Violation reported');
+    closeViolModal(); resetScanner(); await loadClients();
+  } catch(e) { showToast('❌ Error'); }
+}
+
+loadClients();
+setInterval(loadClients, 30000);
+</script>
+</body>
+</html>
