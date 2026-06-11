@@ -1,1 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>NqiZbali — Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',sans-serif;background:#f0f9f0;min-height:100vh;color:#111}
+    nav{background:#1A2332;padding:.9rem 1.5rem;display:flex;align-items:center;justify-content:space-between;color:#fff;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.3)}
+    .nav-brand{font-size:1.1rem;font-weight:800;display:flex;align-items:center;gap:.5rem;color:#4CAF50}
+    .nav-right{display:flex;align-items:center;gap:1rem;font-size:.82rem}
+    .nav-right a{color:rgba(255,255,255,.7);text-decoration:none}
+    .nav-badge{background:#4CAF50;color:#fff;border-radius:6px;padding:.25rem .7rem;font-size:.72rem;font-weight:700}
+    .nav-logout{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:.3rem .8rem;color:#fff;text-decoration:none;font-size:.8rem}
+    .container{max-width:1000px;margin:0 auto;padding:2rem 1.25rem}
+    .page-title{font-size:1.4rem;font-weight:800;color:#0d4f29;margin-bottom:1.75rem}
 
+    /* Stats */
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
+    .stat-card{background:#fff;border-radius:14px;padding:1.1rem 1.25rem;box-shadow:0 2px 12px rgba(0,0,0,.06);border-left:4px solid #1a7c3e}
+    .stat-card.blue{border-left-color:#2196F3}
+    .stat-card.amber{border-left-color:#f39c12}
+    .stat-card.red{border-left-color:#e74c3c}
+    .stat-val{font-size:1.9rem;font-weight:800;color:#111;line-height:1}
+    .stat-lbl{font-size:.75rem;color:#888;margin-top:.35rem}
+    .stat-sub{font-size:.7rem;color:#aaa;margin-top:.2rem}
+
+    /* Section */
+    .section{margin-bottom:2rem}
+    .section-title{font-size:.95rem;font-weight:700;color:#0d4f29;margin-bottom:.9rem;display:flex;align-items:center;gap:.5rem}
+
+    /* Table */
+    .table-wrap{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+    table{width:100%;border-collapse:collapse}
+    th{background:#f8fdf9;font-size:.72rem;font-weight:700;color:#555;padding:.7rem 1rem;text-align:left;border-bottom:1px solid #eee;white-space:nowrap}
+    td{font-size:.8rem;padding:.7rem 1rem;border-bottom:1px solid #f5f5f5;color:#333}
+    tr:last-child td{border-bottom:none}
+    tr:hover td{background:#fafff9}
+
+    /* Badges */
+    .badge{display:inline-block;border-radius:20px;padding:.2rem .65rem;font-size:.68rem;font-weight:700}
+    .badge-green{background:#d4f7e4;color:#0d6e35}
+    .badge-red{background:#ffeaea;color:#c0392b}
+    .badge-amber{background:#fff3cd;color:#7a5c00}
+    .badge-gray{background:#f0f0f0;color:#666}
+    .badge-blue{background:#e3f2fd;color:#1565c0}
+
+    /* Syndic cards */
+    .syndic-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}
+    .syndic-card{background:#fff;border-radius:14px;padding:1.1rem 1.25rem;box-shadow:0 2px 12px rgba(0,0,0,.06);border-top:3px solid #1a7c3e}
+    .syndic-name{font-size:.95rem;font-weight:800;color:#111;margin-bottom:.2rem}
+    .syndic-email{font-size:.75rem;color:#888;margin-bottom:.75rem}
+    .syndic-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:.75rem}
+    .syndic-stat{text-align:center;background:#f8fdf9;border-radius:8px;padding:.5rem}
+    .syndic-stat .n{font-size:1.1rem;font-weight:800;color:#1a7c3e}
+    .syndic-stat .l{font-size:.62rem;color:#999;margin-top:.1rem}
+    .syndic-buildings{font-size:.72rem;color:#555}
+    .syndic-buildings span{display:inline-block;background:#f0f0f0;border-radius:6px;padding:.15rem .5rem;margin:.15rem .1rem}
+
+    /* Revenue chart */
+    .rev-bar-row{display:flex;align-items:center;gap:.75rem;margin-bottom:.6rem}
+    .rev-label{font-size:.75rem;color:#555;width:120px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .rev-bar-track{flex:1;background:#f0f0f0;border-radius:99px;height:10px;overflow:hidden}
+    .rev-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#1a7c3e,#25a25a)}
+    .rev-amount{font-size:.75rem;font-weight:700;color:#1a7c3e;width:60px;text-align:right;flex-shrink:0}
+
+    /* Empty */
+    .empty{text-align:center;padding:2.5rem 1rem;color:#bbb;font-size:.88rem}
+
+    @media(max-width:700px){
+      .stats{grid-template-columns:1fr 1fr}
+      .syndic-grid{grid-template-columns:1fr}
+    }
+    @media(max-width:480px){
+      .stats{grid-template-columns:1fr 1fr}
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-brand">♻️ NqiZbali <span class="nav-badge">Admin</span></div>
+    <div class="nav-right">
+      <a href="/">← App</a>
+      <a class="nav-logout" href="/admin/logout">Logout</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="page-title">📊 Admin Dashboard</div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-val">{{ syndics | length }}</div>
+        <div class="stat-lbl">Total Syndics</div>
+        <div class="stat-sub">Registered accounts</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="stat-val">{{ buildings | length }}</div>
+        <div class="stat-lbl">Total Buildings</div>
+        <div class="stat-sub">{{ active_buildings }} active</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" style="color:#1a7c3e">{{ total_revenue }} DH</div>
+        <div class="stat-lbl">Total Revenue</div>
+        <div class="stat-sub">Approved payments</div>
+      </div>
+      <div class="stat-card {% if pending_payments > 0 %}amber{% endif %}">
+        <div class="stat-val">{{ payments | length }}</div>
+        <div class="stat-lbl">Total Payments</div>
+        <div class="stat-sub">{{ pending_payments }} pending</div>
+      </div>
+    </div>
+
+    <!-- Syndics -->
+    <div class="section">
+      <div class="section-title">👤 Syndics ({{ syndics | length }})</div>
+      {% if syndics %}
+      <div class="syndic-grid">
+        {% for s in syndics %}
+        {% set s_buildings = buildings | selectattr('syndic_id', 'equalto', s.id) | list %}
+        {% set s_payments  = payments  | selectattr('syndic_id', 'equalto', s.id) | list %}
+        {% set s_revenue   = s_payments | selectattr('status', 'equalto', 'approved') | sum(attribute='amount_mad') %}
+        {% set s_active    = s_buildings | selectattr('is_active') | list | length %}
+        <div class="syndic-card">
+          <div class="syndic-name">{{ s.name }}</div>
+          <div class="syndic-email">📧 {{ s.email }} · 📞 {{ s.phone }}</div>
+          <div class="syndic-stats">
+            <div class="syndic-stat">
+              <div class="n">{{ s_buildings | length }}</div>
+              <div class="l">Buildings</div>
+            </div>
+            <div class="syndic-stat">
+              <div class="n">{{ s_active }}</div>
+              <div class="l">Active</div>
+            </div>
+            <div class="syndic-stat">
+              <div class="n" style="font-size:.85rem">{{ s_revenue }} DH</div>
+              <div class="l">Paid</div>
+            </div>
+          </div>
+          {% if s_buildings %}
+          <div class="syndic-buildings">
+            {% for b in s_buildings %}
+            <span>{{ b.name }} {% if b.is_active %}✅{% else %}❌{% endif %}</span>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty">No syndics registered yet.</div>
+      {% endif %}
+    </div>
+
+    <!-- Buildings -->
+    <div class="section">
+      <div class="section-title">🏢 Buildings ({{ buildings | length }})</div>
+      {% if buildings %}
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Building</th>
+              <th>Syndic</th>
+              <th>Neighborhood</th>
+              <th>Apts</th>
+              <th>Monthly</th>
+              <th>Status</th>
+              <th>Expires</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for b in buildings %}
+            <tr>
+              <td><strong>{{ b.name }}</strong><br><span style="font-size:.7rem;color:#aaa">{{ b.address }}</span></td>
+              <td>{{ b.syndic.name }}</td>
+              <td>{{ b.neighborhood }}</td>
+              <td style="text-align:center"><strong>{{ b.nb_apartments }}</strong></td>
+              <td><strong>{{ b.monthly_total }} DH</strong></td>
+              <td>
+                {% if b.is_active %}
+                  <span class="badge badge-green">✅ Active</span>
+                {% else %}
+                  <span class="badge badge-red">❌ Inactive</span>
+                {% endif %}
+              </td>
+              <td style="font-size:.72rem;color:#aaa">
+                {% if b.subscription_end %}
+                  {{ b.subscription_end.strftime('%d/%m/%Y') }}
+                {% else %}—{% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty">No buildings yet.</div>
+      {% endif %}
+    </div>
+
+    <!-- Revenue by syndic -->
+    {% if syndics %}
+    <div class="section">
+      <div class="section-title">💰 Revenue by Syndic</div>
+      <div class="table-wrap" style="padding:1.25rem">
+        {% set max_rev = namespace(val=1) %}
+        {% for s in syndics %}
+          {% set sr = payments | selectattr('syndic_id','equalto',s.id) | selectattr('status','equalto','approved') | sum(attribute='amount_mad') %}
+          {% if sr > max_rev.val %}{% set max_rev.val = sr %}{% endif %}
+        {% endfor %}
+        {% for s in syndics %}
+          {% set sr = payments | selectattr('syndic_id','equalto',s.id) | selectattr('status','equalto','approved') | sum(attribute='amount_mad') %}
+          <div class="rev-bar-row">
+            <div class="rev-label">{{ s.name }}</div>
+            <div class="rev-bar-track">
+              <div class="rev-bar-fill" style="width:{{ (sr / max_rev.val * 100) | int }}%"></div>
+            </div>
+            <div class="rev-amount">{{ sr }} DH</div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Payments -->
+    <div class="section">
+      <div class="section-title">💳 Payment History ({{ payments | length }})</div>
+      {% if payments %}
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Syndic</th>
+              <th>Building</th>
+              <th>Apts</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>CMI Ref</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in payments %}
+            <tr>
+              <td style="white-space:nowrap">{{ p.created_at.strftime('%d/%m/%Y') }}<br><span style="font-size:.7rem;color:#aaa">{{ p.created_at.strftime('%H:%M') }}</span></td>
+              <td>{{ p.syndic.name }}</td>
+              <td>{{ p.building.name }}</td>
+              <td style="text-align:center">{{ p.nb_apartments }}</td>
+              <td><strong>{{ p.amount_mad }} DH</strong></td>
+              <td>
+                {% if p.status == 'approved' %}
+                  <span class="badge badge-green">✅ Approved</span>
+                {% elif p.status == 'pending' %}
+                  <span class="badge badge-amber">⏳ Pending</span>
+                {% else %}
+                  <span class="badge badge-red">❌ Failed</span>
+                {% endif %}
+              </td>
+              <td style="font-size:.7rem;color:#aaa">{{ p.cmi_approval or p.ref[-10:] }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty">No payments yet.</div>
+      {% endif %}
+    </div>
+
+    <!-- Clients -->
+    <div class="section">
+      <div class="section-title">🏠 Residents ({{ clients | length }})</div>
+      {% if clients %}
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>QR Code</th>
+              <th>Neighborhood</th>
+              <th>Building</th>
+              <th>Subscription</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in clients %}
+            <tr>
+              <td><strong>{{ c.name }}</strong></td>
+              <td style="font-size:.7rem;color:#1a7c3e;font-weight:700">{{ c.qr_code }}</td>
+              <td>{{ c.neighborhood }}</td>
+              <td style="font-size:.75rem">{{ c.building.name if c.building else '—' }}</td>
+              <td>
+                {% if c.subscription_active %}
+                  <span class="badge badge-green">✅ Active</span>
+                {% else %}
+                  <span class="badge badge-red">❌ Inactive</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if c.status == 'collected' %}
+                  <span class="badge badge-green">Collected</span>
+                {% elif c.status == 'ready' %}
+                  <span class="badge badge-amber">Ready</span>
+                {% elif c.status == 'violation' %}
+                  <span class="badge badge-red">Violation</span>
+                {% else %}
+                  <span class="badge badge-gray">Not ready</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty">No residents yet.</div>
+      {% endif %}
+    </div>
+
+  </div>
+</body>
+</html>
