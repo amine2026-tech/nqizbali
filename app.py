@@ -404,8 +404,9 @@ def inject_now():
     return {'now': datetime.utcnow()}
 
 
+with app.app_context():
+    db.create_all()
+    seed_data()
+
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-        seed_data()
     app.run(debug=True, host='0.0.0.0')
