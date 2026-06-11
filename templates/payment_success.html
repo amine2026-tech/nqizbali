@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>NqiZbali — Payment Confirmed</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',sans-serif;background:#f0f9f0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem}
+    .card{background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(0,0,0,.1);max-width:420px;width:100%;padding:2.5rem 2rem;text-align:center}
+    .icon{font-size:4rem;margin-bottom:1rem;animation:pop .4s ease}
+    @keyframes pop{0%{transform:scale(.5);opacity:0}80%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+    h1{font-size:1.4rem;font-weight:800;color:#0d4f29;margin-bottom:.5rem}
+    p{font-size:.88rem;color:#666;line-height:1.6}
+    .building-name{font-weight:700;color:#1a7c3e}
+    .approval{display:inline-block;background:#f0faf4;border:1.5px solid #d1f0dc;border-radius:8px;padding:.4rem .9rem;font-size:.76rem;color:#0d6e35;margin:.75rem 0 1.25rem}
+    .btn{display:inline-block;background:linear-gradient(135deg,#1a7c3e,#25a25a);color:#fff;text-decoration:none;border-radius:10px;padding:.75rem 1.75rem;font-size:.92rem;font-weight:700;margin-top:1rem}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">✅</div>
+    <h1>Payment Confirmed!</h1>
+    {% if building %}
+      <p>The subscription for <span class="building-name">{{ building.name }}</span> is now
+      <strong>active for 30 days</strong>.<br/>
+      Trash collection is unlocked for all residents.</p>
+    {% else %}
+      <p>Your payment was approved. The subscription is now active.</p>
+    {% endif %}
+    {% if approval %}
+      <div class="approval">CMI Code: {{ approval }}</div>
+    {% endif %}
+    <a class="btn" href="/syndic/dashboard">Back to Dashboard</a>
+  </div>
+</body>
+</html>
