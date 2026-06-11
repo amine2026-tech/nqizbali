@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>NqiZbali — Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#0d4f29,#1a7c3e);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem}
+    .card{background:#fff;border-radius:20px;box-shadow:0 8px 40px rgba(0,0,0,.25);width:100%;max-width:380px;overflow:hidden}
+    .header{background:#1A2332;padding:2rem;text-align:center;color:#fff}
+    .logo{font-size:2.5rem;margin-bottom:.5rem}
+    .header h1{font-size:1.2rem;font-weight:800;color:#4CAF50}
+    .header p{font-size:.8rem;opacity:.6;margin-top:.25rem}
+    .body{padding:2rem}
+    .field{margin-bottom:1.2rem}
+    label{display:block;font-size:.82rem;font-weight:600;color:#444;margin-bottom:.4rem}
+    input{width:100%;border:1.5px solid #ddd;border-radius:10px;padding:.75rem 1rem;font-size:.95rem;outline:none;transition:border-color .2s;font-family:inherit}
+    input:focus{border-color:#1a7c3e}
+    .btn{width:100%;background:#1A2332;color:#fff;border:none;border-radius:10px;padding:.9rem;font-size:1rem;font-weight:700;cursor:pointer;transition:opacity .2s;font-family:inherit}
+    .btn:hover{opacity:.85}
+    .error{background:#fff0f0;border:1.5px solid #ffb3b3;border-radius:8px;padding:.7rem 1rem;font-size:.83rem;color:#c0392b;margin-bottom:1rem}
+    .hint{background:#f0faf4;border:1.5px dashed #1a7c3e;border-radius:8px;padding:.75rem 1rem;font-size:.78rem;color:#1a7c3e;margin-bottom:1.2rem;line-height:1.6}
+    .back{display:block;text-align:center;font-size:.8rem;color:#aaa;margin-top:1rem;text-decoration:none}
+    .back:hover{color:#1a7c3e}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <div class="logo">♻️</div>
+      <h1>Admin Panel</h1>
+      <p>NqiZbali Management Dashboard</p>
+    </div>
+    <div class="body">
+      <div class="hint">
+        🔑 Default password: <strong>nqizbali2026</strong>
+      </div>
+      {% if error %}<div class="error">{{ error }}</div>{% endif %}
+      <form method="POST">
+        <div class="field">
+          <label>Admin Password</label>
+          <input type="password" name="password" required placeholder="••••••••" autofocus/>
+        </div>
+        <button class="btn" type="submit">Enter Admin Panel</button>
+      </form>
+      <a class="back" href="/">← Back to app</a>
+    </div>
+  </div>
+</body>
+</html>
