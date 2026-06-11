@@ -1,225 +1,161 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NqiZbali - Collecteur</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <title>NqiZbali — Collector</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    #collector-map {
+      height: 360px;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 0.5px solid #CFD8DC;
+      margin-bottom: 10px;
+      position: relative;
+      z-index: 1;
+    }
+    .map-wrapper { position: relative; }
+    .map-center-btn {
+      position: absolute;
+      bottom: 18px;
+      right: 12px;
+      z-index: 999;
+      background: white;
+      border: none;
+      border-radius: 10px;
+      width: 40px;
+      height: 40px;
+      font-size: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .map-filter-btn {
+      position: absolute;
+      bottom: 18px;
+      left: 12px;
+      z-index: 999;
+      background: white;
+      border: none;
+      border-radius: 10px;
+      padding: 0 12px;
+      height: 40px;
+      font-size: 11px;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+      cursor: pointer;
+      color: #1A2332;
+    }
+    .route-card {
+      background: #f0faf4;
+      border: 1px solid #d1f0dc;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .route-icon { font-size: 22px; flex-shrink: 0; }
+    .route-text { flex: 1; font-size: 12px; color: #0d4f29; font-weight: 600; }
+    .route-badge { background: #1a7c3e; color: white; border-radius: 8px; padding: 4px 10px; font-size: 11px; font-weight: 700; }
+    .client-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+    .client-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: #f8fafc;
+      border-radius: 12px;
+      border: 1px solid #e8edf2;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .client-row.ready { border-color: #ffd54f; background: #fffde7; }
+    .client-row.collected { border-color: #c8e6c9; background: #f1f8f2; opacity: 0.7; }
+    .client-row.violation { border-color: #ffcdd2; background: #fff5f5; }
+    .client-status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .client-info { flex: 1; min-width: 0; }
+    .client-name { font-size: 13px; font-weight: 700; color: #1A2332; }
+    .client-addr { font-size: 11px; color: #607D8B; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mini-btn { border: none; border-radius: 8px; padding: 6px 10px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; }
+    .mini-btn-green { background: #2E7D32; color: white; }
+    .mini-btn-gray { background: #e0e0e0; color: #607D8B; }
+  </style>
 </head>
 <body>
 <div class="app-container">
 
-    <!-- Top Bar -->
-    <div class="top-bar">
-        <a href="/" class="back-btn">← Home</a>
-        <span class="top-bar-title">🌿 NQIZBALI</span>
-        <span class="top-bar-time" id="clock">21:15</span>
+  <div class="top-bar">
+    <a href="/" class="back-btn">← Home</a>
+    <span class="top-bar-title">♻️ NQIZBALI</span>
+    <span class="top-bar-time" id="clock">--:--</span>
+  </div>
+
+  <div class="content">
+
+    <div class="card card-dark">
+      <div class="profile-row">
+        <div class="avatar avatar-teal">YB</div>
+        <div>
+          <div class="profile-name" style="color:white">Youssef Benaissa</div>
+          <div class="profile-sub" style="color:#ffffff88">🚛 Collector · M'hamid–Massira zone</div>
+        </div>
+        <div style="margin-left:auto">
+          <span class="badge badge-green">
+            <span class="pulse-dot"></span> On duty
+          </span>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-pill" style="background:#ffffff18;color:#ffffffcc">📍 Massira II</div>
+        <div class="info-pill" style="background:#ffffff18;color:#ffffffcc">🕐 <span id="clock2">--:--</span></div>
+      </div>
     </div>
 
-    <div class="content">
-
-        <!-- Profile Card -->
-        <div class="card card-dark">
-            <div class="profile-row">
-                <div class="avatar avatar-teal">YB</div>
-                <div>
-                    <div class="profile-name" style="color:white">Youssef Benaissa</div>
-                    <div class="profile-sub" style="color:#ffffff88">🚛 Collecteur · Zone M'hamid–Massira</div>
-                </div>
-                <div style="margin-left:auto">
-                    <span class="badge badge-green">
-                        <span class="pulse-dot"></span> Fi khidma
-                    </span>
-                </div>
-            </div>
-            <div class="info-row">
-                <div class="info-pill" style="background:#ffffff18;color:#ffffffcc">📍 Massira II</div>
-                <div class="info-pill" style="background:#ffffff18;color:#ffffffcc">🕐 <span id="clock2">21:15</span></div>
-            </div>
-        </div>
-
-        <!-- Stats Grid -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">🏠</div>
-                <div class="stat-val" id="stat-total">30</div>
-                <div class="stat-label">Dyor / Maisons</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">✅</div>
-                <div class="stat-val" id="stat-collected" style="color:#2E7D32">18</div>
-                <div class="stat-label">Mjmoa / Collectées</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">⚠️</div>
-                <div class="stat-val" id="stat-violations" style="color:#C62828">3</div>
-                <div class="stat-label">Mshakil / Violations</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">⏳</div>
-                <div class="stat-val" id="stat-pending" style="color:#E65100">9</div>
-                <div class="stat-label">Bqyin / En attente</div>
-            </div>
-        </div>
-
-        <!-- Live Map -->
-        <div class="card">
-            <div class="card-title">🗺️ Carte live · خريطة المسار</div>
-            <div id="collector-map"></div>
-            <div class="legend">
-                <div class="legend-item"><div class="legend-dot" style="background:#2E7D32"></div> Collecté</div>
-                <div class="legend-item"><div class="legend-dot" style="background:#C62828"></div> Violation</div>
-                <div class="legend-item"><div class="legend-dot" style="background:#CFD8DC"></div> En attente</div>
-                <div class="legend-item"><div class="legend-dot" style="background:#00695C"></div> Camion</div>
-            </div>
-        </div>
-
-        <!-- QR Scanner -->
-        <div class="card">
-            <div class="card-title">📷 Scanner QR · قارئ الكود</div>
-            <div class="scanner-box" id="scanner-box">
-                <div class="scan-corner scan-corner-tl"></div>
-                <div class="scan-corner scan-corner-tr"></div>
-                <div class="scan-corner scan-corner-bl"></div>
-                <div class="scan-corner scan-corner-br"></div>
-                <div id="scan-content">
-                    <div class="scan-idle">
-                        <div class="scan-idle-icon">▦</div>
-                        <div>Pointer vers l'autocollant</div>
-                    </div>
-                </div>
-                <div id="scan-line" class="scan-line" style="display:none;top:20%"></div>
-                <div id="scan-label" style="position:absolute;bottom:8px;left:0;right:0;text-align:center;color:#ffffff88;font-size:11px"></div>
-            </div>
-
-            <!-- Scan Button -->
-            <div id="scan-btn-area">
-                <button class="btn btn-teal" id="scan-btn" onclick="startScan()">
-                    📷 Simuler Scan / محاكاة الكاميرا
-                </button>
-            </div>
-
-            <!-- Action Buttons (shown after scan) -->
-            <div id="action-buttons" style="display:none">
-                <div class="action-row">
-                    <button class="btn btn-green" onclick="markCollected()">✅ Mjmoa / Collecté</button>
-                    <button class="btn btn-red" onclick="openViolModal()">📸 Mshkil / Violation</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Unit Grid -->
-        <div class="card">
-            <div class="card-title">🏠 Grille d-dyor / شبكة البيوت</div>
-            <div class="unit-grid" id="unit-grid"></div>
-            <div class="legend">
-                <div class="legend-item"><div class="legend-sq" style="background:#2E7D32"></div> Collecté</div>
-                <div class="legend-item"><div class="legend-sq" style="background:#C62828"></div> Violation</div>
-                <div class="legend-item"><div class="legend-sq" style="background:#CFD8DC"></div> En attente</div>
-            </div>
-        </div>
-
-        <!-- Performance -->
-        <div class="card">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-                <div class="card-title" style="margin-bottom:0">🏆 Performance / تقييم</div>
-                <span class="badge badge-amber">Niveau Or 🥇</span>
-            </div>
-            <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:5px">
-                <span style="font-size:26px;font-weight:900;color:#2E7D32" id="points-display">810</span>
-                <span style="font-size:12px;color:#607D8B">pts aujourd'hui</span>
-            </div>
-            <div class="progress-label">
-                <span id="progress-text">18 / 30</span>
-                <span style="color:#2E7D32" id="progress-pct">60%</span>
-            </div>
-            <div class="progress-track">
-                <div class="progress-fill" id="progress-fill" style="width:60%"></div>
-            </div>
-            <div style="font-size:11px;color:#607D8B;margin-top:4px;margin-bottom:12px">
-                Objectif: 30 dyor pour bonus complet
-            </div>
-            <div class="bonus-row">
-                <div>
-                    <div class="bonus-label">Bonus vitesse / سرعة</div>
-                    <div class="bonus-desc">Terminer avant 22h</div>
-                </div>
-                <span class="badge badge-teal">+15 DH</span>
-            </div>
-            <div class="bonus-row">
-                <div>
-                    <div class="bonus-label">Bonus qualité / جودة</div>
-                    <div class="bonus-desc">0 plainte cette semaine</div>
-                </div>
-                <span class="badge badge-green">+10 DH</span>
-            </div>
-            <div class="bonus-row">
-                <div>
-                    <div class="bonus-label">Bonus complétion / اكتمال</div>
-                    <div class="bonus-desc">100% dyor collectées</div>
-                </div>
-                <span class="badge" id="completion-badge" style="background:#F2F5F0;color:#607D8B">Verrouillé</span>
-            </div>
-            <div class="total-row">
-                <span class="total-label">Bonus total / مجموع</span>
-                <span class="total-val" id="bonus-total">+25 DH</span>
-            </div>
-        </div>
-
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">🏠</div>
+        <div class="stat-val" id="stat-total">0</div>
+        <div class="stat-label">Total homes</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🗑️</div>
+        <div class="stat-val" id="stat-ready" style="color:#E65100">0</div>
+        <div class="stat-label">Ready now</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-val" id="stat-collected" style="color:#2E7D32">0</div>
+        <div class="stat-label">Collected</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⚠️</div>
+        <div class="stat-val" id="stat-violations" style="color:#C62828">0</div>
+        <div class="stat-label">Violations</div>
+      </div>
     </div>
-</div>
 
-<!-- Violation Modal -->
-<div class="modal-overlay" id="viol-modal" style="display:none">
-    <div class="modal-box">
-        <div class="modal-header">
-            <div>
-                <div class="modal-title">⚠️ Mshkil / Violation</div>
-                <div class="modal-sub" id="viol-unit-name">Dar —</div>
-            </div>
-            <button class="close-btn" onclick="closeViolModal()">✕</button>
-        </div>
-
-        <div style="background:#0a0f1e;border-radius:11px;height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;margin-bottom:11px;position:relative">
-            <span style="font-size:24px;opacity:.4">📷</span>
-            <span style="color:#ffffff44;font-size:11px">Capture simulée</span>
-            <div style="position:absolute;top:6px;right:8px;background:#C62828;color:#fff;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px">● REC</div>
-        </div>
-
-        <div style="font-weight:700;font-size:12px;color:#1A2332;margin-bottom:8px">Sabab / Raison :</div>
-
-        <button class="viol-option" onclick="selectViol(this,'leaking')">
-            <span class="viol-option-icon">💧</span>
-            <span class="viol-option-label">Zbel katshel / Fuite</span>
-        </button>
-        <button class="viol-option" onclick="selectViol(this,'oversized')">
-            <span class="viol-option-icon">📦</span>
-            <span class="viol-option-label">Kbir bzaf / Trop volumineux</span>
-        </button>
-        <button class="viol-option" onclick="selectViol(this,'early')">
-            <span class="viol-option-icon">⏰</span>
-            <span class="viol-option-label">Khrej bkri / Trop tôt</span>
-        </button>
-        <button class="viol-option" onclick="selectViol(this,'wrong_bag')">
-            <span class="viol-option-icon">🗑️</span>
-            <span class="viol-option-label">Sac ghalt / Mauvais sac</span>
-        </button>
-        <button class="viol-option" onclick="selectViol(this,'bio')">
-            <span class="viol-option-icon">⚠️</span>
-            <span class="viol-option-label">Matière dangereuse / خطر</span>
-        </button>
-
-        <button class="btn btn-red" id="submit-viol-btn" style="margin-top:12px;opacity:0.4" onclick="submitViol()" disabled>
-            Signaler / بلّغ
-        </button>
+    <div class="route-card" id="route-card" style="display:none">
+      <span class="route-icon">🗺️</span>
+      <div class="route-text" id="route-text">Loading route...</div>
+      <span class="route-badge" id="route-badge">0 stops</span>
     </div>
-</div>
 
-<!-- Toast -->
-<div class="toast" id="toast"></div>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="{{ url_for('static', filename='js/collector.js') }}"></script>
-</body>
-</html>
+    <div class="card">
+      <div class="card-title">🗺️ Live collection map</div>
+      <div class="map-wrapper">
+        <div id="collector-map"></div>
+        <button class="map-center-btn" onclick="centerMap()">🎯</button>
+        <button class="map-filter-btn" id="filter-btn" onclick="toggleFilter()">🗑️ Ready only</button>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#ffd54f"></div> Ready</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#2E7D32"></div> Collected</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#C62828"></div> Violation</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#CFD8DC"></div> Waiting</div>
+        <div class="legend-item"><div
