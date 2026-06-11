@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>NqiZbali — Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',sans-serif;background:#f0f9f0;min-height:100vh;color:#111}
+    nav{background:linear-gradient(135deg,#0d4f29,#1a7c3e);padding:.9rem 1.5rem;display:flex;align-items:center;justify-content:space-between;color:#fff;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+    .nav-brand{font-size:1.2rem;font-weight:800}
+    .nav-right{display:flex;align-items:center;gap:1rem;font-size:.85rem}
+    .nav-logout{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:8px;padding:.35rem .8rem;color:#fff;font-size:.82rem;text-decoration:none}
+    .container{max-width:900px;margin:0 auto;padding:2rem 1.25rem}
+    .greeting{margin-bottom:1.75rem}
+    .greeting h1{font-size:1.5rem;font-weight:800;color:#0d4f29}
+    .greeting p{font-size:.9rem;color:#666;margin-top:.3rem}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem}
+    .stat-card{background:#fff;border-radius:14px;padding:1.1rem 1.25rem;box-shadow:0 2px 12px rgba(0,0,0,.06);border-left:4px solid #1a7c3e}
+    .stat-card.warn{border-left-color:#f39c12}
+    .stat-card.danger{border-left-color:#e74c3c}
+    .stat-card .val{font-size:1.8rem;font-weight:800;color:#111;line-height:1}
+    .stat-card .lbl{font-size:.75rem;color:#888;margin-top:.35rem}
+    .section-title{font-size:1rem;font-weight:700;color:#0d4f29;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between}
+    .btn-add{background:#1a7c3e;color:#fff;border:none;border-radius:8px;padding:.45rem 1rem;font-size:.82rem;font-weight:600;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:.35rem}
+    .buildings{display:grid;gap:1rem}
+    .b-card{background:#fff;border-radius:16px;box-shadow:0 2px 14px rgba(0,0,0,.07);overflow:hidden}
+    .b-card-head{padding:1.1rem 1.25rem;display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem}
+    .b-card-title{font-size:1rem;font-weight:700;color:#111}
+    .b-card-sub{font-size:.78rem;color:#888;margin-top:.2rem}
+    .badge{display:inline-block;border-radius:20px;padding:.25rem .75rem;font-size:.72rem;font-weight:700;flex-shrink:0}
+    .badge-active{background:#d4f7e4;color:#0d6e35}
+    .badge-inactive{background:#ffeaea;color:#c0392b}
+    .badge-expire{background:#fff3cd;color:#7a5c00}
+    .b-card-body{padding:.75rem 1.25rem 1.25rem;display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;border-top:1px solid #f3f3f3}
+    .b-stat{text-align:center}
+    .b-stat .num{font-size:1.4rem;font-weight:800;color:#1a7c3e}
+    .b-stat .lbl{font-size:.7rem;color:#999;margin-top:.15rem}
+    .b-card-footer{padding:.75rem 1.25rem 1.1rem;display:flex;gap:.65rem;flex-wrap:wrap}
+    .btn-pay{background:linear-gradient(135deg,#1a7c3e,#25a25a);color:#fff;border:none;border-radius:9px;padding:.6rem 1.2rem;font-size:.83rem;font-weight:700;cursor:pointer;text-decoration:none}
+    .btn-renew{background:linear-gradient(135deg,#d35400,#e67e22);color:#fff;border:none;border-radius:9px;padding:.6rem 1.2rem;font-size:.83rem;font-weight:700;cursor:pointer;text-decoration:none}
+    .history{margin-top:2rem}
+    table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+    th{background:#f8fdf9;font-size:.75rem;font-weight:700;color:#555;padding:.75rem 1rem;text-align:left;border-bottom:1px solid #eee}
+    td{font-size:.82rem;padding:.75rem 1rem;border-bottom:1px solid #f5f5f5;color:#333}
+    tr:last-child td{border-bottom:none}
+    .status-approved{color:#0d6e35;font-weight:700}
+    .status-pending{color:#7a5c00;font-weight:600}
+    .status-failed{color:#c0392b;font-weight:600}
+    .empty{text-align:center;padding:3rem 1rem;color:#bbb;font-size:.9rem}
+    @media(max-width:600px){
+      .stats{grid-template-columns:1fr 1fr}
+      .b-card-body{grid-template-columns:1fr 1fr}
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-brand">♻️ NqiZbali</div>
+    <div class="nav-right">
+      <span>👤 {{ syndic.name }}</span>
+      <a class="nav-logout" href="/syndic/logout">Logout</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="greeting">
+      <h1>Hello, {{ syndic.name.split()[0] }} 👋</h1>
+      <p>Manage your buildings and NqiZbali subscriptions.</p>
+    </div>
+
+    {% set active_count = buildings | selectattr('is_active') | list | length %}
+    {% set total_due = buildings | selectattr('is_active', 'equalto', False) | sum(attribute='monthly_total') %}
+    <div class="stats">
+      <div class="stat-card">
+        <div class="val">{{ buildings | length }}</div>
+        <div class="lbl">Registered Buildings</div>
+      </div>
+      <div class="stat-card {% if active_count < buildings|length %}warn{% endif %}">
+        <div class="val">{{ active_count }} / {{ buildings | length }}</div>
+        <div class="lbl">Active Subscriptions</div>
+      </div>
+      <div class="stat-card {% if total_due > 0 %}danger{% endif %}">
+        <div class="val">{{ total_due }} DH</div>
+        <div class="lbl">Due This Month</div>
+      </div>
+    </div>
+
+    <div class="section-title">
+      My Buildings
+      <a class="btn-add" href="/syndic/building/add">+ Add Building</a>
+    </div>
+
+    {% if buildings %}
+    <div class="buildings">
+      {% for b in buildings %}
+      <div class="b-card">
+        <div class="b-card-head">
+          <div>
+            <div class="b-card-title">{{ b.name }}</div>
+            <div class="b-card-sub">📍 {{ b.address }}, {{ b.neighborhood }}</div>
+          </div>
+          {% if b.is_active %}
+            {% set days_left = ((b.subscription_end - now).days) if b.subscription_end else 0 %}
+            {% if days_left <= 5 %}
+              <span class="badge badge-expire">⚠️ Expires in {{ days_left }}d</span>
+            {% else %}
+              <span class="badge badge-active">✅ Active — {{ days_left }}d left</span>
+            {% endif %}
+          {% else %}
+            <span class="badge badge-inactive">❌ Inactive</span>
+          {% endif %}
+        </div>
+        <div class="b-card-body">
+          <div class="b-stat">
+            <div class="num">{{ b.nb_apartments }}</div>
+            <div class="lbl">Apartments</div>
+          </div>
+          <div class="b-stat">
+            <div class="num">{{ b.monthly_total }} DH</div>
+            <div class="lbl">Monthly Total</div>
+          </div>
+          <div class="b-stat">
+            <div class="num">{{ b.clients | length }}</div>
+            <div class="lbl">Residents</div>
+          </div>
+        </div>
+        <div class="b-card-footer">
+          {% if b.is_active %}
+            <a class="btn-renew" href="/syndic/building/{{ b.id }}/pay">🔄 Renew</a>
+          {% else %}
+            <a class="btn-pay" href="/syndic/building/{{ b.id }}/pay">💳 Pay — {{ b.monthly_total }} DH</a>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty">
+      No buildings yet.<br>
+      <a class="btn-add" style="margin-top:1rem;display:inline-flex" href="/syndic/building/add">+ Add your first building</a>
+    </div>
+    {% endif %}
+
+    <div class="history">
+      <div class="section-title">Payment History</div>
+      {% set all_payments = syndic.payments | sort(attribute='created_at', reverse=True) %}
+      {% if all_payments %}
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th><th>Building</th><th>Apts</th><th>Amount</th><th>Status</th><th>CMI Ref</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in all_payments %}
+          <tr>
+            <td>{{ p.created_at.strftime('%d/%m/%Y') }}</td>
+            <td>{{ p.building.name }}</td>
+            <td>{{ p.nb_apartments }}</td>
+            <td><strong>{{ p.amount_mad }} DH</strong></td>
+            <td class="status-{{ p.status }}">
+              {% if p.status == 'approved' %}✅ Approved
+              {% elif p.status == 'pending' %}⏳ Pending
+              {% else %}❌ Failed{% endif %}
+            </td>
+            <td style="font-size:.72rem;color:#aaa">{{ p.cmi_approval or p.ref[-12:] }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <div class="empty">No payments yet.</div>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>
