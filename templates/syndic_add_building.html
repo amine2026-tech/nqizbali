@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>NqiZbali — Add Building</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',sans-serif;background:#f0f9f0;min-height:100vh}
+    nav{background:linear-gradient(135deg,#0d4f29,#1a7c3e);padding:.9rem 1.5rem;display:flex;align-items:center;gap:1rem;color:#fff}
+    nav a{color:rgba(255,255,255,.8);text-decoration:none;font-size:.85rem}
+    nav .brand{font-weight:800;font-size:1.1rem}
+    .container{max-width:520px;margin:2rem auto;padding:0 1.25rem}
+    h1{font-size:1.3rem;font-weight:800;color:#0d4f29;margin-bottom:1.5rem}
+    .card{background:#fff;border-radius:16px;box-shadow:0 2px 14px rgba(0,0,0,.07);padding:1.75rem}
+    .field{margin-bottom:1.1rem}
+    label{display:block;font-size:.82rem;font-weight:600;color:#444;margin-bottom:.4rem}
+    input,select{width:100%;border:1.5px solid #ddd;border-radius:10px;padding:.7rem 1rem;font-size:.93rem;outline:none;font-family:inherit;transition:border-color .2s}
+    input:focus,select:focus{border-color:#1a7c3e}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+    .price-preview{background:#f0faf4;border:1.5px solid #1a7c3e;border-radius:10px;padding:.9rem 1.1rem;margin-bottom:1.25rem;font-size:.88rem;color:#0d4f29;display:none}
+    .price-preview strong{font-size:1.3rem}
+    .btn{width:100%;background:linear-gradient(135deg,#1a7c3e,#25a25a);color:#fff;border:none;border-radius:10px;padding:.85rem;font-size:.98rem;font-weight:700;cursor:pointer}
+    .btn:hover{opacity:.9}
+    .error{background:#fff0f0;border:1.5px solid #ffb3b3;border-radius:8px;padding:.65rem 1rem;font-size:.82rem;color:#c0392b;margin-bottom:1rem}
+    .back{display:inline-block;margin-bottom:1rem;font-size:.82rem;color:#1a7c3e;text-decoration:none;font-weight:600}
+  </style>
+</head>
+<body>
+  <nav>
+    <span class="brand">♻️ NqiZbali</span>
+    <a href="/syndic/dashboard">Dashboard</a>
+  </nav>
+  <div class="container">
+    <a class="back" href="/syndic/dashboard">← Back</a>
+    <h1>Add a Building</h1>
+    <div class="card">
+      {% if error %}<div class="error">{{ error }}</div>{% endif %}
+      <form method="POST">
+        <div class="field">
+          <label>Building / Residence Name</label>
+          <input name="name" required placeholder="e.g. Residence Al Amal"/>
+        </div>
+        <div class="field">
+          <label>Address</label>
+          <input name="address" required placeholder="Street, number..."/>
+        </div>
+        <div class="field">
+          <label>Neighborhood</label>
+          <select name="neighborhood" required>
+            <option value="">— Select —</option>
+            <option>Massira I</option>
+            <option>Massira II</option>
+            <option>Massira III</option>
+            <option>M'hamid 6</option>
+            <option>M'hamid 7</option>
+            <option>M'hamid 8</option>
+            <option>Daoudiate</option>
+            <option>Gueliz</option>
+            <option>Hivernage</option>
+            <option>Medina</option>
+            <option>Targa</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Number of Apartments</label>
+          <input name="nb_apartments" id="nbApts" type="number" min="1" max="500"
+                 required placeholder="e.g. 8" oninput="updatePrice()"/>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Latitude (optional)</label>
+            <input name="lat" type="number" step="any" placeholder="31.6258"/>
+          </div>
+          <div class="field">
+            <label>Longitude (optional)</label>
+            <input name="lng" type="number" step="any" placeholder="-8.0038"/>
+          </div>
+        </div>
+
+        <div class="price-preview" id="pricePreview">
+          💰 Monthly total: <strong id="totalPrice">0</strong> DH
+          <span style="font-size:.75rem;color:#555;display:block;margin-top:.2rem">
+            ({{ price_per_apt }} DH × <span id="aptCount">0</span> apartments)
+          </span>
+        </div>
+
+        <button class="btn" type="submit">Save Building</button>
+      </form>
+    </div>
+  </div>
+  <script>
+    function updatePrice() {
+      const n = parseInt(document.getElementById('nbApts').value) || 0;
+      const preview = document.getElementById('pricePreview');
+      if (n > 0) {
+        document.getElementById('totalPrice').textContent = n * {{ price_per_apt }};
+        document.getElementById('aptCount').textContent = n;
+        preview.style.display = 'block';
+      } else {
+        preview.style.display = 'none';
+      }
+    }
+  </script>
+</body>
+</html>
