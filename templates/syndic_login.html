@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>NqiZbali — Syndic Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#0d4f29,#1a7c3e);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem}
+    .card{background:#fff;border-radius:20px;box-shadow:0 8px 40px rgba(0,0,0,.25);width:100%;max-width:400px;overflow:hidden}
+    .header{background:linear-gradient(135deg,#1a7c3e,#25a25a);padding:2rem;text-align:center;color:#fff}
+    .logo{font-size:2.5rem;margin-bottom:.5rem}
+    .header h1{font-size:1.3rem;font-weight:700}
+    .header p{font-size:.82rem;opacity:.85;margin-top:.25rem}
+    .body{padding:2rem}
+    .field{margin-bottom:1.2rem}
+    label{display:block;font-size:.82rem;font-weight:600;color:#444;margin-bottom:.4rem}
+    input{width:100%;border:1.5px solid #ddd;border-radius:10px;padding:.75rem 1rem;font-size:.95rem;outline:none;transition:border-color .2s}
+    input:focus{border-color:#1a7c3e}
+    .btn{width:100%;background:linear-gradient(135deg,#1a7c3e,#25a25a);color:#fff;border:none;border-radius:10px;padding:.9rem;font-size:1rem;font-weight:700;cursor:pointer;transition:opacity .2s}
+    .btn:hover{opacity:.9}
+    .error{background:#fff0f0;border:1.5px solid #ffb3b3;border-radius:8px;padding:.7rem 1rem;font-size:.83rem;color:#c0392b;margin-bottom:1rem}
+    .footer-link{text-align:center;font-size:.82rem;color:#888;margin-top:1.2rem}
+    .footer-link a{color:#1a7c3e;text-decoration:none;font-weight:600}
+    .demo-box{background:#f0faf4;border:1.5px dashed #1a7c3e;border-radius:8px;padding:.75rem 1rem;font-size:.78rem;color:#1a7c3e;margin-bottom:1.2rem;line-height:1.6}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <div class="logo">♻️</div>
+      <h1>Syndic Portal</h1>
+      <p>Manage your building subscription</p>
+    </div>
+    <div class="body">
+      <div class="demo-box">
+        🔑 Demo account:<br>
+        <strong>syndic@nqizbali.ma</strong> / <strong>nqizbali2026</strong>
+      </div>
+      {% if error %}<div class="error">{{ error }}</div>{% endif %}
+      <form method="POST">
+        <div class="field">
+          <label>Email</label>
+          <input type="email" name="email" required placeholder="your@email.com"/>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" name="password" required placeholder="••••••••"/>
+        </div>
+        <button class="btn" type="submit">Log In</button>
+      </form>
+      <div class="footer-link">
+        No account yet? <a href="/syndic/register">Register</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
