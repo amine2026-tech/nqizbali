@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>NqiZbali — Register</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#0d4f29,#1a7c3e);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem}
+    .card{background:#fff;border-radius:20px;box-shadow:0 8px 40px rgba(0,0,0,.25);width:100%;max-width:420px;overflow:hidden}
+    .header{background:linear-gradient(135deg,#1a7c3e,#25a25a);padding:1.75rem;text-align:center;color:#fff}
+    .logo{font-size:2rem;margin-bottom:.4rem}
+    .header h1{font-size:1.2rem;font-weight:700}
+    .body{padding:1.75rem}
+    .field{margin-bottom:1rem}
+    label{display:block;font-size:.82rem;font-weight:600;color:#444;margin-bottom:.35rem}
+    input{width:100%;border:1.5px solid #ddd;border-radius:10px;padding:.7rem 1rem;font-size:.93rem;outline:none;transition:border-color .2s}
+    input:focus{border-color:#1a7c3e}
+    .btn{width:100%;background:linear-gradient(135deg,#1a7c3e,#25a25a);color:#fff;border:none;border-radius:10px;padding:.85rem;font-size:.98rem;font-weight:700;cursor:pointer;transition:opacity .2s;margin-top:.5rem}
+    .btn:hover{opacity:.9}
+    .error{background:#fff0f0;border:1.5px solid #ffb3b3;border-radius:8px;padding:.65rem 1rem;font-size:.82rem;color:#c0392b;margin-bottom:1rem}
+    .footer-link{text-align:center;font-size:.82rem;color:#888;margin-top:1rem}
+    .footer-link a{color:#1a7c3e;text-decoration:none;font-weight:600}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <div class="logo">♻️</div>
+      <h1>Create a Syndic Account</h1>
+    </div>
+    <div class="body">
+      {% if error %}<div class="error">{{ error }}</div>{% endif %}
+      <form method="POST">
+        <div class="field">
+          <label>Full Name</label>
+          <input name="name" required placeholder="Mohammed Alami"/>
+        </div>
+        <div class="field">
+          <label>Phone</label>
+          <input name="phone" required placeholder="06 XX XX XX XX"/>
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" name="email" required placeholder="syndic@email.com"/>
+        </div>
+        <div class="field">
+          <label>Password (min. 6 characters)</label>
+          <input type="password" name="password" required placeholder="••••••••"/>
+        </div>
+        <button class="btn" type="submit">Create Account</button>
+      </form>
+      <div class="footer-link">
+        Already registered? <a href="/syndic/login">Log in</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
