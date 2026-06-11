@@ -1,73 +1,78 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NqiZbali - مراكش</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <meta name="theme-color" content="#2E7D32">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="NqiZbali">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192.png') }}">
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>NqiZbali — Smart Trash Collection</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,#0d4f29 0%,#1a7c3e 50%,#0d4f29 100%);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1rem}
+
+    .logo{font-size:3.5rem;margin-bottom:.5rem}
+    .brand{font-size:2rem;font-weight:800;color:#fff;letter-spacing:-1px}
+    .tagline{font-size:.95rem;color:rgba(255,255,255,.7);margin-bottom:3rem;margin-top:.4rem}
+
+    .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;width:100%;max-width:780px}
+
+    .role-card{background:#fff;border-radius:20px;padding:2rem 1.5rem;text-align:center;text-decoration:none;transition:transform .2s,box-shadow .2s;box-shadow:0 4px 24px rgba(0,0,0,.15);display:flex;flex-direction:column;align-items:center;gap:.75rem}
+    .role-card:hover{transform:translateY(-4px);box-shadow:0 8px 32px rgba(0,0,0,.25)}
+    .role-card:active{transform:scale(.98)}
+
+    .role-icon{font-size:2.8rem;line-height:1}
+    .role-title{font-size:1.1rem;font-weight:800;color:#111}
+    .role-desc{font-size:.8rem;color:#888;line-height:1.5}
+
+    .role-card.resident .role-badge{background:#e6f4ff;color:#0c6cbf}
+    .role-card.collector .role-badge{background:#fff8e1;color:#7a5c00}
+    .role-card.syndic .role-badge{background:#f0faf4;color:#0d6e35}
+
+    .role-badge{border-radius:20px;padding:.3rem .9rem;font-size:.72rem;font-weight:700;margin-top:.25rem}
+
+    .footer{color:rgba(255,255,255,.4);font-size:.75rem;margin-top:2.5rem;text-align:center}
+
+    @media(max-width:600px){
+      .cards{grid-template-columns:1fr;max-width:340px}
+      .brand{font-size:1.6rem}
+    }
+  </style>
 </head>
 <body>
-    <div class="home-container">
-        <div class="home-logo">🌿</div>
-        <h1 class="home-title">NqiZbali</h1>
-        <p class="home-subtitle">خدمة جمع الزبالة الذكية · Marrakech</p>
-        <p class="home-desc">Smart Trash Collection · مراكش</p>
 
-        <div class="home-buttons">
-            <a href="/client" class="btn-home btn-client">
-                <span class="btn-icon">🏠</span>
-                <span class="btn-text">
-                    <strong>Client / كليان</strong>
-                    <small>Voir mon statut de collecte</small>
-                </span>
-            </a>
-            <a href="/collector" class="btn-home btn-collector">
-                <span class="btn-icon">🚛</span>
-                <span class="btn-text">
-                    <strong>Collecteur / خدام</strong>
-                    <small>Dashboard du collecteur</small>
-                </span>
-            </a>
-        </div>
+  <div class="logo">♻️</div>
+  <div class="brand">NqiZbali</div>
+  <div class="tagline">Smart trash collection · Marrakech</div>
 
-        <button id="install-btn" style="display:none;margin-top:20px;padding:13px 28px;background:#2E7D32;color:white;border:none;border-radius:50px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">
-            📲 Installer l'app sur mon téléphone
-        </button>
+  <div class="cards">
 
-        <div class="home-footer">
-            60 DH/mois · 24 collectes · Lundi–Samedi
-        </div>
+    <!-- Resident -->
+    <a class="role-card resident" href="/client">
+      <div class="role-icon">🏠</div>
+      <div class="role-title">I am a Resident</div>
+      <div class="role-desc">Signal when your trash is ready and track your collection</div>
+      <div class="role-badge">Resident access</div>
+    </a>
 
-        <div id="pwa-status" style="margin-top:12px;font-size:11px;color:#ffffff44;"></div>
-    </div>
+    <!-- Collector -->
+    <a class="role-card collector" href="/collector">
+      <div class="role-icon">🚛</div>
+      <div class="role-title">I am a Collector</div>
+      <div class="role-desc">See ready buildings, scan QR codes and confirm collections</div>
+      <div class="role-badge">Collector access</div>
+    </a>
 
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/static/sw.js')
-                    .then(reg => {
-                        document.getElementById('pwa-status').textContent = '✅ App prête pour installation';
-                    });
-            });
-        }
+    <!-- Syndic -->
+    <a class="role-card syndic" href="/syndic/login">
+      <div class="role-icon">🏢</div>
+      <div class="role-title">I am a Syndic</div>
+      <div class="role-desc">Manage your buildings and pay the monthly subscription</div>
+      <div class="role-badge">Syndic portal</div>
+    </a>
 
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', e => {
-            e.preventDefault();
-            deferredPrompt = e;
-            document.getElementById('install-btn').style.display = 'block';
-        });
+  </div>
 
-        document.getElementById('install-btn').addEventListener('click', async () => {
-            if (!deferredPrompt) return;
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            if (outcome === 'accepted') {
-                document.getElementById('pwa-status').textContent = 'App installée!';
-            }
+  <div class="footer">
+    nqizbali.onrender.com · Marrakech 2026
+  </div>
+
+</body>
+</html>
