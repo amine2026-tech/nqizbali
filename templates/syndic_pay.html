@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>NqiZbali — Payment</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',sans-serif;background:#f0f9f0;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:2rem 1rem}
+    .card{background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(0,0,0,.12);max-width:460px;width:100%;overflow:hidden}
+    .header{background:linear-gradient(135deg,#0d4f29,#1a7c3e);padding:1.75rem 2rem;color:#fff;text-align:center}
+    .header h1{font-size:1.25rem;font-weight:800}
+    .header p{font-size:.82rem;opacity:.85;margin-top:.3rem}
+    .body{padding:1.75rem}
+    .building-box{background:#f6fef8;border:1.5px solid #d1f0dc;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.4rem}
+    .building-box h3{font-size:.95rem;font-weight:700;color:#0d4f29}
+    .building-box p{font-size:.8rem;color:#666;margin-top:.25rem}
+    .breakdown{margin-bottom:1.4rem}
+    .breakdown-row{display:flex;justify-content:space-between;align-items:center;padding:.55rem 0;border-bottom:1px solid #f0f0f0;font-size:.88rem}
+    .breakdown-row:last-child{border-bottom:none;font-weight:800;font-size:1rem;color:#0d4f29;padding-top:.75rem}
+    .breakdown-row span:first-child{color:#555}
+    .cmi-btn{width:100%;background:linear-gradient(135deg,#c8102e,#e8192c);color:#fff;border:none;border-radius:12px;padding:1rem;font-size:1rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.6rem;transition:opacity .2s}
+    .cmi-btn:hover{opacity:.92}
+    .cmi-logo{background:#fff;color:#c8102e;border-radius:4px;padding:.1rem .35rem;font-weight:900;font-size:.75rem}
+    .secure{text-align:center;font-size:.74rem;color:#aaa;margin-top:.8rem;display:flex;align-items:center;justify-content:center;gap:.35rem}
+    .bank-logos{display:flex;justify-content:center;gap:.6rem;flex-wrap:wrap;margin-top:1rem}
+    .bank-pill{background:#f4f4f4;border-radius:6px;padding:.3rem .7rem;font-size:.7rem;font-weight:600;color:#555}
+    .back{display:block;text-align:center;margin-top:1rem;font-size:.8rem;color:#888;text-decoration:none}
+    .back:hover{color:#1a7c3e}
+    .dev-box{background:#fffbe6;border:1.5px dashed #f39c12;border-radius:10px;padding:.85rem 1rem;margin-top:1.1rem;font-size:.78rem;color:#7a5c00}
+    .dev-box strong{display:block;margin-bottom:.35rem}
+    .dev-simulate{background:#f39c12;color:#fff;border:none;border-radius:7px;padding:.45rem .9rem;font-size:.78rem;font-weight:700;cursor:pointer;margin-top:.5rem}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <h1>♻️ NqiZbali — Payment</h1>
+      <p>Monthly trash collection subscription</p>
+    </div>
+    <div class="body">
+
+      <div class="building-box">
+        <h3>🏢 {{ building.name }}</h3>
+        <p>📍 {{ building.address }}, {{ building.neighborhood }}</p>
+      </div>
+
+      <div class="breakdown">
+        <div class="breakdown-row">
+          <span>Price per apartment</span>
+          <span>60 DH</span>
+        </div>
+        <div class="breakdown-row">
+          <span>Number of apartments</span>
+          <span>× {{ building.nb_apartments }}</span>
+        </div>
+        <div class="breakdown-row">
+          <span>Duration</span>
+          <span>1 month</span>
+        </div>
+        <div class="breakdown-row">
+          <span>Total to pay</span>
+          <span>{{ payment.amount_mad }} DH</span>
+        </div>
+      </div>
+
+      <form id="cmiForm" action="{{ cmi_url }}" method="POST">
+        {% for key, val in cmi_params.items() %}
+          <input type="hidden" name="{{ key }}" value="{{ val }}"/>
+        {% endfor %}
+        <button class="cmi-btn" type="submit">
+          <span class="cmi-logo">CMI</span>
+          Pay {{ payment.amount_mad }} DH by bank card
+        </button>
+      </form>
+
+      <div class="secure">🔒 Secure payment · CMI Network · 3D Secure</div>
+
+      <div class="bank-logos">
+        <span class="bank-pill">Attijariwafa</span>
+        <span class="bank-pill">CIH Bank</span>
+        <span class="bank-pill">Banque Populaire</span>
+        <span class="bank-pill">BMCE</span>
+        <span class="bank-pill">BMCI</span>
+        <span class="bank-pill">Société Générale</span>
+        <span class="bank-pill">Crédit Agricole</span>
+      </div>
+
+      <div class="dev-box">
+        <strong>🧪 Test mode — Simulate approved payment</strong>
+        Reference: <code>{{ payment.ref }}</code>
+        <br/>
+        <button class="dev-simulate" onclick="simulatePay()">✅ Simulate CMI approval</button>
+      </div>
+
+      <a class="back" href="/syndic/dashboard">← Cancel and return to dashboard</a>
+    </div>
+  </div>
+
+  <script>
+    async function simulatePay() {
+      const ref = '{{ payment.ref }}';
+      const r   = await fetch(`/dev/simulate-payment/${ref}`, {method: 'POST'});
+      const d   = await r.json();
+      if (d.success) window.location.href = '/cmi/ok?oid=' + ref + '&AuthCode=TEST-CMI-OK';
+    }
+  </script>
+</body>
+</html>
