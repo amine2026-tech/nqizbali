@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>NqiZbali — Verify Code</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#0d4f29,#1a7c3e);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem}
+    .card{background:#fff;border-radius:20px;box-shadow:0 8px 40px rgba(0,0,0,.25);width:100%;max-width:400px;overflow:hidden}
+    .header{background:linear-gradient(135deg,#1a7c3e,#25a25a);padding:2rem;text-align:center;color:#fff}
+    .logo{font-size:2.5rem;margin-bottom:.5rem}
+    .header h1{font-size:1.3rem;font-weight:700}
+    .header p{font-size:.82rem;opacity:.85;margin-top:.25rem}
+    .body{padding:2rem}
+
+    /* OTP display box */
+    .dev-otp-box{background:#1A2332;border-radius:14px;padding:1.25rem;text-align:center;margin-bottom:1.5rem}
+    .dev-otp-label{font-size:.72rem;color:#ffffff66;margin-bottom:.5rem;text-transform:uppercase;letter-spacing:1px}
+    .dev-otp-code{font-size:2.5rem;font-weight:900;color:#4CAF50;letter-spacing:8px;font-family:monospace}
+    .dev-otp-hint{font-size:.72rem;color:#ffffff44;margin-top:.5rem}
+
+    /* OTP input */
+    .otp-input-wrap{display:flex;gap:.5rem;justify-content:center;margin-bottom:1.5rem}
+    .otp-input{width:44px;height:52px;border:2px solid #ddd;border-radius:10px;text-align:center;font-size:1.4rem;font-weight:800;outline:none;transition:border-color .2s;font-family:inherit}
+    .otp-input:focus{border-color:#1a7c3e}
+
+    .btn{width:100%;background:linear-gradient(135deg,#1a7c3e,#25a25a);color:#fff;border:none;border-radius:10px;padding:.9rem;font-size:1rem;font-weight:700;cursor:pointer;transition:opacity .2s;font-family:inherit}
+    .btn:hover{opacity:.9}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .error{background:#fff0f0;border:1.5px solid #ffb3b3;border-radius:8px;padding:.7rem 1rem;font-size:.83rem;color:#c0392b;margin-bottom:1rem}
+
+    .client-info{background:#f0faf4;border:1px solid #d1f0dc;border-radius:10px;padding:.9rem 1.1rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:.75rem}
+    .client-avatar{width:40px;height:40px;border-radius:50%;background:#1a7c3e;color:#fff;font-weight:800;font-size:1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .client-info-name{font-size:.9rem;font-weight:700;color:#0d4f29}
+    .client-info-addr{font-size:.75rem;color:#666;margin-top:.15rem}
+
+    .resend{text-align:center;font-size:.8rem;color:#aaa;margin-top:1rem}
+    .resend a{color:#1a7c3e;text-decoration:none;font-weight:600}
+    .back{display:block;text-align:center;font-size:.8rem;color:#aaa;margin-top:.75rem;text-decoration:none}
+    .back:hover{color:#1a7c3e}
+
+    .timer{font-size:.75rem;color:#f39c12;font-weight:600;text-align:center;margin-bottom:1rem}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <div class="logo">📱</div>
+      <h1>Enter Verification Code</h1>
+      <p>A 6-digit code has been generated</p>
+    </div>
+    <div class="body">
+
+      <!-- Client info -->
+      <div class="client-info">
+        <div class="client-avatar">{{ client.name[0].upper() }}</div>
+        <div>
+          <div class="client-info-name">{{ client.name }}</div>
+          <div class="client-info-addr">{{ client.address }} · {{ client.neighborhood }}</div>
+        </div>
+      </div>
+
+      <!-- Dev OTP display -->
+      {% if dev_otp %}
+      <div class="dev-otp-box">
+        <div class="dev-otp-label">🧪 Test mode — your code</div>
+        <div class="dev-otp-code">{{ dev_otp }}</div>
+        <div class="dev-otp-hint">In production this would be sent by SMS</div>
+      </div>
+      {% endif %}
+
+      <!-- Timer -->
+      <div class="timer" id="timer">⏱️ Code expires in <span id="countdown">5:00</span></div>
+
+      {% if error %}<div class="error">{{ error }}</div>{% endif %}
+
+      <!-- OTP input -->
+      <form method="POST" id="otpForm">
+        <div class="otp-input-wrap">
+          <input class="otp-input" type="tel" maxlength="1" id="d1" oninput="moveNext(this,'d2')" onkeydown="movePrev(event,'d1','d1')"/>
+          <input class="otp-input" type="tel" maxlength="1" id="d2" oninput="moveNext(this,'d3')" onkeydown="movePrev(event,'d2','d1')"/>
+          <input class="otp-input" type="tel" maxlength="1" id="d3" oninput="moveNext(this,'d4')" onkeydown="movePrev(event,'d3','d2')"/>
+          <input class="otp-input" type="tel" maxlength="1" id="d4" oninput="moveNext(this,'d5')" onkeydown="movePrev(event,'d4','d3')"/>
+          <input class="otp-input" type="tel" maxlength="1" id="d5" oninput="moveNext(this,'d6')" onkeydown="movePrev(event,'d5','d4')"/>
+          <input class="otp-input" type="tel" maxlength="1" id="d6" oninput="moveNext(this,null)" onkeydown="movePrev(event,'d6','d5')"/>
+        </div>
+        <input type="hidden" name="otp" id="otpHidden"/>
+        <button class="btn" type="submit" id="submitBtn" disabled>✅ Verify & Login</button>
+      </form>
+
+      <div class="resend">
+        Didn't receive it? <a href="/resident/login">Request a new code</a>
+      </div>
+      <a class="back" href="/">← Back to home</a>
+    </div>
+  </div>
+
+  <script>
+    // ── OTP input navigation ──
+    function moveNext(el, nextId) {
+      if (el.value.length === 1 && nextId) {
+        document.getElementById(nextId).focus();
+      }
+      updateHidden();
+    }
+
+    function movePrev(e, currentId, prevId) {
+      if (e.key === 'Backspace' && document.getElementById(currentId).value === '') {
+        document.getElementById(prevId).focus();
+      }
+    }
+
+    function updateHidden() {
+      const code = ['d1','d2','d3','d4','d5','d6']
+        .map(id => document.getElementById(id).value).join('');
+      document.getElementById('otpHidden').value = code;
+      document.getElementById('submitBtn').disabled = code.length < 6;
+    }
+
+    // ── Auto-fill from dev box ──
+    {% if dev_otp %}
+    setTimeout(() => {
+      const code = '{{ dev_otp }}';
+      ['d1','d2','d3','d4','d5','d6'].forEach((id,i) => {
+        document.getElementById(id).value = code[i] || '';
+      });
+      updateHidden();
+    }, 500);
+    {% endif %}
+
+    // ── Countdown timer ──
+    let seconds = 300;
+    const countdown = document.getElementById('countdown');
+    const timer     = document.getElementById('timer');
+    const interval  = setInterval(() => {
+      seconds--;
+      if (seconds <= 0) {
+        clearInterval(interval);
+        countdown.textContent = '0:00';
+        timer.style.color = '#e74c3c';
+        timer.textContent = '❌ Code expired — request a new one';
+        document.getElementById('submitBtn').disabled = true;
+      } else {
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        countdown.textContent = m + ':' + s.toString().padStart(2,'0');
+      }
+    }, 1000);
+
+    // ── Auto submit when 6 digits entered ──
+    document.getElementById('d6').addEventListener('input', () => {
+      setTimeout(() => {
+        const code = ['d1','d2','d3','d4','d5','d6']
+          .map(id => document.getElementById(id).value).join('');
+        if (code.length === 6) document.getElementById('otpForm').submit();
+      }, 200);
+    });
+  </script>
+</body>
+</html>
