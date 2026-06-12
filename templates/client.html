@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-  <title>NqiZbali — Resident</title>
+  <title>NqiZbali — My Home</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <style>
@@ -19,20 +19,16 @@
     .map-wrapper { position: relative; }
     .map-center-btn {
       position: absolute;
-      bottom: 18px;
-      right: 12px;
+      bottom: 18px; right: 12px;
       z-index: 999;
       background: white;
       border: none;
       border-radius: 10px;
-      width: 40px;
-      height: 40px;
+      width: 40px; height: 40px;
       font-size: 18px;
       box-shadow: 0 2px 8px rgba(0,0,0,.2);
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
     }
     .sub-alert {
       background: #fff8e1;
@@ -46,7 +42,6 @@
       align-items: center;
       gap: 8px;
     }
-    .sub-alert-icon { font-size: 20px; flex-shrink: 0; }
     .sub-alert a { color: #1a7c3e; font-weight: 700; }
     .big-action {
       width: 100%;
@@ -76,6 +71,18 @@
       font-weight: 700;
       margin-bottom: 14px;
     }
+    .logout-btn {
+      display: block;
+      text-align: center;
+      padding: .6rem;
+      background: #fff0f0;
+      color: #c0392b;
+      border-radius: 10px;
+      font-size: .82rem;
+      font-weight: 700;
+      text-decoration: none;
+      margin-top: .5rem;
+    }
   </style>
 </head>
 <body>
@@ -89,12 +96,13 @@
 
   <div class="content">
 
+    <!-- Profile Card -->
     <div class="card card-dark">
       <div class="profile-row">
-        <div class="avatar avatar-green" id="avatar-initials">KF</div>
+        <div class="avatar avatar-green" id="avatar-initials">?</div>
         <div>
-          <div class="profile-name" style="color:white" id="profile-name">Karima Fahim</div>
-          <div class="profile-sub" style="color:#ffffff88" id="profile-addr">📍 Massira II, Marrakech</div>
+          <div class="profile-name" style="color:white" id="profile-name">Loading...</div>
+          <div class="profile-sub" style="color:#ffffff88" id="profile-addr">📍 Marrakech</div>
         </div>
         <div style="margin-left:auto">
           <span class="badge badge-green" id="sub-badge">
@@ -107,12 +115,14 @@
       </div>
     </div>
 
+    <!-- Subscription alert -->
     <div class="sub-alert" id="sub-alert" style="display:none">
-      <span class="sub-alert-icon">⚠️</span>
+      <span style="font-size:20px;flex-shrink:0">⚠️</span>
       <div>Your building subscription is <strong>not active</strong>.
       Contact your syndic or <a href="/syndic/login">access the syndic portal</a>.</div>
     </div>
 
+    <!-- Action Card -->
     <div class="card">
       <div class="card-title">My trash status</div>
       <div style="text-align:center">
@@ -129,6 +139,7 @@
       </div>
     </div>
 
+    <!-- Live Map -->
     <div class="card">
       <div class="card-title">📍 Live map</div>
       <div class="map-wrapper">
@@ -142,6 +153,7 @@
       </div>
     </div>
 
+    <!-- QR Code -->
     <div class="card">
       <div class="card-title">🏷️ My QR Code</div>
       <div class="qr-row">
@@ -164,24 +176,25 @@
           <rect x="42" y="74" width="5" height="5" fill="#2E7D32"/>
         </svg>
         <div class="qr-info">
-          <div class="qr-code" id="qr-code-text">NQZ-MRK-0001</div>
-          <div class="qr-addr" id="qr-name">Karima Fahim</div>
-          <div class="qr-addr" id="qr-addr">Apt 7B · Massira II</div>
-          <button class="btn btn-green btn-sm" style="margin-top:10px" onclick="showToast('📄 QR ready!')">
-            📥 Download
-          </button>
+          <div class="qr-code" id="qr-code-text">—</div>
+          <div class="qr-addr" id="qr-name">—</div>
+          <div class="qr-addr" id="qr-addr">—</div>
+          <button class="btn btn-green btn-sm" style="margin-top:10px"
+                  onclick="showToast('📄 QR ready!')">📥 Download</button>
         </div>
       </div>
     </div>
 
+    <!-- Collection History -->
     <div class="card">
       <div class="card-title">📋 Collection history</div>
       <div id="history-list">
-        <div class="log-item"><div class="log-dot"></div><div class="log-text">Today 21:15 · Youssef B.</div><div class="log-status">✓ Collected</div></div>
-        <div class="log-item"><div class="log-dot"></div><div class="log-text">Yesterday 20:58 · Khalid M.</div><div class="log-status">✓ Collected</div></div>
-        <div class="log-item"><div class="log-dot"></div><div class="log-text">Thu 21:12 · Youssef B.</div><div class="log-status">✓ Collected</div></div>
+        <div style="text-align:center;color:#607D8B;font-size:13px;padding:20px">Loading...</div>
       </div>
     </div>
+
+    <!-- Logout -->
+    <a class="logout-btn" href="/resident/logout">🚪 Log out</a>
 
   </div>
 </div>
@@ -190,6 +203,7 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+// ── Clock ──
 function updateClock() {
   const n = new Date();
   document.getElementById('clock').textContent =
@@ -197,51 +211,57 @@ function updateClock() {
 }
 updateClock(); setInterval(updateClock, 10000);
 
+// ── Toast ──
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2800);
 }
 
+// ── State ──
 let currentClient = null;
 let map = null;
 let myMarker = null;
 let collectorMarker = null;
 let trashReady = false;
 
-async function loadClient() {
+// ── Load MY data ──
+async function loadMyData() {
   try {
-    const res = await fetch('/api/clients');
-    const clients = await res.json();
-    if (!clients.length) return;
-    currentClient = clients[0];
+    const res = await fetch('/api/client/me');
+    if (res.status === 401) {
+      window.location.href = '/resident/login';
+      return;
+    }
+    currentClient = await res.json();
     updateUI(currentClient);
-    initMap(currentClient);
+    if (!map) initMap(currentClient);
+    loadHistory(currentClient.id);
   } catch(e) { console.error(e); }
 }
 
 function updateUI(c) {
   const initials = c.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
   document.getElementById('avatar-initials').textContent = initials;
-  document.getElementById('profile-name').textContent = c.name;
-  document.getElementById('profile-addr').textContent = '📍 ' + c.neighborhood + ', Marrakech';
-  document.getElementById('qr-code-text').textContent = c.qr_code;
-  document.getElementById('qr-name').textContent = c.name;
-  document.getElementById('qr-addr').textContent = c.address + ' · ' + c.neighborhood;
+  document.getElementById('profile-name').textContent    = c.name;
+  document.getElementById('profile-addr').textContent    = '📍 ' + c.neighborhood + ', Marrakech';
+  document.getElementById('qr-code-text').textContent    = c.qr_code;
+  document.getElementById('qr-name').textContent         = c.name;
+  document.getElementById('qr-addr').textContent         = c.address + ' · ' + c.neighborhood;
 
   if (c.subscription_active) {
-    document.getElementById('sub-badge').innerHTML = '<span class="pulse-dot"></span> Active';
-    document.getElementById('sub-badge').className = 'badge badge-green';
-    document.getElementById('sub-info').textContent = '🏢 Building subscription active · Collection unlocked';
+    document.getElementById('sub-badge').innerHTML   = '<span class="pulse-dot"></span> Active';
+    document.getElementById('sub-badge').className   = 'badge badge-green';
+    document.getElementById('sub-info').textContent  = '🏢 Building subscription active · Collection unlocked';
     document.getElementById('sub-alert').style.display = 'none';
-    document.getElementById('action-btn').disabled = false;
+    document.getElementById('action-btn').disabled   = false;
     document.getElementById('action-btn').style.opacity = '1';
   } else {
-    document.getElementById('sub-badge').innerHTML = '❌ Inactive';
-    document.getElementById('sub-badge').className = 'badge badge-red';
-    document.getElementById('sub-info').textContent = '⚠️ Building subscription not active — contact your syndic';
+    document.getElementById('sub-badge').innerHTML   = '❌ Inactive';
+    document.getElementById('sub-badge').className   = 'badge badge-red';
+    document.getElementById('sub-info').textContent  = '⚠️ Building subscription not active — contact your syndic';
     document.getElementById('sub-alert').style.display = 'flex';
-    document.getElementById('action-btn').disabled = true;
+    document.getElementById('action-btn').disabled   = true;
     document.getElementById('action-btn').style.opacity = '0.5';
   }
 
@@ -250,30 +270,32 @@ function updateUI(c) {
 }
 
 function updateActionBtn() {
-  const btn = document.getElementById('action-btn');
+  const btn  = document.getElementById('action-btn');
   const pill = document.getElementById('status-pill');
   if (trashReady) {
     btn.className = 'big-action cancel';
     btn.innerHTML = '✅ Trash signalled — Tap to cancel';
     pill.style.background = '#e8f5e9'; pill.style.color = '#2E7D32';
-    document.getElementById('status-dot').textContent = '✅';
-    document.getElementById('status-label-text').textContent = 'Ready for collection';
-    document.getElementById('action-hint').textContent = 'The collector has been notified. Tap to cancel.';
+    document.getElementById('status-dot').textContent       = '✅';
+    document.getElementById('status-label-text').textContent= 'Ready for collection';
+    document.getElementById('action-hint').textContent      = 'The collector has been notified. Tap to cancel.';
   } else {
     btn.className = 'big-action ready';
     btn.innerHTML = '🗑️ My trash is ready — Signal now';
     pill.style.background = '#f0f4f8'; pill.style.color = '#607D8B';
-    document.getElementById('status-dot').textContent = '⏳';
-    document.getElementById('status-label-text').textContent = 'Not ready';
-    document.getElementById('action-hint').textContent = 'Tap to let the collector know your trash is ready.';
+    document.getElementById('status-dot').textContent       = '⏳';
+    document.getElementById('status-label-text').textContent= 'Not ready';
+    document.getElementById('action-hint').textContent      = 'Tap to let the collector know your trash is ready.';
   }
 }
 
 async function toggleTrash() {
   if (!currentClient) return;
-  if (!currentClient.subscription_active) { showToast('⚠️ Subscription not active'); return; }
+  if (!currentClient.subscription_active) {
+    showToast('⚠️ Subscription not active'); return;
+  }
   try {
-    const res = await fetch('/api/trash_ready/' + currentClient.id, {method:'POST'});
+    const res  = await fetch('/api/trash_ready/' + currentClient.id, {method:'POST'});
     const data = await res.json();
     if (data.success) {
       trashReady = !trashReady;
@@ -284,8 +306,29 @@ async function toggleTrash() {
   } catch(e) { showToast('❌ Error — try again'); }
 }
 
+// ── History ──
+async function loadHistory(id) {
+  try {
+    const res  = await fetch('/api/collections/' + id);
+    const data = await res.json();
+    const list = document.getElementById('history-list');
+    if (!data.length) {
+      list.innerHTML = '<div style="text-align:center;color:#607D8B;font-size:13px;padding:20px">No collections yet.</div>';
+      return;
+    }
+    list.innerHTML = data.map(c => `
+      <div class="log-item">
+        <div class="log-dot" style="background:${c.status==='collected'?'#4CAF50':'#C62828'}"></div>
+        <div class="log-text">${c.date} · ${c.collector}</div>
+        <div class="log-status" style="color:${c.status==='collected'?'#2E7D32':'#C62828'}">
+          ${c.status==='collected'?'✓ Collected':'⚠️ Violation'}
+        </div>
+      </div>`).join('');
+  } catch(e) {}
+}
+
+// ── Map ──
 function initMap(c) {
-  if (map) return;
   map = L.map('client-map').setView([c.lat, c.lng], 15);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap', maxZoom: 19
@@ -304,9 +347,12 @@ function initMap(c) {
   });
   const cl = c.lat + 0.003, cn = c.lng + 0.002;
   collectorMarker = L.marker([cl, cn], {icon: truckIcon}).addTo(map)
-    .bindPopup('<b>Youssef B.</b><br>Collector · En route');
+    .bindPopup('<b>Collector</b><br>En route');
 
-  L.circle([c.lat, c.lng], {radius:80, color:'#2E7D32', fillColor:'#2E7D32', fillOpacity:0.08, weight:1}).addTo(map);
+  L.circle([c.lat, c.lng], {
+    radius:80, color:'#2E7D32', fillColor:'#2E7D32',
+    fillOpacity:0.08, weight:1
+  }).addTo(map);
 
   let step = 0;
   const steps = [[cl,cn],[cl-0.001,cn-0.001],[cl-0.002,cn],[c.lat+0.0005,c.lng+0.0005]];
@@ -326,7 +372,7 @@ function centerMap() {
   if (map && currentClient) map.flyTo([currentClient.lat, currentClient.lng], 16, {duration:0.8});
 }
 
-loadClient();
+loadMyData();
 </script>
 </body>
 </html>
