@@ -1,5 +1,5 @@
 from flask import (Flask, render_template, request, jsonify,
-                   redirect, url_for, session, flash)
+                   redirect, url_for, session)
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
 from functools import wraps
@@ -11,14 +11,18 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///nqizbali.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'nqizbali-dev-secret')
 
-CMI_MERCHANT_ID   = os.environ.get('CMI_MERCHANT_ID',  'TEST_MERCHANT')
-CMI_STORE_KEY     = os.environ.get('CMI_STORE_KEY',     'TEST_STORE_KEY')
-CMI_BASE_URL      = os.environ.get('CMI_BASE_URL',
-                    'https://testpayment.cmi.co.ma/fim/est3Dgate')
-PRICE_PER_APT     = 60
-ADMIN_PASSWORD    = os.environ.get('ADMIN_PASSWORD', 'nqizbali2026')
+CMI_MERCHANT_ID  = os.environ.get('CMI_MERCHANT_ID',  'TEST_MERCHANT')
+CMI_STORE_KEY    = os.environ.get('CMI_STORE_KEY',     'TEST_STORE_KEY')
+CMI_BASE_URL     = os.environ.get('CMI_BASE_URL',
+                   'https://testpayment.cmi.co.ma/fim/est3Dgate')
+PRICE_PER_APT    = 60
+ADMIN_PASSWORD   = os.environ.get('ADMIN_PASSWORD', 'nqizbali2026')
 
 db = SQLAlchemy(app)
+
+# ═══════════════════════════════════════════════════
+#  MODELS
+# ═══════════════════════════════════════════════════
 
 class Syndic(db.Model):
     id            = db.Column(db.Integer, primary_key=True)
@@ -26,6 +30,7 @@ class Syndic(db.Model):
     phone         = db.Column(db.String(30),  nullable=False)
     email         = db.Column(db.String(150), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
+    approved      = db.Column(db.Boolean, default=False)
     created_at    = db.Column(db.DateTime, default=datetime.utcnow)
     buildings     = db.relationship('Building', backref='syndic', lazy=True)
 
@@ -106,6 +111,10 @@ class Payment(db.Model):
     syndic        = db.relationship('Syndic', backref='payments')
 
 
+# ═══════════════════════════════════════════════════
+#  HELPERS
+# ═══════════════════════════════════════════════════
+
 def syndic_login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -149,20 +158,26 @@ def cmi_build_form(payment, building, syndic):
     return params
 
 
+# ═══════════════════════════════════════════════════
+#  PUBLIC ROUTES
+# ═══════════════════════════════════════════════════
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
 @app.route('/client')
 def client_view():
-    clients = Client.query.all()
-    return render_template('client.html', clients=clients)
+    return render_template('client.html')
 
 @app.route('/collector')
 def collector_view():
-    clients = Client.query.all()
-    return render_template('collector.html', clients=clients)
+    return render_template('collector.html')
 
+
+# ═══════════════════════════════════════════════════
+#  SYNDIC AUTH
+# ═══════════════════════════════════════════════════
 
 @app.route('/syndic/login', methods=['GET', 'POST'])
 def syndic_login():
@@ -172,15 +187,21 @@ def syndic_login():
         pw    = request.form.get('password', '')
         s = Syndic.query.filter_by(email=email).first()
         if s and s.check_password(pw):
-            session['syndic_id']   = s.id
-            session['syndic_name'] = s.name
-            return redirect(url_for('syndic_dashboard'))
-        error = 'Incorrect email or password.'
+            if not s.approved:
+                error = 'Your account is pending approval. Please contact NqiZbali admin.'
+            else:
+                session['syndic_id']   = s.id
+                session['syndic_name'] = s.name
+                return redirect(url_for('syndic_dashboard'))
+        else:
+            error = 'Incorrect email or password.'
     return render_template('syndic_login.html', error=error)
+
 
 @app.route('/syndic/register', methods=['GET', 'POST'])
 def syndic_register():
-    error = None
+    error   = None
+    success = False
     if request.method == 'POST':
         name  = request.form.get('name',  '').strip()
         phone = request.form.get('phone', '').strip()
@@ -191,20 +212,23 @@ def syndic_register():
         elif len(pw) < 6:
             error = 'Password must be at least 6 characters.'
         else:
-            s = Syndic(name=name, phone=phone, email=email)
+            s = Syndic(name=name, phone=phone, email=email, approved=False)
             s.set_password(pw)
             db.session.add(s)
             db.session.commit()
-            session['syndic_id']   = s.id
-            session['syndic_name'] = s.name
-            return redirect(url_for('syndic_dashboard'))
-    return render_template('syndic_register.html', error=error)
+            success = True
+    return render_template('syndic_register.html', error=error, success=success)
+
 
 @app.route('/syndic/logout')
 def syndic_logout():
     session.clear()
     return redirect(url_for('syndic_login'))
 
+
+# ═══════════════════════════════════════════════════
+#  SYNDIC DASHBOARD
+# ═══════════════════════════════════════════════════
 
 @app.route('/syndic/dashboard')
 @syndic_login_required
@@ -217,6 +241,7 @@ def syndic_dashboard():
             db.session.commit()
     return render_template('syndic_dashboard.html', syndic=syndic,
                            buildings=buildings, price_per_apt=PRICE_PER_APT)
+
 
 @app.route('/syndic/building/add', methods=['GET', 'POST'])
 @syndic_login_required
@@ -241,6 +266,7 @@ def syndic_add_building():
     return render_template('syndic_add_building.html', error=error,
                            price_per_apt=PRICE_PER_APT)
 
+
 @app.route('/syndic/building/<int:building_id>/pay')
 @syndic_login_required
 def syndic_pay(building_id):
@@ -264,6 +290,10 @@ def syndic_pay(building_id):
                            syndic=syndic, payment=payment,
                            cmi_params=cmi_params, cmi_url=CMI_BASE_URL)
 
+
+# ═══════════════════════════════════════════════════
+#  CMI CALLBACKS
+# ═══════════════════════════════════════════════════
 
 @app.route('/cmi/ok', methods=['GET', 'POST'])
 def cmi_callback_ok():
@@ -306,6 +336,7 @@ def _confirm_payment(ref, approval_code=''):
         building.subscription_end    = datetime.utcnow() + timedelta(days=30)
     db.session.commit()
 
+
 @app.route('/dev/simulate-payment/<ref>', methods=['POST'])
 def dev_simulate_payment(ref):
     if os.environ.get('FLASK_ENV') == 'production':
@@ -313,6 +344,10 @@ def dev_simulate_payment(ref):
     _confirm_payment(ref, approval_code='TEST-OK')
     return jsonify({'success': True})
 
+
+# ═══════════════════════════════════════════════════
+#  CLIENT / COLLECTOR API
+# ═══════════════════════════════════════════════════
 
 @app.route('/api/clients', methods=['GET'])
 def get_clients():
@@ -369,6 +404,10 @@ def report_violation(client_id):
     return jsonify({'success': True})
 
 
+# ═══════════════════════════════════════════════════
+#  ADMIN PANEL
+# ═══════════════════════════════════════════════════
+
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
     error = None
@@ -388,22 +427,48 @@ def admin_logout():
 def admin_dashboard():
     if not session.get('admin'):
         return redirect(url_for('admin_login'))
-    syndics          = Syndic.query.all()
+    syndics          = Syndic.query.order_by(Syndic.created_at.desc()).all()
     buildings        = Building.query.all()
     payments         = Payment.query.order_by(Payment.created_at.desc()).all()
     clients          = Client.query.all()
     total_revenue    = sum(p.amount_mad for p in payments if p.status == 'approved')
     active_buildings = sum(1 for b in buildings if b.is_active)
     pending_payments = sum(1 for p in payments if p.status == 'pending')
+    pending_syndics  = sum(1 for s in syndics if not s.approved)
     return render_template('admin_dashboard.html',
         syndics=syndics, buildings=buildings, payments=payments,
         clients=clients, total_revenue=total_revenue,
-        active_buildings=active_buildings, pending_payments=pending_payments)
+        active_buildings=active_buildings,
+        pending_payments=pending_payments,
+        pending_syndics=pending_syndics)
 
+@app.route('/admin/syndic/<int:syndic_id>/approve', methods=['POST'])
+def admin_approve_syndic(syndic_id):
+    if not session.get('admin'):
+        return jsonify({'error': 'Unauthorized'}), 401
+    s = Syndic.query.get_or_404(syndic_id)
+    s.approved = True
+    db.session.commit()
+    return jsonify({'success': True, 'name': s.name})
+
+@app.route('/admin/syndic/<int:syndic_id>/reject', methods=['POST'])
+def admin_reject_syndic(syndic_id):
+    if not session.get('admin'):
+        return jsonify({'error': 'Unauthorized'}), 401
+    s = Syndic.query.get_or_404(syndic_id)
+    db.session.delete(s)
+    db.session.commit()
+    return jsonify({'success': True})
+
+
+# ═══════════════════════════════════════════════════
+#  SEED DATA
+# ═══════════════════════════════════════════════════
 
 def seed_data():
     if Syndic.query.count() == 0:
-        s = Syndic(name='Mohammed Alami', phone='0661234567', email='syndic@nqizbali.ma')
+        s = Syndic(name='Mohammed Alami', phone='0661234567',
+                   email='syndic@nqizbali.ma', approved=True)
         s.set_password('nqizbali2026')
         db.session.add(s)
         db.session.flush()
@@ -416,13 +481,13 @@ def seed_data():
         db.session.add_all([b1, b2])
         db.session.flush()
         clients = [
-            Client(building_id=b1.id, name='Karima Fahim',   address='Apt 7B',  neighborhood='Massira II', qr_code='NQZ-MRK-0001', lat=31.6258, lng=-8.0038),
-            Client(building_id=b1.id, name='Ahmed Benali',   address='Apt 3A',  neighborhood='Massira II', qr_code='NQZ-MRK-0002', lat=31.6255, lng=-8.0035),
-            Client(building_id=b1.id, name='Fatima Ouali',   address='Apt 1C',  neighborhood='Massira II', qr_code='NQZ-MRK-0003', lat=31.6252, lng=-8.0032),
-            Client(building_id=b2.id, name='Hassan Tazi',    address='Apt 4',   neighborhood="M'hamid 6",  qr_code='NQZ-MRK-0004', lat=31.6220, lng=-7.9972),
-            Client(building_id=b2.id, name='Nadia Chraibi',  address='Apt 2A',  neighborhood="M'hamid 6",  qr_code='NQZ-MRK-0005', lat=31.6218, lng=-7.9968),
-            Client(building_id=None,  name='Omar Bakkali',   address='Rue Al Farah', neighborhood='Daoudiate', qr_code='NQZ-MRK-0006', lat=31.6271, lng=-8.0062),
-            Client(building_id=None,  name='Zineb Mansouri', address='Appt 5',  neighborhood='Massira III', qr_code='NQZ-MRK-0007', lat=31.6243, lng=-8.0010),
+            Client(building_id=b1.id, name='Karima Fahim',   address='Apt 7B',       neighborhood='Massira II',  qr_code='NQZ-MRK-0001', lat=31.6258, lng=-8.0038),
+            Client(building_id=b1.id, name='Ahmed Benali',   address='Apt 3A',       neighborhood='Massira II',  qr_code='NQZ-MRK-0002', lat=31.6255, lng=-8.0035),
+            Client(building_id=b1.id, name='Fatima Ouali',   address='Apt 1C',       neighborhood='Massira II',  qr_code='NQZ-MRK-0003', lat=31.6252, lng=-8.0032),
+            Client(building_id=b2.id, name='Hassan Tazi',    address='Apt 4',        neighborhood="M'hamid 6",   qr_code='NQZ-MRK-0004', lat=31.6220, lng=-7.9972),
+            Client(building_id=b2.id, name='Nadia Chraibi',  address='Apt 2A',       neighborhood="M'hamid 6",   qr_code='NQZ-MRK-0005', lat=31.6218, lng=-7.9968),
+            Client(building_id=None,  name='Omar Bakkali',   address='Rue Al Farah', neighborhood='Daoudiate',   qr_code='NQZ-MRK-0006', lat=31.6271, lng=-8.0062),
+            Client(building_id=None,  name='Zineb Mansouri', address='Appt 5',       neighborhood='Massira III', qr_code='NQZ-MRK-0007', lat=31.6243, lng=-8.0010),
         ]
         db.session.add_all(clients)
         db.session.commit()
