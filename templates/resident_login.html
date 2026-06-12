@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>NqiZbali — Resident Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#0d4f29,#1a7c3e);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem}
+    .card{background:#fff;border-radius:20px;box-shadow:0 8px 40px rgba(0,0,0,.25);width:100%;max-width:400px;overflow:hidden}
+    .header{background:linear-gradient(135deg,#1a7c3e,#25a25a);padding:2rem;text-align:center;color:#fff}
+    .logo{font-size:2.5rem;margin-bottom:.5rem}
+    .header h1{font-size:1.3rem;font-weight:700}
+    .header p{font-size:.82rem;opacity:.85;margin-top:.25rem}
+    .body{padding:2rem}
+    .field{margin-bottom:1.2rem}
+    label{display:block;font-size:.82rem;font-weight:600;color:#444;margin-bottom:.4rem}
+    input{width:100%;border:1.5px solid #ddd;border-radius:10px;padding:.75rem 1rem;font-size:.95rem;outline:none;transition:border-color .2s;font-family:inherit}
+    input:focus{border-color:#1a7c3e}
+    .btn{width:100%;background:linear-gradient(135deg,#1a7c3e,#25a25a);color:#fff;border:none;border-radius:10px;padding:.9rem;font-size:1rem;font-weight:700;cursor:pointer;transition:opacity .2s;font-family:inherit}
+    .btn:hover{opacity:.9}
+    .error{background:#fff0f0;border:1.5px solid #ffb3b3;border-radius:8px;padding:.7rem 1rem;font-size:.83rem;color:#c0392b;margin-bottom:1rem}
+    .info-box{background:#f0faf4;border:1.5px dashed #1a7c3e;border-radius:10px;padding:1rem;margin-bottom:1.25rem;font-size:.8rem;color:#0d4f29;line-height:1.7}
+    .info-box strong{display:block;margin-bottom:.3rem;font-size:.88rem}
+    .qr-hint{background:#f8f9fa;border-radius:10px;padding:.9rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:.75rem;font-size:.8rem;color:#555}
+    .qr-hint-icon{font-size:2rem;flex-shrink:0}
+    .back{display:block;text-align:center;font-size:.8rem;color:#aaa;margin-top:1rem;text-decoration:none}
+    .back:hover{color:#1a7c3e}
+    .demo-box{background:#fff8e1;border:1.5px dashed #ffd54f;border-radius:8px;padding:.75rem 1rem;font-size:.75rem;color:#7a5c00;margin-bottom:1.2rem;line-height:1.7}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <div class="logo">♻️</div>
+      <h1>Resident Login</h1>
+      <p>Enter your QR code and phone number</p>
+    </div>
+    <div class="body">
+
+      <div class="qr-hint">
+        <div class="qr-hint-icon">🏷️</div>
+        <div>Your QR code is on the <strong>sticker on your door</strong>. It looks like <strong>NQZ-MRK-0001</strong>.</div>
+      </div>
+
+      <div class="demo-box">
+        🧪 Demo — use any of these QR codes:<br>
+        <strong>NQZ-MRK-0001</strong> · <strong>NQZ-MRK-0002</strong> · <strong>NQZ-MRK-0003</strong><br>
+        Phone: any number (e.g. 0661234567)
+      </div>
+
+      {% if error %}<div class="error">{{ error }}</div>{% endif %}
+
+      <form method="POST">
+        <div class="field">
+          <label>QR Code (on your door sticker)</label>
+          <input name="qr_code" required placeholder="NQZ-MRK-0001"
+                 style="text-transform:uppercase;letter-spacing:1px;font-weight:700"/>
+        </div>
+        <div class="field">
+          <label>Phone Number</label>
+          <input name="phone" type="tel" required placeholder="06 XX XX XX XX"/>
+        </div>
+        <button class="btn" type="submit">📱 Send verification code</button>
+      </form>
+
+      <a class="back" href="/">← Back to home</a>
+    </div>
+  </div>
+</body>
+</html>
