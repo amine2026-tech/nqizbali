@@ -12,11 +12,10 @@
     .nav-right{display:flex;align-items:center;gap:1rem;font-size:.82rem}
     .nav-right a{color:rgba(255,255,255,.7);text-decoration:none}
     .nav-badge{background:#4CAF50;color:#fff;border-radius:6px;padding:.25rem .7rem;font-size:.72rem;font-weight:700}
+    .nav-alert{background:#e74c3c;color:#fff;border-radius:6px;padding:.25rem .7rem;font-size:.72rem;font-weight:700}
     .nav-logout{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:.3rem .8rem;color:#fff;text-decoration:none;font-size:.8rem}
     .container{max-width:1000px;margin:0 auto;padding:2rem 1.25rem}
     .page-title{font-size:1.4rem;font-weight:800;color:#0d4f29;margin-bottom:1.75rem}
-
-    /* Stats */
     .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
     .stat-card{background:#fff;border-radius:14px;padding:1.1rem 1.25rem;box-shadow:0 2px 12px rgba(0,0,0,.06);border-left:4px solid #1a7c3e}
     .stat-card.blue{border-left-color:#2196F3}
@@ -25,61 +24,69 @@
     .stat-val{font-size:1.9rem;font-weight:800;color:#111;line-height:1}
     .stat-lbl{font-size:.75rem;color:#888;margin-top:.35rem}
     .stat-sub{font-size:.7rem;color:#aaa;margin-top:.2rem}
-
-    /* Section */
     .section{margin-bottom:2rem}
     .section-title{font-size:.95rem;font-weight:700;color:#0d4f29;margin-bottom:.9rem;display:flex;align-items:center;gap:.5rem}
-
-    /* Table */
     .table-wrap{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06)}
     table{width:100%;border-collapse:collapse}
     th{background:#f8fdf9;font-size:.72rem;font-weight:700;color:#555;padding:.7rem 1rem;text-align:left;border-bottom:1px solid #eee;white-space:nowrap}
     td{font-size:.8rem;padding:.7rem 1rem;border-bottom:1px solid #f5f5f5;color:#333}
     tr:last-child td{border-bottom:none}
     tr:hover td{background:#fafff9}
-
-    /* Badges */
     .badge{display:inline-block;border-radius:20px;padding:.2rem .65rem;font-size:.68rem;font-weight:700}
     .badge-green{background:#d4f7e4;color:#0d6e35}
     .badge-red{background:#ffeaea;color:#c0392b}
     .badge-amber{background:#fff3cd;color:#7a5c00}
     .badge-gray{background:#f0f0f0;color:#666}
     .badge-blue{background:#e3f2fd;color:#1565c0}
+    .badge-orange{background:#fff3e0;color:#e65100}
+
+    /* Pending syndics alert */
+    .pending-alert{background:#fff8e1;border:2px solid #ffd54f;border-radius:14px;padding:1.25rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem}
+    .pending-alert-icon{font-size:2rem;flex-shrink:0}
+    .pending-alert-text h3{font-size:.95rem;font-weight:800;color:#7a5c00;margin-bottom:.2rem}
+    .pending-alert-text p{font-size:.8rem;color:#9a7c00}
 
     /* Syndic cards */
     .syndic-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}
     .syndic-card{background:#fff;border-radius:14px;padding:1.1rem 1.25rem;box-shadow:0 2px 12px rgba(0,0,0,.06);border-top:3px solid #1a7c3e}
-    .syndic-name{font-size:.95rem;font-weight:800;color:#111;margin-bottom:.2rem}
+    .syndic-card.pending{border-top-color:#ffd54f;background:#fffde7}
+    .syndic-name{font-size:.95rem;font-weight:800;color:#111;margin-bottom:.2rem;display:flex;align-items:center;gap:.5rem}
     .syndic-email{font-size:.75rem;color:#888;margin-bottom:.75rem}
     .syndic-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:.75rem}
     .syndic-stat{text-align:center;background:#f8fdf9;border-radius:8px;padding:.5rem}
     .syndic-stat .n{font-size:1.1rem;font-weight:800;color:#1a7c3e}
     .syndic-stat .l{font-size:.62rem;color:#999;margin-top:.1rem}
-    .syndic-buildings{font-size:.72rem;color:#555}
+    .syndic-buildings{font-size:.72rem;color:#555;margin-bottom:.75rem}
     .syndic-buildings span{display:inline-block;background:#f0f0f0;border-radius:6px;padding:.15rem .5rem;margin:.15rem .1rem}
+    .approve-row{display:flex;gap:.5rem}
+    .btn-approve{background:#1a7c3e;color:#fff;border:none;border-radius:8px;padding:.5rem 1rem;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;flex:1}
+    .btn-approve:hover{opacity:.9}
+    .btn-reject{background:#fff;color:#c0392b;border:1.5px solid #ffb3b3;border-radius:8px;padding:.5rem 1rem;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;flex:1}
+    .btn-reject:hover{background:#fff0f0}
 
-    /* Revenue chart */
+    /* Revenue */
     .rev-bar-row{display:flex;align-items:center;gap:.75rem;margin-bottom:.6rem}
     .rev-label{font-size:.75rem;color:#555;width:120px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .rev-bar-track{flex:1;background:#f0f0f0;border-radius:99px;height:10px;overflow:hidden}
     .rev-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#1a7c3e,#25a25a)}
     .rev-amount{font-size:.75rem;font-weight:700;color:#1a7c3e;width:60px;text-align:right;flex-shrink:0}
-
-    /* Empty */
     .empty{text-align:center;padding:2.5rem 1rem;color:#bbb;font-size:.88rem}
 
     @media(max-width:700px){
       .stats{grid-template-columns:1fr 1fr}
       .syndic-grid{grid-template-columns:1fr}
     }
-    @media(max-width:480px){
-      .stats{grid-template-columns:1fr 1fr}
-    }
   </style>
 </head>
 <body>
   <nav>
-    <div class="nav-brand">♻️ NqiZbali <span class="nav-badge">Admin</span></div>
+    <div class="nav-brand">
+      ♻️ NqiZbali
+      <span class="nav-badge">Admin</span>
+      {% if pending_syndics > 0 %}
+        <span class="nav-alert">{{ pending_syndics }} pending</span>
+      {% endif %}
+    </div>
     <div class="nav-right">
       <a href="/">← App</a>
       <a class="nav-logout" href="/admin/logout">Logout</a>
@@ -89,12 +96,23 @@
   <div class="container">
     <div class="page-title">📊 Admin Dashboard</div>
 
+    <!-- Pending alert -->
+    {% if pending_syndics > 0 %}
+    <div class="pending-alert">
+      <div class="pending-alert-icon">⚠️</div>
+      <div class="pending-alert-text">
+        <h3>{{ pending_syndics }} syndic{{ 's' if pending_syndics > 1 }} waiting for approval</h3>
+        <p>Review and approve or reject their accounts below.</p>
+      </div>
+    </div>
+    {% endif %}
+
     <!-- Stats -->
     <div class="stats">
       <div class="stat-card">
         <div class="stat-val">{{ syndics | length }}</div>
         <div class="stat-lbl">Total Syndics</div>
-        <div class="stat-sub">Registered accounts</div>
+        <div class="stat-sub">{{ syndics | selectattr('approved') | list | length }} approved</div>
       </div>
       <div class="stat-card blue">
         <div class="stat-val">{{ buildings | length }}</div>
@@ -123,8 +141,15 @@
         {% set s_payments  = payments  | selectattr('syndic_id', 'equalto', s.id) | list %}
         {% set s_revenue   = s_payments | selectattr('status', 'equalto', 'approved') | sum(attribute='amount_mad') %}
         {% set s_active    = s_buildings | selectattr('is_active') | list | length %}
-        <div class="syndic-card">
-          <div class="syndic-name">{{ s.name }}</div>
+        <div class="syndic-card {% if not s.approved %}pending{% endif %}">
+          <div class="syndic-name">
+            {{ s.name }}
+            {% if s.approved %}
+              <span class="badge badge-green">✅ Approved</span>
+            {% else %}
+              <span class="badge badge-amber">⏳ Pending</span>
+            {% endif %}
+          </div>
           <div class="syndic-email">📧 {{ s.email }} · 📞 {{ s.phone }}</div>
           <div class="syndic-stats">
             <div class="syndic-stat">
@@ -147,6 +172,12 @@
             {% endfor %}
           </div>
           {% endif %}
+          {% if not s.approved %}
+          <div class="approve-row">
+            <button class="btn-approve" onclick="approveSyndic({{ s.id }}, this)">✅ Approve</button>
+            <button class="btn-reject"  onclick="rejectSyndic({{ s.id }}, this)">❌ Reject</button>
+          </div>
+          {% endif %}
         </div>
         {% endfor %}
       </div>
@@ -163,13 +194,8 @@
         <table>
           <thead>
             <tr>
-              <th>Building</th>
-              <th>Syndic</th>
-              <th>Neighborhood</th>
-              <th>Apts</th>
-              <th>Monthly</th>
-              <th>Status</th>
-              <th>Expires</th>
+              <th>Building</th><th>Syndic</th><th>Neighborhood</th>
+              <th>Apts</th><th>Monthly</th><th>Status</th><th>Expires</th>
             </tr>
           </thead>
           <tbody>
@@ -181,15 +207,11 @@
               <td style="text-align:center"><strong>{{ b.nb_apartments }}</strong></td>
               <td><strong>{{ b.monthly_total }} DH</strong></td>
               <td>
-                {% if b.is_active %}
-                  <span class="badge badge-green">✅ Active</span>
-                {% else %}
-                  <span class="badge badge-red">❌ Inactive</span>
-                {% endif %}
+                {% if b.is_active %}<span class="badge badge-green">✅ Active</span>
+                {% else %}<span class="badge badge-red">❌ Inactive</span>{% endif %}
               </td>
               <td style="font-size:.72rem;color:#aaa">
-                {% if b.subscription_end %}
-                  {{ b.subscription_end.strftime('%d/%m/%Y') }}
+                {% if b.subscription_end %}{{ b.subscription_end.strftime('%d/%m/%Y') }}
                 {% else %}—{% endif %}
               </td>
             </tr>
@@ -233,15 +255,7 @@
       <div class="table-wrap">
         <table>
           <thead>
-            <tr>
-              <th>Date</th>
-              <th>Syndic</th>
-              <th>Building</th>
-              <th>Apts</th>
-              <th>Amount</th>
-              <th>Status</th>
-              <th>CMI Ref</th>
-            </tr>
+            <tr><th>Date</th><th>Syndic</th><th>Building</th><th>Apts</th><th>Amount</th><th>Status</th><th>Ref</th></tr>
           </thead>
           <tbody>
             {% for p in payments %}
@@ -252,13 +266,9 @@
               <td style="text-align:center">{{ p.nb_apartments }}</td>
               <td><strong>{{ p.amount_mad }} DH</strong></td>
               <td>
-                {% if p.status == 'approved' %}
-                  <span class="badge badge-green">✅ Approved</span>
-                {% elif p.status == 'pending' %}
-                  <span class="badge badge-amber">⏳ Pending</span>
-                {% else %}
-                  <span class="badge badge-red">❌ Failed</span>
-                {% endif %}
+                {% if p.status == 'approved' %}<span class="badge badge-green">✅ Approved</span>
+                {% elif p.status == 'pending' %}<span class="badge badge-amber">⏳ Pending</span>
+                {% else %}<span class="badge badge-red">❌ Failed</span>{% endif %}
               </td>
               <td style="font-size:.7rem;color:#aaa">{{ p.cmi_approval or p.ref[-10:] }}</td>
             </tr>
@@ -271,21 +281,14 @@
       {% endif %}
     </div>
 
-    <!-- Clients -->
+    <!-- Residents -->
     <div class="section">
       <div class="section-title">🏠 Residents ({{ clients | length }})</div>
       {% if clients %}
       <div class="table-wrap">
         <table>
           <thead>
-            <tr>
-              <th>Name</th>
-              <th>QR Code</th>
-              <th>Neighborhood</th>
-              <th>Building</th>
-              <th>Subscription</th>
-              <th>Status</th>
-            </tr>
+            <tr><th>Name</th><th>QR Code</th><th>Neighborhood</th><th>Building</th><th>Subscription</th><th>Status</th></tr>
           </thead>
           <tbody>
             {% for c in clients %}
@@ -295,22 +298,14 @@
               <td>{{ c.neighborhood }}</td>
               <td style="font-size:.75rem">{{ c.building.name if c.building else '—' }}</td>
               <td>
-                {% if c.subscription_active %}
-                  <span class="badge badge-green">✅ Active</span>
-                {% else %}
-                  <span class="badge badge-red">❌ Inactive</span>
-                {% endif %}
+                {% if c.subscription_active %}<span class="badge badge-green">✅ Active</span>
+                {% else %}<span class="badge badge-red">❌ Inactive</span>{% endif %}
               </td>
               <td>
-                {% if c.status == 'collected' %}
-                  <span class="badge badge-green">Collected</span>
-                {% elif c.status == 'ready' %}
-                  <span class="badge badge-amber">Ready</span>
-                {% elif c.status == 'violation' %}
-                  <span class="badge badge-red">Violation</span>
-                {% else %}
-                  <span class="badge badge-gray">Not ready</span>
-                {% endif %}
+                {% if c.status == 'collected' %}<span class="badge badge-green">Collected</span>
+                {% elif c.status == 'ready' %}<span class="badge badge-amber">Ready</span>
+                {% elif c.status == 'violation' %}<span class="badge badge-red">Violation</span>
+                {% else %}<span class="badge badge-gray">Not ready</span>{% endif %}
               </td>
             </tr>
             {% endfor %}
@@ -323,5 +318,31 @@
     </div>
 
   </div>
+
+  <script>
+    async function approveSyndic(id, btn) {
+      if (!confirm('Approve this syndic?')) return;
+      btn.disabled = true; btn.textContent = '⏳...';
+      const r = await fetch('/admin/syndic/'+id+'/approve', {method:'POST'});
+      const d = await r.json();
+      if (d.success) { showToast('✅ '+d.name+' approved!'); setTimeout(()=>location.reload(), 1000); }
+    }
+
+    async function rejectSyndic(id, btn) {
+      if (!confirm('Reject and delete this syndic account?')) return;
+      btn.disabled = true; btn.textContent = '⏳...';
+      const r = await fetch('/admin/syndic/'+id+'/reject', {method:'POST'});
+      const d = await r.json();
+      if (d.success) { showToast('❌ Account rejected'); setTimeout(()=>location.reload(), 1000); }
+    }
+
+    function showToast(msg) {
+      const t = document.createElement('div');
+      t.textContent = msg;
+      t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1A2332;color:#fff;padding:11px 20px;border-radius:50px;font-size:13px;font-weight:700;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.25)';
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 3000);
+    }
+  </script>
 </body>
 </html>
