@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
-import hashlib, os, uuid
+import hashlib, os, uuid, random
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///nqizbali.db'
@@ -80,6 +80,9 @@ class Client(db.Model):
     lat          = db.Column(db.Float, default=31.6258)
     lng          = db.Column(db.Float, default=-8.0038)
     email        = db.Column(db.String(150), nullable=True)
+    phone        = db.Column(db.String(30), nullable=True)
+    otp_code     = db.Column(db.String(6), nullable=True)
+    otp_expiry   = db.Column(db.DateTime, nullable=True)
 
     @property
     def subscription_active(self):
@@ -123,6 +126,13 @@ def syndic_login_required(f):
         return f(*args, **kwargs)
     return decorated
 
+def resident_login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if 'client_id' not in session:
+            return redirect(url_for('resident_login'))
+        return f(*args, **kwargs)
+    return decorated
 
 def cmi_build_form(payment, building, syndic):
     ok_url   = url_for('cmi_callback_ok',   _external=True)
@@ -166,13 +176,80 @@ def cmi_build_form(payment, building, syndic):
 def index():
     return render_template('index.html')
 
-@app.route('/client')
-def client_view():
-    return render_template('client.html')
-
 @app.route('/collector')
 def collector_view():
     return render_template('collector.html')
+
+
+# ═══════════════════════════════════════════════════
+#  RESIDENT AUTH
+# ═══════════════════════════════════════════════════
+
+@app.route('/client')
+def client_view():
+    if 'client_id' not in session:
+        return redirect(url_for('resident_login'))
+    return render_template('client.html')
+
+@app.route('/resident/login', methods=['GET', 'POST'])
+def resident_login():
+    error = None
+    if request.method == 'POST':
+        qr_code = request.form.get('qr_code', '').strip().upper()
+        phone   = request.form.get('phone', '').strip()
+        client  = Client.query.filter_by(qr_code=qr_code).first()
+        if not client:
+            error = 'QR code not found. Check the sticker on your door.'
+        else:
+            # Save phone if first time
+            if not client.phone:
+                client.phone = phone
+            # Generate OTP
+            otp = str(random.randint(100000, 999999))
+            client.otp_code   = otp
+            client.otp_expiry = datetime.utcnow() + timedelta(minutes=5)
+            db.session.commit()
+            session['otp_client_id'] = client.id
+            # In production: send SMS here
+            # For now: store in session for display
+            session['dev_otp'] = otp
+            return redirect(url_for('resident_verify'))
+    return render_template('resident_login.html', error=error)
+
+@app.route('/resident/verify', methods=['GET', 'POST'])
+def resident_verify():
+    client_id = session.get('otp_client_id')
+    if not client_id:
+        return redirect(url_for('resident_login'))
+    client  = Client.query.get(client_id)
+    dev_otp = session.get('dev_otp')
+    error   = None
+    if request.method == 'POST':
+        entered = request.form.get('otp', '').strip()
+        if not client.otp_code or not client.otp_expiry:
+            error = 'OTP expired. Please try again.'
+        elif datetime.utcnow() > client.otp_expiry:
+            error = 'OTP expired. Please request a new one.'
+        elif entered != client.otp_code:
+            error = 'Incorrect code. Please try again.'
+        else:
+            # Clear OTP
+            client.otp_code   = None
+            client.otp_expiry = None
+            db.session.commit()
+            session.pop('otp_client_id', None)
+            session.pop('dev_otp', None)
+            session['client_id']   = client.id
+            session['client_name'] = client.name
+            return redirect(url_for('client_view'))
+    return render_template('resident_verify.html',
+                           client=client, error=error, dev_otp=dev_otp)
+
+@app.route('/resident/logout')
+def resident_logout():
+    session.pop('client_id', None)
+    session.pop('client_name', None)
+    return redirect(url_for('resident_login'))
 
 
 # ═══════════════════════════════════════════════════
@@ -197,7 +274,6 @@ def syndic_login():
             error = 'Incorrect email or password.'
     return render_template('syndic_login.html', error=error)
 
-
 @app.route('/syndic/register', methods=['GET', 'POST'])
 def syndic_register():
     error   = None
@@ -218,7 +294,6 @@ def syndic_register():
             db.session.commit()
             success = True
     return render_template('syndic_register.html', error=error, success=success)
-
 
 @app.route('/syndic/logout')
 def syndic_logout():
@@ -242,7 +317,6 @@ def syndic_dashboard():
     return render_template('syndic_dashboard.html', syndic=syndic,
                            buildings=buildings, price_per_apt=PRICE_PER_APT)
 
-
 @app.route('/syndic/building/add', methods=['GET', 'POST'])
 @syndic_login_required
 def syndic_add_building():
@@ -265,7 +339,6 @@ def syndic_add_building():
             error = str(e)
     return render_template('syndic_add_building.html', error=error,
                            price_per_apt=PRICE_PER_APT)
-
 
 @app.route('/syndic/building/<int:building_id>/pay')
 @syndic_login_required
@@ -336,7 +409,6 @@ def _confirm_payment(ref, approval_code=''):
         building.subscription_end    = datetime.utcnow() + timedelta(days=30)
     db.session.commit()
 
-
 @app.route('/dev/simulate-payment/<ref>', methods=['POST'])
 def dev_simulate_payment(ref):
     if os.environ.get('FLASK_ENV') == 'production':
@@ -353,6 +425,14 @@ def dev_simulate_payment(ref):
 def get_clients():
     clients = Client.query.all()
     return jsonify([_client_dict(c) for c in clients])
+
+@app.route('/api/client/me', methods=['GET'])
+def get_my_client():
+    client_id = session.get('client_id')
+    if not client_id:
+        return jsonify({'error': 'Not logged in'}), 401
+    c = Client.query.get_or_404(client_id)
+    return jsonify(_client_dict(c))
 
 @app.route('/api/client/<int:client_id>', methods=['GET'])
 def get_client(client_id):
@@ -402,6 +482,17 @@ def report_violation(client_id):
                               violation_reason=data.get('reason', '')))
     db.session.commit()
     return jsonify({'success': True})
+
+@app.route('/api/collections/<int:client_id>', methods=['GET'])
+def get_collections(client_id):
+    cols = Collection.query.filter_by(client_id=client_id)\
+               .order_by(Collection.collected_at.desc()).limit(10).all()
+    return jsonify([{
+        'collector': c.collector_name,
+        'date': c.collected_at.strftime('%d/%m/%Y %H:%M'),
+        'status': c.status,
+        'reason': c.violation_reason
+    } for c in cols])
 
 
 # ═══════════════════════════════════════════════════
@@ -481,13 +572,13 @@ def seed_data():
         db.session.add_all([b1, b2])
         db.session.flush()
         clients = [
-            Client(building_id=b1.id, name='Karima Fahim',   address='Apt 7B',       neighborhood='Massira II',  qr_code='NQZ-MRK-0001', lat=31.6258, lng=-8.0038),
-            Client(building_id=b1.id, name='Ahmed Benali',   address='Apt 3A',       neighborhood='Massira II',  qr_code='NQZ-MRK-0002', lat=31.6255, lng=-8.0035),
-            Client(building_id=b1.id, name='Fatima Ouali',   address='Apt 1C',       neighborhood='Massira II',  qr_code='NQZ-MRK-0003', lat=31.6252, lng=-8.0032),
-            Client(building_id=b2.id, name='Hassan Tazi',    address='Apt 4',        neighborhood="M'hamid 6",   qr_code='NQZ-MRK-0004', lat=31.6220, lng=-7.9972),
-            Client(building_id=b2.id, name='Nadia Chraibi',  address='Apt 2A',       neighborhood="M'hamid 6",   qr_code='NQZ-MRK-0005', lat=31.6218, lng=-7.9968),
-            Client(building_id=None,  name='Omar Bakkali',   address='Rue Al Farah', neighborhood='Daoudiate',   qr_code='NQZ-MRK-0006', lat=31.6271, lng=-8.0062),
-            Client(building_id=None,  name='Zineb Mansouri', address='Appt 5',       neighborhood='Massira III', qr_code='NQZ-MRK-0007', lat=31.6243, lng=-8.0010),
+            Client(building_id=b1.id, name='Karima Fahim',   address='Apt 7B',       neighborhood='Massira II',  qr_code='NQZ-MRK-0001', lat=31.6258, lng=-8.0038, phone='0661000001'),
+            Client(building_id=b1.id, name='Ahmed Benali',   address='Apt 3A',       neighborhood='Massira II',  qr_code='NQZ-MRK-0002', lat=31.6255, lng=-8.0035, phone='0661000002'),
+            Client(building_id=b1.id, name='Fatima Ouali',   address='Apt 1C',       neighborhood='Massira II',  qr_code='NQZ-MRK-0003', lat=31.6252, lng=-8.0032, phone='0661000003'),
+            Client(building_id=b2.id, name='Hassan Tazi',    address='Apt 4',        neighborhood="M'hamid 6",   qr_code='NQZ-MRK-0004', lat=31.6220, lng=-7.9972, phone='0661000004'),
+            Client(building_id=b2.id, name='Nadia Chraibi',  address='Apt 2A',       neighborhood="M'hamid 6",   qr_code='NQZ-MRK-0005', lat=31.6218, lng=-7.9968, phone='0661000005'),
+            Client(building_id=None,  name='Omar Bakkali',   address='Rue Al Farah', neighborhood='Daoudiate',   qr_code='NQZ-MRK-0006', lat=31.6271, lng=-8.0062, phone='0661000006'),
+            Client(building_id=None,  name='Zineb Mansouri', address='Appt 5',       neighborhood='Massira III', qr_code='NQZ-MRK-0007', lat=31.6243, lng=-8.0010, phone='0661000007'),
         ]
         db.session.add_all(clients)
         db.session.commit()
