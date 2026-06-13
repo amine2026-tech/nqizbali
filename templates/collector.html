@@ -4,479 +4,275 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
   <title>NqiZbali — Collector</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <style>
-    #collector-map {
-      height: 360px;
-      border-radius: 16px;
-      overflow: hidden;
-      border: 0.5px solid #CFD8DC;
-      margin-bottom: 10px;
-      position: relative;
-      z-index: 1;
-    }
-    .map-wrapper { position: relative; }
-    .map-center-btn {
-      position: absolute;
-      bottom: 18px; right: 12px;
-      z-index: 999;
-      background: white;
-      border: none;
-      border-radius: 10px;
-      width: 40px; height: 40px;
-      font-size: 18px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.2);
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .map-filter-btn {
-      position: absolute;
-      bottom: 18px; left: 12px;
-      z-index: 999;
-      background: white;
-      border: none;
-      border-radius: 10px;
-      padding: 0 12px;
-      height: 40px;
-      font-size: 11px;
-      font-weight: 700;
-      box-shadow: 0 2px 8px rgba(0,0,0,.2);
-      cursor: pointer;
-      color: #1A2332;
-    }
-    .gps-status {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 10px;
-      font-size: 12px;
-      font-weight: 600;
-      margin-bottom: 10px;
-    }
-    .gps-status.active   { background: #e8f5e9; color: #2E7D32; border: 1px solid #c8e6c9; }
-    .gps-status.inactive { background: #fff8e1; color: #7a5c00; border: 1px solid #ffe082; }
-    .gps-status.error    { background: #fff0f0; color: #c0392b; border: 1px solid #ffb3b3; }
-    .route-card {
-      background: #f0faf4;
-      border: 1px solid #d1f0dc;
-      border-radius: 12px;
-      padding: 12px 14px;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .route-icon  { font-size: 22px; flex-shrink: 0; }
-    .route-text  { flex: 1; font-size: 12px; color: #0d4f29; font-weight: 600; }
-    .route-badge { background: #1a7c3e; color: white; border-radius: 8px; padding: 4px 10px; font-size: 11px; font-weight: 700; }
-    .client-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
-    .client-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 12px;
-      background: #f8fafc;
-      border-radius: 12px;
-      border: 1px solid #e8edf2;
-      cursor: pointer;
-    }
-    .client-row.ready     { border-color: #ffd54f; background: #fffde7; }
-    .client-row.collected { border-color: #c8e6c9; background: #f1f8f2; opacity: 0.7; }
-    .client-row.violation { border-color: #ffcdd2; background: #fff5f5; }
-    .client-status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-    .client-info { flex: 1; min-width: 0; }
-    .client-name { font-size: 13px; font-weight: 700; color: #1A2332; }
-    .client-addr { font-size: 11px; color: #607D8B; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .mini-btn { border: none; border-radius: 8px; padding: 6px 10px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; }
-    .mini-btn-green { background: #2E7D32; color: white; }
-    .mini-btn-gray  { background: #e0e0e0; color: #607D8B; }
-
-    /* ── WeChat-style QR Scanner ── */
-    .qr-scanner-wrap {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 1;
-      border-radius: 16px;
-      overflow: hidden;
-      background: #000;
-      margin-bottom: 12px;
-    }
-    #camera-video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: none;
-    }
-    #camera-canvas { display: none; }
-
-    /* Dark overlay with square cutout */
-    .qr-overlay {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .qr-overlay-top,
-    .qr-overlay-bottom,
-    .qr-overlay-left,
-    .qr-overlay-right {
-      position: absolute;
-      background: rgba(0,0,0,0.55);
-    }
-    .qr-overlay-top    { top:0; left:0; right:0; height: calc(50% - 120px); }
-    .qr-overlay-bottom { bottom:0; left:0; right:0; height: calc(50% - 120px); }
-    .qr-overlay-left   { top: calc(50% - 120px); left:0; width: calc(50% - 120px); height: 240px; }
-    .qr-overlay-right  { top: calc(50% - 120px); right:0; width: calc(50% - 120px); height: 240px; }
-
-    /* QR frame box */
-    .qr-frame {
-      position: absolute;
-      width: 240px;
-      height: 240px;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
-    /* Corner borders */
-    .qr-frame::before,
-    .qr-frame::after,
-    .qr-corner-br,
-    .qr-corner-bl {
-      content: '';
-      position: absolute;
-      width: 36px;
-      height: 36px;
-      border-color: #4CAF50;
-      border-style: solid;
-    }
-    .qr-frame::before { top:0; left:0; border-width: 4px 0 0 4px; border-radius: 6px 0 0 0; }
-    .qr-frame::after  { top:0; right:0; border-width: 4px 4px 0 0; border-radius: 0 6px 0 0; }
-    .qr-corner-br { bottom:0; right:0; border-width: 0 4px 4px 0; border-radius: 0 0 6px 0; }
-    .qr-corner-bl { bottom:0; left:0;  border-width: 0 0 4px 4px; border-radius: 0 0 0 6px; }
-
-    /* Animated scan line */
-    .qr-scan-line {
-      position: absolute;
-      left: 4px;
-      right: 4px;
-      height: 3px;
-      background: linear-gradient(90deg, transparent, #4CAF50, #4CAF50, transparent);
-      box-shadow: 0 0 12px #4CAF50, 0 0 24px rgba(76,175,80,.5);
-      border-radius: 99px;
-      top: 4px;
-      animation: scanMove 2s ease-in-out infinite;
-    }
-    @keyframes scanMove {
-      0%   { top: 4px;   opacity: 1; }
-      50%  { top: 228px; opacity: 1; }
-      100% { top: 4px;   opacity: 1; }
-    }
-
-    /* Scanner idle state */
-    .scanner-idle {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      background: #0a0f1e;
-    }
-    .scanner-idle-icon { font-size: 3rem; opacity: .4; }
-    .scanner-idle-text { font-size: 13px; color: rgba(255,255,255,.5); font-weight: 500; }
-
-    /* Scanner hint text */
-    .qr-hint-text {
-      position: absolute;
-      bottom: 16px;
-      left: 0; right: 0;
-      text-align: center;
-      color: rgba(255,255,255,.7);
-      font-size: 12px;
-      font-weight: 500;
-    }
-
-    /* Success overlay */
-    .qr-success {
-      display: none;
-      position: absolute;
-      inset: 0;
-      background: rgba(0,0,0,.8);
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .qr-success-icon  { font-size: 3rem; animation: popIn .3s ease; }
-    .qr-success-code  { color: #4CAF50; font-size: 15px; font-weight: 800; font-family: monospace; letter-spacing: 1px; }
-    .qr-success-name  { color: #fff; font-size: 12px; }
-    @keyframes popIn {
-      from { transform: scale(0.5); opacity: 0; }
-      to   { transform: scale(1);   opacity: 1; }
-    }
-
-    .btn-scan-open {
-      width: 100%;
-      background: linear-gradient(135deg, #1a7c3e, #25a25a);
-      color: #fff;
-      border: none;
-      border-radius: 12px;
-      padding: .9rem;
-      font-size: .98rem;
-      font-weight: 800;
-      cursor: pointer;
-      font-family: inherit;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: .5rem;
-      margin-bottom: 8px;
-    }
-    .btn-scan-stop {
-      width: 100%;
-      background: #C62828;
-      color: #fff;
-      border: none;
-      border-radius: 12px;
-      padding: .9rem;
-      font-size: .98rem;
-      font-weight: 800;
-      cursor: pointer;
-      font-family: inherit;
-      margin-bottom: 8px;
-      display: none;
-    }
-    .btn-scan-sim {
-      width: 100%;
-      background: #f0f0f0;
-      color: #555;
-      border: none;
-      border-radius: 12px;
-      padding: .7rem;
-      font-size: .82rem;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: inherit;
-    }
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    body{font-family:'Inter',sans-serif;background:#f0f7f2;min-height:100vh;color:#111827}
+    .top-bar{background:linear-gradient(135deg,#051f10,#1a7c3e);padding:14px 20px 12px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.2)}
+    .top-back{color:rgba(255,255,255,.8);text-decoration:none;font-size:.82rem;font-weight:600}
+    .top-brand{font-size:1rem;font-weight:900;color:#fff;letter-spacing:-.3px}
+    .top-time{font-size:.75rem;color:rgba(255,255,255,.65);font-weight:600}
+    .content{padding:1rem 1rem 2rem;max-width:480px;margin:0 auto}
+    .collector-hero{background:linear-gradient(135deg,#051f10,#1a7c3e);border-radius:24px;padding:1.4rem;margin-bottom:1rem;position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(10,61,32,.3)}
+    .collector-hero::before{content:'🚛';position:absolute;right:-5px;bottom:-10px;font-size:5rem;opacity:.1;line-height:1}
+    .hero-top{display:flex;align-items:center;gap:12px;margin-bottom:1rem}
+    .hero-avatar{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.3);color:#fff;font-size:1.1rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .hero-name{font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:.15rem}
+    .hero-role{font-size:.75rem;color:rgba(255,255,255,.65)}
+    .hero-badge{margin-left:auto;background:rgba(76,175,80,.25);border:1px solid rgba(76,175,80,.4);border-radius:99px;padding:.3rem .85rem;color:#a5d6a7;font-size:.72rem;font-weight:700;display:flex;align-items:center;gap:.4rem;flex-shrink:0}
+    .hero-dot{width:6px;height:6px;border-radius:50%;background:#4CAF50;animation:pulse 1.4s infinite}
+    .hero-pills{display:flex;gap:.6rem}
+    .hero-pill{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:.45rem .85rem;font-size:.72rem;color:rgba(255,255,255,.85);font-weight:600}
+    .gps-bar{border-radius:14px;padding:.75rem 1rem;margin-bottom:1rem;display:flex;align-items:center;gap:.65rem;font-size:.78rem;font-weight:600;transition:all .3s}
+    .gps-bar.active{background:#e8f5e9;color:#1b5e20;border:1px solid #c8e6c9}
+    .gps-bar.inactive{background:#fffde7;color:#E65100;border:1px solid #ffe082}
+    .gps-bar.error{background:#ffebee;color:#b71c1c;border:1px solid #ffcdd2}
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.65rem;margin-bottom:1rem}
+    .stat-box{background:#fff;border-radius:18px;padding:.9rem .75rem;box-shadow:0 2px 10px rgba(0,0,0,.05);text-align:center;position:relative;overflow:hidden}
+    .stat-box::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px}
+    .stat-box.s1::after{background:#1a7c3e}
+    .stat-box.s2::after{background:#E65100}
+    .stat-box.s3::after{background:#2E7D32}
+    .stat-box.s4::after{background:#C62828}
+    .stat-emoji{font-size:1.1rem;margin-bottom:.3rem;display:block}
+    .stat-num{font-size:1.4rem;font-weight:900;color:#111827;line-height:1}
+    .stat-txt{font-size:.6rem;color:#9CA3AF;margin-top:.2rem;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+    .route-banner{background:linear-gradient(135deg,#e8f5e9,#f0faf2);border:1.5px solid #c8e6c9;border-radius:16px;padding:.85rem 1.1rem;margin-bottom:1rem;display:none;align-items:center;gap:.85rem}
+    .route-icon{font-size:1.5rem;flex-shrink:0}
+    .route-text{flex:1;font-size:.8rem;color:#1b5e20;font-weight:600}
+    .route-chip{background:#1a7c3e;color:#fff;border-radius:99px;padding:.3rem .85rem;font-size:.72rem;font-weight:700;flex-shrink:0}
+    .section-card{background:#fff;border-radius:24px;padding:1.25rem;margin-bottom:1rem;box-shadow:0 4px 20px rgba(0,0,0,.06)}
+    .section-label{font-size:.68rem;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:1px;margin-bottom:1rem}
+    #collector-map{height:320px;border-radius:16px;overflow:hidden;margin-bottom:.75rem;z-index:1}
+    .map-wrap{position:relative}
+    .map-fab{position:absolute;bottom:12px;right:10px;z-index:999;background:#fff;border:none;border-radius:12px;width:38px;height:38px;font-size:16px;box-shadow:0 2px 12px rgba(0,0,0,.15);cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .map-filter{position:absolute;bottom:12px;left:10px;z-index:999;background:#fff;border:none;border-radius:12px;padding:0 12px;height:38px;font-size:.72rem;font-weight:700;box-shadow:0 2px 12px rgba(0,0,0,.15);cursor:pointer;color:#111827;font-family:inherit}
+    .legend{display:flex;gap:.85rem;flex-wrap:wrap;margin-top:.65rem}
+    .legend-item{display:flex;align-items:center;gap:.3rem;font-size:.68rem;color:#9CA3AF;font-weight:500}
+    .legend-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+    .client-list{display:flex;flex-direction:column;gap:.65rem}
+    .client-row{display:flex;align-items:center;gap:.85rem;padding:.9rem 1rem;background:#f9fafb;border-radius:16px;border:1.5px solid #F3F4F6;cursor:pointer;transition:background .15s}
+    .client-row:active{background:#f0faf2}
+    .client-row.ready{border-color:#FDD835;background:#fffde7}
+    .client-row.collected{border-color:#C8E6C9;background:#f1f8f2;opacity:.75}
+    .client-row.violation{border-color:#FFCDD2;background:#fff5f5}
+    .client-status-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+    .client-name{font-size:.82rem;font-weight:700;color:#111827}
+    .client-addr{font-size:.7rem;color:#9CA3AF;margin-top:.1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .client-info{flex:1;min-width:0}
+    .mini-btn{border:none;border-radius:10px;padding:.45rem .85rem;font-size:.72rem;font-weight:700;cursor:pointer;font-family:inherit}
+    .mini-btn-green{background:linear-gradient(135deg,#1a7c3e,#25a25a);color:#fff;box-shadow:0 2px 8px rgba(26,124,62,.25)}
+    .mini-btn-gray{background:#F3F4F6;color:#9CA3AF}
+    .qr-wrap{position:relative;width:100%;aspect-ratio:1;border-radius:20px;overflow:hidden;background:#000;margin-bottom:1rem}
+    #camera-video{width:100%;height:100%;object-fit:cover;display:none}
+    #camera-canvas{display:none}
+    .qr-dark-top,.qr-dark-bottom,.qr-dark-left,.qr-dark-right{position:absolute;background:rgba(0,0,0,.55)}
+    .qr-dark-top{top:0;left:0;right:0;height:calc(50% - 110px)}
+    .qr-dark-bottom{bottom:0;left:0;right:0;height:calc(50% - 110px)}
+    .qr-dark-left{top:calc(50% - 110px);left:0;width:calc(50% - 110px);height:220px}
+    .qr-dark-right{top:calc(50% - 110px);right:0;width:calc(50% - 110px);height:220px}
+    .qr-frame{position:absolute;width:220px;height:220px;top:50%;left:50%;transform:translate(-50%,-50%);display:none}
+    .qr-frame::before,.qr-frame::after,.qr-bl,.qr-br{content:'';position:absolute;width:32px;height:32px;border-color:#4CAF50;border-style:solid}
+    .qr-frame::before{top:0;left:0;border-width:4px 0 0 4px;border-radius:6px 0 0 0}
+    .qr-frame::after{top:0;right:0;border-width:4px 4px 0 0;border-radius:0 6px 0 0}
+    .qr-bl{bottom:0;left:0;border-width:0 0 4px 4px;border-radius:0 0 0 6px}
+    .qr-br{bottom:0;right:0;border-width:0 4px 4px 0;border-radius:0 0 6px 0}
+    .qr-scan-line{position:absolute;left:4px;right:4px;height:3px;background:linear-gradient(90deg,transparent,#4CAF50,#4CAF50,transparent);box-shadow:0 0 12px #4CAF50,0 0 24px rgba(76,175,80,.4);border-radius:99px;top:4px;animation:scanAnim 2s ease-in-out infinite}
+    @keyframes scanAnim{0%{top:4px;opacity:1}50%{top:212px;opacity:1}100%{top:4px;opacity:1}}
+    .qr-hint{position:absolute;bottom:14px;left:0;right:0;text-align:center;color:rgba(255,255,255,.7);font-size:.75rem;font-weight:500;display:none}
+    .qr-idle{position:absolute;inset:0;background:#0a0f1e;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+    .qr-idle-icon{font-size:2.5rem;opacity:.3}
+    .qr-idle-text{font-size:.8rem;color:rgba(255,255,255,.4);font-weight:500}
+    .qr-success{display:none;position:absolute;inset:0;background:rgba(0,0,0,.8);align-items:center;justify-content:center;flex-direction:column;gap:10px}
+    .qr-success-tick{font-size:3rem;animation:popIn .3s ease}
+    .qr-success-code{color:#4CAF50;font-size:1rem;font-weight:800;font-family:monospace}
+    .qr-success-name{color:#fff;font-size:.8rem}
+    @keyframes popIn{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+    .btn-cam-open{width:100%;background:linear-gradient(135deg,#00796B,#00897B);color:#fff;border:none;border-radius:14px;padding:1rem;font-size:.95rem;font-weight:800;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:.5rem;box-shadow:0 4px 14px rgba(0,121,107,.3);margin-bottom:.65rem;transition:transform .15s}
+    .btn-cam-open:active{transform:scale(.98)}
+    .btn-cam-stop{width:100%;background:#C62828;color:#fff;border:none;border-radius:14px;padding:.9rem;font-size:.9rem;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:.65rem;display:none}
+    .btn-sim{width:100%;background:#F3F4F6;color:#6B7280;border:none;border-radius:14px;padding:.75rem;font-size:.8rem;font-weight:600;cursor:pointer;font-family:inherit}
+    .action-row{display:flex;gap:.75rem;margin-top:.85rem}
+    .btn-collect{flex:1;background:linear-gradient(135deg,#1a7c3e,#25a25a);color:#fff;border:none;border-radius:14px;padding:.9rem;font-size:.88rem;font-weight:800;cursor:pointer;font-family:inherit;box-shadow:0 4px 14px rgba(26,124,62,.3)}
+    .btn-viol{flex:1;background:linear-gradient(135deg,#C62828,#D32F2F);color:#fff;border:none;border-radius:14px;padding:.9rem;font-size:.88rem;font-weight:800;cursor:pointer;font-family:inherit;box-shadow:0 4px 14px rgba(198,40,40,.25)}
+    .perf-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+    .perf-title{font-size:.9rem;font-weight:800;color:#111827}
+    .perf-badge{background:linear-gradient(135deg,#F57C00,#FFA726);color:#fff;border-radius:99px;padding:.3rem .85rem;font-size:.72rem;font-weight:700}
+    .perf-score{display:flex;align-items:baseline;gap:.35rem;margin-bottom:.85rem}
+    .perf-pts{font-size:2.5rem;font-weight:900;color:#1a7c3e;line-height:1}
+    .perf-label{font-size:.75rem;color:#9CA3AF}
+    .progress-row{display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:.45rem}
+    .progress-row span:first-child{font-weight:700;color:#111827}
+    .progress-row span:last-child{color:#1a7c3e;font-weight:700}
+    .progress-track{background:#F3F4F6;border-radius:99px;height:10px;overflow:hidden;margin-bottom:.35rem}
+    .progress-fill{height:100%;background:linear-gradient(90deg,#1a7c3e,#4CAF50);border-radius:99px;transition:width .6s ease}
+    .progress-hint{font-size:.7rem;color:#9CA3AF;margin-bottom:1rem}
+    .bonus-row{display:flex;align-items:center;justify-content:space-between;padding:.75rem 0;border-bottom:1px solid #F3F4F6}
+    .bonus-row:last-of-type{border-bottom:none}
+    .bonus-name{font-size:.8rem;font-weight:700;color:#111827}
+    .bonus-desc{font-size:.7rem;color:#9CA3AF;margin-top:.15rem}
+    .bonus-chip{border-radius:99px;padding:.3rem .85rem;font-size:.72rem;font-weight:700}
+    .bonus-chip.teal{background:#e0f2f1;color:#00695C}
+    .bonus-chip.green{background:#e8f5e9;color:#2E7D32}
+    .bonus-total{background:linear-gradient(135deg,#e8f5e9,#f0faf2);border-radius:14px;padding:.9rem 1.1rem;margin-top:.85rem;display:flex;justify-content:space-between;align-items:center}
+    .bonus-total-lbl{font-size:.8rem;font-weight:700;color:#1a7c3e}
+    .bonus-total-val{font-size:1.2rem;font-weight:900;color:#1a7c3e}
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:500;display:flex;flex-direction:column;justify-content:flex-end}
+    .modal-box{background:#fff;border-radius:32px 32px 0 0;padding:24px 20px 40px;animation:slideUp .3s cubic-bezier(.34,1.56,.64,1)}
+    @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+    .modal-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
+    .modal-title{font-size:1.1rem;font-weight:900;color:#111827}
+    .modal-sub{font-size:.75rem;color:#9CA3AF;margin-top:.2rem}
+    .modal-close{background:#F3F4F6;border:none;border-radius:50%;width:34px;height:34px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#374151}
+    .viol-opt{padding:12px 14px;border-radius:16px;border:1.5px solid #F3F4F6;background:#F9FAFB;cursor:pointer;display:flex;align-items:center;gap:12px;margin-bottom:8px;width:100%;font-family:inherit;transition:all .15s;text-align:left}
+    .viol-opt.selected{border-color:#C62828;background:rgba(198,40,40,.05)}
+    .viol-opt-icon{font-size:1.2rem}
+    .viol-opt-label{font-size:.82rem;font-weight:600;color:#111827}
+    .viol-opt.selected .viol-opt-label{color:#C62828}
+    .btn-report{width:100%;margin-top:12px;background:linear-gradient(135deg,#C62828,#D32F2F);color:#fff;border:none;border-radius:16px;padding:1rem;font-size:.95rem;font-weight:800;cursor:pointer;font-family:inherit;box-shadow:0 4px 14px rgba(198,40,40,.25);transition:opacity .2s}
+    .btn-report:disabled{opacity:.4;cursor:not-allowed}
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(17,24,39,.92);backdrop-filter:blur(8px);color:#fff;padding:.65rem 1.25rem;border-radius:99px;font-size:.8rem;font-weight:600;z-index:9999;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.2);transition:transform .35s cubic-bezier(.34,1.56,.64,1),opacity .3s;opacity:0;pointer-events:none}
+    .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
   </style>
 </head>
 <body>
-<div class="app-container">
 
-  <div class="top-bar">
-    <a href="/" class="back-btn">← Home</a>
-    <span class="top-bar-title">♻️ NQIZBALI</span>
-    <span class="top-bar-time" id="clock">--:--</span>
-  </div>
-
-  <div class="content">
-
-    <!-- Profile -->
-    <div class="card card-dark">
-      <div class="profile-row">
-        <div class="avatar avatar-teal">YB</div>
-        <div>
-          <div class="profile-name" style="color:white">Youssef Benaissa</div>
-          <div class="profile-sub" style="color:#ffffff88">🚛 Collector · M'hamid–Massira zone</div>
-        </div>
-        <div style="margin-left:auto">
-          <span class="badge badge-green"><span class="pulse-dot"></span> On duty</span>
-        </div>
-      </div>
-      <div class="info-row">
-        <div class="info-pill" style="background:#ffffff18;color:#ffffffcc">📍 Massira II</div>
-        <div class="info-pill" style="background:#ffffff18;color:#ffffffcc">🕐 <span id="clock2">--:--</span></div>
-      </div>
-    </div>
-
-    <!-- GPS Status -->
-    <div class="gps-status inactive" id="gps-status">
-      <span id="gps-icon">📡</span>
-      <span id="gps-text">Getting your GPS location...</span>
-    </div>
-
-    <!-- Stats -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon">🏠</div>
-        <div class="stat-val" id="stat-total">0</div>
-        <div class="stat-label">Total homes</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">🗑️</div>
-        <div class="stat-val" id="stat-ready" style="color:#E65100">0</div>
-        <div class="stat-label">Ready now</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">✅</div>
-        <div class="stat-val" id="stat-collected" style="color:#2E7D32">0</div>
-        <div class="stat-label">Collected</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">⚠️</div>
-        <div class="stat-val" id="stat-violations" style="color:#C62828">0</div>
-        <div class="stat-label">Violations</div>
-      </div>
-    </div>
-
-    <!-- Route -->
-    <div class="route-card" id="route-card" style="display:none">
-      <span class="route-icon">🗺️</span>
-      <div class="route-text" id="route-text">Loading route...</div>
-      <span class="route-badge" id="route-badge">0 stops</span>
-    </div>
-
-    <!-- Map -->
-    <div class="card">
-      <div class="card-title">🗺️ Live collection map</div>
-      <div class="map-wrapper">
-        <div id="collector-map"></div>
-        <button class="map-center-btn" onclick="centerMap()">🎯</button>
-        <button class="map-filter-btn" id="filter-btn" onclick="toggleFilter()">🗑️ Ready only</button>
-      </div>
-      <div class="legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#ffd54f"></div> Ready</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#2E7D32"></div> Collected</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#C62828"></div> Violation</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#CFD8DC"></div> Waiting</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#00695C"></div> You (GPS)</div>
-      </div>
-    </div>
-
-    <!-- Client List -->
-    <div class="card">
-      <div class="card-title">🏠 Homes on your route</div>
-      <div class="client-list" id="client-list">
-        <div style="text-align:center;color:#607D8B;font-size:13px;padding:20px">Loading...</div>
-      </div>
-    </div>
-
-    <!-- QR Scanner -->
-    <div class="card">
-      <div class="card-title">📷 QR Scanner</div>
-
-      <!-- WeChat-style scanner -->
-      <div class="qr-scanner-wrap" id="scanner-wrap">
-
-        <!-- Idle state -->
-        <div class="scanner-idle" id="scanner-idle">
-          <div class="scanner-idle-icon">▦</div>
-          <div class="scanner-idle-text">Tap to open camera</div>
-        </div>
-
-        <!-- Camera -->
-        <video id="camera-video" autoplay playsinline></video>
-        <canvas id="camera-canvas"></canvas>
-
-        <!-- Dark overlay -->
-        <div class="qr-overlay" id="qr-overlay" style="display:none">
-          <div class="qr-overlay-top"></div>
-          <div class="qr-overlay-bottom"></div>
-          <div class="qr-overlay-left"></div>
-          <div class="qr-overlay-right"></div>
-        </div>
-
-        <!-- QR frame with animated line -->
-        <div class="qr-frame" id="qr-frame" style="display:none">
-          <div class="qr-corner-br"></div>
-          <div class="qr-corner-bl"></div>
-          <div class="qr-scan-line"></div>
-        </div>
-
-        <!-- Hint -->
-        <div class="qr-hint-text" id="qr-hint" style="display:none">
-          Align QR code within the frame
-        </div>
-
-        <!-- Success overlay -->
-        <div class="qr-success" id="qr-success">
-          <div class="qr-success-icon">✅</div>
-          <div class="qr-success-code" id="qr-success-code">—</div>
-          <div class="qr-success-name" id="qr-success-name">—</div>
-        </div>
-
-      </div>
-
-      <!-- Buttons -->
-      <button class="btn-scan-open" id="btn-open-camera" onclick="startCamera()">
-        📷 Open Camera to Scan QR
-      </button>
-      <button class="btn-scan-stop" id="btn-stop-camera" onclick="stopCamera()">
-        ⏹ Stop Camera
-      </button>
-      <button class="btn-scan-sim" onclick="startSimulatedScan()">
-        🧪 Simulate scan (no camera)
-      </button>
-
-      <div id="action-buttons" style="display:none;margin-top:10px">
-        <div class="action-row">
-          <button class="btn btn-green" onclick="markCollected()">✅ Collected</button>
-          <button class="btn btn-red"   onclick="openViolModal()">📸 Violation</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Performance -->
-    <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <div class="card-title" style="margin-bottom:0">🏆 Performance</div>
-        <span class="badge badge-amber">Gold level 🥇</span>
-      </div>
-      <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:5px">
-        <span style="font-size:26px;font-weight:900;color:#2E7D32" id="points-display">0</span>
-        <span style="font-size:12px;color:#607D8B">pts today</span>
-      </div>
-      <div class="progress-label">
-        <span id="progress-text">0 / 0</span>
-        <span style="color:#2E7D32" id="progress-pct">0%</span>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
-      </div>
-      <div style="font-size:11px;color:#607D8B;margin-top:4px;margin-bottom:12px">Goal: collect all homes for full bonus</div>
-      <div class="bonus-row">
-        <div><div class="bonus-label">Speed bonus</div><div class="bonus-desc">Finish before 22h</div></div>
-        <span class="badge badge-teal">+15 DH</span>
-      </div>
-      <div class="bonus-row">
-        <div><div class="bonus-label">Quality bonus</div><div class="bonus-desc">0 complaints this week</div></div>
-        <span class="badge badge-green">+10 DH</span>
-      </div>
-      <div class="total-row">
-        <span class="total-label">Total bonus</span>
-        <span class="total-val">+25 DH</span>
-      </div>
-    </div>
-
-  </div>
+<div class="top-bar">
+  <a href="/" class="top-back">← Home</a>
+  <div class="top-brand">♻️ NQIZBALI</div>
+  <div class="top-time" id="clock">--:--</div>
 </div>
 
-<!-- Violation Modal -->
+<div class="content">
+
+  <div class="collector-hero">
+    <div class="hero-top">
+      <div class="hero-avatar">YB</div>
+      <div>
+        <div class="hero-name">Youssef Benaissa</div>
+        <div class="hero-role">🚛 Collector · M'hamid–Massira</div>
+      </div>
+      <div class="hero-badge"><span class="hero-dot"></span> On duty</div>
+    </div>
+    <div class="hero-pills">
+      <div class="hero-pill">📍 Massira II</div>
+      <div class="hero-pill">🕐 <span id="clock2">--:--</span></div>
+    </div>
+  </div>
+
+  <div class="gps-bar inactive" id="gps-bar">
+    <span id="gps-icon">📡</span>
+    <span id="gps-text">Getting your GPS location...</span>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box s1"><span class="stat-emoji">🏠</span><div class="stat-num" id="stat-total">0</div><div class="stat-txt">Homes</div></div>
+    <div class="stat-box s2"><span class="stat-emoji">🗑️</span><div class="stat-num" id="stat-ready" style="color:#E65100">0</div><div class="stat-txt">Ready</div></div>
+    <div class="stat-box s3"><span class="stat-emoji">✅</span><div class="stat-num" id="stat-collected" style="color:#2E7D32">0</div><div class="stat-txt">Done</div></div>
+    <div class="stat-box s4"><span class="stat-emoji">⚠️</span><div class="stat-num" id="stat-violations" style="color:#C62828">0</div><div class="stat-txt">Issues</div></div>
+  </div>
+
+  <div class="route-banner" id="route-banner">
+    <span class="route-icon">🗺️</span>
+    <div class="route-text" id="route-text">Loading...</div>
+    <span class="route-chip" id="route-chip">0</span>
+  </div>
+
+  <div class="section-card">
+    <div class="section-label">Live Collection Map</div>
+    <div class="map-wrap">
+      <div id="collector-map"></div>
+      <button class="map-fab" onclick="centerMap()">🎯</button>
+      <button class="map-filter" id="filter-btn" onclick="toggleFilter()">🗑️ Ready only</button>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#ffd54f"></div>Ready</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#2E7D32"></div>Collected</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#C62828"></div>Violation</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#CFD8DC"></div>Waiting</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#00695C"></div>You</div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-label">Homes on your route</div>
+    <div class="client-list" id="client-list">
+      <div style="text-align:center;color:#9CA3AF;padding:1.5rem;font-size:.85rem">Loading...</div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-label">QR Scanner</div>
+    <div class="qr-wrap">
+      <div class="qr-idle" id="qr-idle"><div class="qr-idle-icon">▦</div><div class="qr-idle-text">Tap to open camera</div></div>
+      <video id="camera-video" autoplay playsinline></video>
+      <canvas id="camera-canvas"></canvas>
+      <div id="qr-ot" style="display:none;position:absolute;background:rgba(0,0,0,.55);top:0;left:0;right:0;height:calc(50% - 110px)"></div>
+      <div id="qr-ob" style="display:none;position:absolute;background:rgba(0,0,0,.55);bottom:0;left:0;right:0;height:calc(50% - 110px)"></div>
+      <div id="qr-ol" style="display:none;position:absolute;background:rgba(0,0,0,.55);top:calc(50% - 110px);left:0;width:calc(50% - 110px);height:220px"></div>
+      <div id="qr-or" style="display:none;position:absolute;background:rgba(0,0,0,.55);top:calc(50% - 110px);right:0;width:calc(50% - 110px);height:220px"></div>
+      <div class="qr-frame" id="qr-frame"><div class="qr-bl"></div><div class="qr-br"></div><div class="qr-scan-line"></div></div>
+      <div class="qr-hint" id="qr-hint">Align QR code within the frame</div>
+      <div class="qr-success" id="qr-success"><div class="qr-success-tick">✅</div><div class="qr-success-code" id="qs-code">—</div><div class="qr-success-name" id="qs-name">—</div></div>
+    </div>
+    <button class="btn-cam-open" id="btn-open" onclick="startCamera()">📷 Open Camera to Scan QR</button>
+    <button class="btn-cam-stop" id="btn-stop" onclick="stopCamera()">⏹ Stop Camera</button>
+    <button class="btn-sim" onclick="startSimScan()">🧪 Simulate scan (no camera)</button>
+    <div id="action-btns" style="display:none">
+      <div class="action-row">
+        <button class="btn-collect" onclick="markCollected()">✅ Collected</button>
+        <button class="btn-viol" onclick="openViolModal()">📸 Violation</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="perf-top">
+      <div class="perf-title">🏆 Performance</div>
+      <span class="perf-badge">Gold 🥇</span>
+    </div>
+    <div class="perf-score">
+      <div class="perf-pts" id="pts">0</div>
+      <div class="perf-label">pts today</div>
+    </div>
+    <div class="progress-row"><span id="prog-text">0 / 0</span><span id="prog-pct">0%</span></div>
+    <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+    <div class="progress-hint">Collect all homes to unlock full bonus</div>
+    <div class="bonus-row">
+      <div><div class="bonus-name">Speed bonus</div><div class="bonus-desc">Finish before 22h</div></div>
+      <span class="bonus-chip teal">+15 DH</span>
+    </div>
+    <div class="bonus-row">
+      <div><div class="bonus-name">Quality bonus</div><div class="bonus-desc">0 complaints this week</div></div>
+      <span class="bonus-chip green">+10 DH</span>
+    </div>
+    <div class="bonus-total">
+      <span class="bonus-total-lbl">Total bonus</span>
+      <span class="bonus-total-val">+25 DH</span>
+    </div>
+  </div>
+
+</div>
+
 <div class="modal-overlay" id="viol-modal" style="display:none">
   <div class="modal-box">
-    <div class="modal-header">
-      <div>
-        <div class="modal-title">⚠️ Report Violation</div>
-        <div class="modal-sub" id="viol-unit-name">—</div>
-      </div>
-      <button class="close-btn" onclick="closeViolModal()">✕</button>
+    <div class="modal-head">
+      <div><div class="modal-title">⚠️ Report Violation</div><div class="modal-sub" id="viol-name">—</div></div>
+      <button class="modal-close" onclick="closeViolModal()">✕</button>
     </div>
-    <div style="background:#0a0f1e;border-radius:11px;height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;margin-bottom:11px;position:relative">
-      <span style="font-size:24px;opacity:.4">📷</span>
-      <span style="color:#ffffff44;font-size:11px">Photo captured</span>
-      <div style="position:absolute;top:6px;right:8px;background:#C62828;color:#fff;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px">● REC</div>
+    <div style="background:#0a0f1e;border-radius:16px;height:70px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;position:relative">
+      <span style="font-size:1.5rem;opacity:.3">📷</span>
+      <div style="position:absolute;top:8px;right:10px;background:#C62828;color:#fff;font-size:.65rem;font-weight:800;padding:2px 8px;border-radius:99px">● REC</div>
     </div>
-    <div style="font-weight:700;font-size:12px;color:#1A2332;margin-bottom:8px">Reason:</div>
-    <button class="viol-option" onclick="selectViol(this,'leaking')"><span class="viol-option-icon">💧</span><span class="viol-option-label">Leaking bag</span></button>
-    <button class="viol-option" onclick="selectViol(this,'oversized')"><span class="viol-option-icon">📦</span><span class="viol-option-label">Too bulky</span></button>
-    <button class="viol-option" onclick="selectViol(this,'early')"><span class="viol-option-icon">⏰</span><span class="viol-option-label">Put out too early</span></button>
-    <button class="viol-option" onclick="selectViol(this,'wrong_bag')"><span class="viol-option-icon">🗑️</span><span class="viol-option-label">Wrong bag type</span></button>
-    <button class="viol-option" onclick="selectViol(this,'bio')"><span class="viol-option-icon">⚠️</span><span class="viol-option-label">Hazardous material</span></button>
-    <button class="btn btn-red" id="submit-viol-btn" style="margin-top:12px;opacity:0.4" onclick="submitViol()" disabled>Report violation</button>
+    <div style="font-size:.75rem;font-weight:700;color:#374151;margin-bottom:10px">Select reason:</div>
+    <button class="viol-opt" onclick="selViol(this,'leaking')"><span class="viol-opt-icon">💧</span><span class="viol-opt-label">Leaking bag</span></button>
+    <button class="viol-opt" onclick="selViol(this,'oversized')"><span class="viol-opt-icon">📦</span><span class="viol-opt-label">Too bulky</span></button>
+    <button class="viol-opt" onclick="selViol(this,'early')"><span class="viol-opt-icon">⏰</span><span class="viol-opt-label">Put out too early</span></button>
+    <button class="viol-opt" onclick="selViol(this,'wrong_bag')"><span class="viol-opt-icon">🗑️</span><span class="viol-opt-label">Wrong bag type</span></button>
+    <button class="viol-opt" onclick="selViol(this,'bio')"><span class="viol-opt-icon">⚠️</span><span class="viol-opt-label">Hazardous material</span></button>
+    <button class="btn-report" id="btn-report" onclick="submitViol()" disabled>Report Violation</button>
   </div>
 </div>
 
@@ -484,321 +280,206 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-// ── Clock ──
-function updateClock() {
-  const t = new Date();
-  const s = t.getHours().toString().padStart(2,'0')+':'+t.getMinutes().toString().padStart(2,'0');
-  document.getElementById('clock').textContent  = s;
-  document.getElementById('clock2').textContent = s;
-}
-updateClock(); setInterval(updateClock, 10000);
+function tick(){const t=new Date(),s=t.getHours().toString().padStart(2,'0')+':'+t.getMinutes().toString().padStart(2,'0');document.getElementById('clock').textContent=s;document.getElementById('clock2').textContent=s}
+tick();setInterval(tick,10000);
 
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
-}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800)}
 
-// ── State ──
-let clients       = [];
-let map           = null;
-let markers       = {};
-let myMarker      = null;
-let myPos         = null;
-let showReadyOnly = false;
-let currentScanId = null;
-let selectedViol  = null;
-let scanInterval  = null;
-let cameraStream  = null;
-let jsQRLoaded    = false;
+let clients=[],map=null,markers={},myMarker=null,myPos=null,showReadyOnly=false;
+let currentScanId=null,selectedViol=null,scanInterval=null,cameraStream=null,jsQRLoaded=false;
 
-// ── GPS ──
-function startGPS() {
-  if (!navigator.geolocation) { setGPSStatus('error','❌','GPS not supported'); return; }
+// GPS
+function startGPS(){
+  if(!navigator.geolocation){setGPS('error','❌','GPS not supported');return}
   navigator.geolocation.watchPosition(
-    pos => {
-      myPos = {lat: pos.coords.latitude, lng: pos.coords.longitude};
-      setGPSStatus('active','📍',`GPS active · Accuracy: ${Math.round(pos.coords.accuracy)}m`);
-      updateMyMarker();
-      sendLocationToServer(myPos.lat, myPos.lng);
-    },
-    () => setGPSStatus('error','❌','GPS denied — enable location in settings'),
-    {enableHighAccuracy:true, maximumAge:5000, timeout:10000}
-  );
+    pos=>{myPos={lat:pos.coords.latitude,lng:pos.coords.longitude};
+      setGPS('active','📍',`GPS active · ${Math.round(pos.coords.accuracy)}m accuracy`);
+      updateMyMarker();sendPos(myPos.lat,myPos.lng)},
+    ()=>setGPS('error','❌','GPS denied — enable in browser settings'),
+    {enableHighAccuracy:true,maximumAge:5000,timeout:10000}
+  )
+}
+function setGPS(t,i,txt){
+  document.getElementById('gps-bar').className='gps-bar '+t;
+  document.getElementById('gps-icon').textContent=i;
+  document.getElementById('gps-text').textContent=txt;
+}
+async function sendPos(lat,lng){
+  try{await fetch('/api/collector/location',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lat,lng})})}catch(e){}
+}
+function updateMyMarker(){
+  if(!map||!myPos)return;
+  const icon=L.divIcon({html:`<div style="background:#00695C;color:white;border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 3px 12px rgba(0,0,0,.4);border:3px solid white">🚛</div>`,className:'',iconSize:[44,44],iconAnchor:[22,22]});
+  if(myMarker)myMarker.setLatLng([myPos.lat,myPos.lng]);
+  else myMarker=L.marker([myPos.lat,myPos.lng],{icon,zIndexOffset:1000}).addTo(map).bindPopup('<b>You</b><br>Live GPS');
 }
 
-function setGPSStatus(type, icon, text) {
-  document.getElementById('gps-status').className = 'gps-status '+type;
-  document.getElementById('gps-icon').textContent = icon;
-  document.getElementById('gps-text').textContent  = text;
+// Clients
+async function loadClients(){
+  try{const r=await fetch('/api/clients');clients=await r.json();updateStats();updateList();updateRoute();if(!map)initMap();else updateMarkers()}catch(e){}
 }
-
-async function sendLocationToServer(lat, lng) {
-  try {
-    await fetch('/api/collector/location', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({lat, lng})
-    });
-  } catch(e) {}
-}
-
-function updateMyMarker() {
-  if (!map || !myPos) return;
-  const icon = L.divIcon({
-    html:`<div style="background:#00695C;color:white;border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 3px 12px rgba(0,0,0,.4);border:3px solid white">🚛</div>`,
-    className:'', iconSize:[44,44], iconAnchor:[22,22]
-  });
-  if (myMarker) myMarker.setLatLng([myPos.lat, myPos.lng]);
-  else myMarker = L.marker([myPos.lat,myPos.lng],{icon,zIndexOffset:1000}).addTo(map).bindPopup('<b>You (Collector)</b><br>Live GPS');
-}
-
-// ── Clients ──
-async function loadClients() {
-  try {
-    const res = await fetch('/api/clients');
-    clients = await res.json();
-    updateStats(); updateClientList(); updateRoute();
-    if (!map) initMap(); else updateMapMarkers();
-  } catch(e) {}
-}
-
-function updateStats() {
-  const total=clients.length, ready=clients.filter(c=>c.trash_ready).length,
-        collected=clients.filter(c=>c.status==='collected').length,
-        violations=clients.filter(c=>c.status==='violation').length;
+function updateStats(){
+  const total=clients.length,ready=clients.filter(c=>c.trash_ready).length,
+        col=clients.filter(c=>c.status==='collected').length,
+        viol=clients.filter(c=>c.status==='violation').length;
   document.getElementById('stat-total').textContent=total;
   document.getElementById('stat-ready').textContent=ready;
-  document.getElementById('stat-collected').textContent=collected;
-  document.getElementById('stat-violations').textContent=violations;
-  const pts=collected*45, pct=total?Math.round(collected/total*100):0;
-  document.getElementById('points-display').textContent=pts;
-  document.getElementById('progress-text').textContent=collected+' / '+total;
-  document.getElementById('progress-pct').textContent=pct+'%';
-  document.getElementById('progress-fill').style.width=pct+'%';
+  document.getElementById('stat-collected').textContent=col;
+  document.getElementById('stat-violations').textContent=viol;
+  const pts=col*45,pct=total?Math.round(col/total*100):0;
+  document.getElementById('pts').textContent=pts;
+  document.getElementById('prog-text').textContent=col+' / '+total;
+  document.getElementById('prog-pct').textContent=pct+'%';
+  document.getElementById('prog-fill').style.width=pct+'%';
 }
-
-function updateRoute() {
+function updateRoute(){
   const ready=clients.filter(c=>c.trash_ready).length;
-  const card=document.getElementById('route-card');
-  if(ready>0){
-    card.style.display='flex';
-    document.getElementById('route-text').textContent=ready+' home'+(ready>1?'s':'')+' ready';
-    document.getElementById('route-badge').textContent=ready+' stop'+(ready>1?'s':'');
-  } else card.style.display='none';
+  const b=document.getElementById('route-banner');
+  if(ready>0){b.style.display='flex';document.getElementById('route-text').textContent=ready+' home'+(ready>1?'s':'')+' ready for collection';document.getElementById('route-chip').textContent=ready+' stop'+(ready>1?'s':'')}
+  else b.style.display='none';
 }
-
-function updateClientList() {
+function updateList(){
   const list=document.getElementById('client-list');
-  if(!clients.length){list.innerHTML='<div style="text-align:center;color:#607D8B;font-size:13px;padding:20px">No homes yet.</div>';return;}
+  if(!clients.length){list.innerHTML='<div style="text-align:center;color:#9CA3AF;padding:1.5rem;font-size:.85rem">No homes on your route yet.</div>';return}
   list.innerHTML=clients.map(c=>{
     const dot=c.trash_ready?'#ffd54f':c.status==='collected'?'#2E7D32':c.status==='violation'?'#C62828':'#CFD8DC';
     const cls=c.trash_ready?'ready':c.status==='collected'?'collected':c.status==='violation'?'violation':'';
     const sub=c.subscription_active?'✅':'❌';
     let btn='';
-    if(c.trash_ready) btn=`<button class="mini-btn mini-btn-green" onclick="event.stopPropagation();quickCollect(${c.id})">✅ Collect</button>`;
-    else if(c.status==='collected') btn=`<button class="mini-btn mini-btn-gray" disabled>Done</button>`;
+    if(c.trash_ready)btn=`<button class="mini-btn mini-btn-green" onclick="event.stopPropagation();qkCollect(${c.id})">✅ Collect</button>`;
+    else if(c.status==='collected')btn=`<button class="mini-btn mini-btn-gray" disabled>Done</button>`;
     else btn=`<button class="mini-btn mini-btn-gray" style="opacity:.5" disabled>Waiting</button>`;
     return `<div class="client-row ${cls}" onclick="focusClient(${c.id})">
       <div class="client-status-dot" style="background:${dot}"></div>
-      <div class="client-info">
-        <div class="client-name">${c.name} ${sub}</div>
-        <div class="client-addr">${c.address} · ${c.neighborhood}</div>
-      </div>
-      <div>${btn}</div>
-    </div>`;
+      <div class="client-info"><div class="client-name">${c.name} ${sub}</div><div class="client-addr">${c.address} · ${c.neighborhood}</div></div>
+      <div>${btn}</div></div>`;
   }).join('');
 }
-
-async function quickCollect(id) {
-  try {
-    await fetch('/api/collect/'+id,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({collector:'Youssef B.'})});
-    showToast('✅ Collected!'); await loadClients();
-  } catch(e){showToast('❌ Error');}
+async function qkCollect(id){
+  try{await fetch('/api/collect/'+id,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({collector:'Youssef B.'})});showToast('✅ Collected!');await loadClients()}catch(e){showToast('❌ Error')}
 }
 
-// ── Map ──
-function initMap() {
+// Map
+function initMap(){
   const center=clients.length?[clients[0].lat,clients[0].lng]:[31.6258,-8.0038];
   map=L.map('collector-map').setView(center,14);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19}).addTo(map);
-  updateMapMarkers();
-  if(myPos) updateMyMarker();
+  updateMarkers();if(myPos)updateMyMarker();
 }
-
-function getMarkerHtml(c) {
-  if(c.trash_ready)         return `<div style="background:#ffd54f;color:#111;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 2px 8px rgba(0,0,0,.25);border:2px solid white">🗑️</div>`;
-  if(c.status==='collected')return `<div style="background:#2E7D32;color:white;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 2px 6px rgba(0,0,0,.2);border:2px solid white">✅</div>`;
-  if(c.status==='violation')return `<div style="background:#C62828;color:white;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 2px 6px rgba(0,0,0,.2);border:2px solid white">⚠️</div>`;
-  return `<div style="background:#CFD8DC;color:#607D8B;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:12px;box-shadow:0 1px 4px rgba(0,0,0,.15);border:2px solid white">🏠</div>`;
+function mkHtml(c){
+  if(c.trash_ready)return`<div style="background:#ffd54f;color:#111;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 2px 8px rgba(0,0,0,.25);border:2px solid white">🗑️</div>`;
+  if(c.status==='collected')return`<div style="background:#2E7D32;color:white;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 2px 6px rgba(0,0,0,.2);border:2px solid white">✅</div>`;
+  if(c.status==='violation')return`<div style="background:#C62828;color:white;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 2px 6px rgba(0,0,0,.2);border:2px solid white">⚠️</div>`;
+  return`<div style="background:#E5E7EB;color:#9CA3AF;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:12px;box-shadow:0 1px 4px rgba(0,0,0,.1);border:2px solid white">🏠</div>`;
 }
-
-function updateMapMarkers() {
-  if(!map) return;
+function updateMarkers(){
+  if(!map)return;
   clients.forEach(c=>{
-    if(showReadyOnly&&!c.trash_ready){if(markers[c.id]){map.removeLayer(markers[c.id]);delete markers[c.id];}return;}
-    const icon=L.divIcon({html:getMarkerHtml(c),className:'',iconSize:[34,34],iconAnchor:[17,17]});
+    if(showReadyOnly&&!c.trash_ready){if(markers[c.id]){map.removeLayer(markers[c.id]);delete markers[c.id]}return}
+    const icon=L.divIcon({html:mkHtml(c),className:'',iconSize:[34,34],iconAnchor:[17,17]});
     const popup=`<b>${c.name}</b><br>${c.address}<br>Status: <b>${c.status}</b>`;
-    if(markers[c.id]) markers[c.id].setIcon(icon);
+    if(markers[c.id])markers[c.id].setIcon(icon);
     else markers[c.id]=L.marker([c.lat,c.lng],{icon}).addTo(map).bindPopup(popup);
   });
 }
-
-function focusClient(id) {
-  const c=clients.find(x=>x.id===id);
-  if(c&&map) map.flyTo([c.lat,c.lng],17,{duration:.6});
-  if(markers[id]) markers[id].openPopup();
-}
-
-function toggleFilter() {
+function focusClient(id){const c=clients.find(x=>x.id===id);if(c&&map)map.flyTo([c.lat,c.lng],17,{duration:.6});if(markers[id])markers[id].openPopup()}
+function toggleFilter(){
   showReadyOnly=!showReadyOnly;
   document.getElementById('filter-btn').textContent=showReadyOnly?'🏠 Show all':'🗑️ Ready only';
-  Object.values(markers).forEach(m=>map.removeLayer(m));
-  markers={}; updateMapMarkers();
+  Object.values(markers).forEach(m=>map.removeLayer(m));markers={};updateMarkers();
 }
+function centerMap(){if(map&&myPos)map.flyTo([myPos.lat,myPos.lng],16,{duration:.8});else if(map&&clients.length)map.flyTo([clients[0].lat,clients[0].lng],15,{duration:.8})}
 
-function centerMap() {
-  if(map&&myPos) map.flyTo([myPos.lat,myPos.lng],16,{duration:.8});
-  else if(map&&clients.length) map.flyTo([clients[0].lat,clients[0].lng],15,{duration:.8});
-}
-
-// ── WeChat QR Scanner ──
-async function loadJsQR() {
-  if(jsQRLoaded) return;
-  await new Promise((resolve,reject)=>{
-    const s=document.createElement('script');
-    s.src='https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
-    s.onload=resolve; s.onerror=reject;
-    document.head.appendChild(s);
-  });
+// QR Camera
+async function loadJsQR(){
+  if(jsQRLoaded)return;
+  await new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';s.onload=res;s.onerror=rej;document.head.appendChild(s)});
   jsQRLoaded=true;
 }
-
-async function startCamera() {
-  try {
+async function startCamera(){
+  try{
     await loadJsQR();
     const video=document.getElementById('camera-video');
-    cameraStream=await navigator.mediaDevices.getUserMedia({
-      video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}}
-    });
-    video.srcObject=cameraStream;
-    video.style.display='block';
-    document.getElementById('scanner-idle').style.display='none';
-    document.getElementById('qr-overlay').style.display='flex';
+    cameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}}});
+    video.srcObject=cameraStream;video.style.display='block';
+    document.getElementById('qr-idle').style.display='none';
+    ['qr-ot','qr-ob','qr-ol','qr-or'].forEach(id=>document.getElementById(id).style.display='block');
     document.getElementById('qr-frame').style.display='block';
     document.getElementById('qr-hint').style.display='block';
-    document.getElementById('btn-open-camera').style.display='none';
-    document.getElementById('btn-stop-camera').style.display='block';
-    await video.play();
-    scanQRLoop();
-    showToast('📷 Point camera at QR sticker');
-  } catch(e) {
-    if(e.name==='NotAllowedError') showToast('❌ Camera permission denied');
-    else showToast('❌ Camera unavailable — use simulate below');
-  }
+    document.getElementById('btn-open').style.display='none';
+    document.getElementById('btn-stop').style.display='block';
+    await video.play();scanLoop();
+    showToast('📷 Point at QR sticker');
+  }catch(e){showToast(e.name==='NotAllowedError'?'❌ Camera denied':'❌ Camera unavailable')}
 }
-
-function scanQRLoop() {
-  const video=document.getElementById('camera-video');
-  const canvas=document.getElementById('camera-canvas');
-  const ctx=canvas.getContext('2d');
+function scanLoop(){
+  const video=document.getElementById('camera-video'),canvas=document.getElementById('camera-canvas'),ctx=canvas.getContext('2d');
   scanInterval=setInterval(()=>{
-    if(video.readyState!==video.HAVE_ENOUGH_DATA) return;
-    canvas.width=video.videoWidth; canvas.height=video.videoHeight;
+    if(video.readyState!==video.HAVE_ENOUGH_DATA)return;
+    canvas.width=video.videoWidth;canvas.height=video.videoHeight;
     ctx.drawImage(video,0,0,canvas.width,canvas.height);
-    const imgData=ctx.getImageData(0,0,canvas.width,canvas.height);
-    const code=jsQR(imgData.data,imgData.width,imgData.height,{inversionAttempts:'dontInvert'});
-    if(code) onQRDetected(code.data);
+    const img=ctx.getImageData(0,0,canvas.width,canvas.height);
+    const code=jsQR(img.data,img.width,img.height,{inversionAttempts:'dontInvert'});
+    if(code)onQR(code.data);
   },250);
 }
-
-function onQRDetected(data) {
-  const client=clients.find(c=>c.qr_code===data.trim().toUpperCase());
-  if(!client) return;
-  stopCamera();
-  currentScanId=client.id;
-  document.getElementById('viol-unit-name').textContent=client.name+' · '+client.address;
-  // Show success
-  document.getElementById('qr-success-code').textContent=client.qr_code;
-  document.getElementById('qr-success-name').textContent=client.name;
-  document.getElementById('qr-success').style.display='flex';
-  setTimeout(()=>{
-    document.getElementById('qr-success').style.display='none';
-    document.getElementById('action-buttons').style.display='block';
-  },1500);
-  showToast('📱 '+client.qr_code+' — '+client.name);
+function onQR(data){
+  const c=clients.find(x=>x.qr_code===data.trim().toUpperCase());
+  if(!c)return;
+  stopCamera();currentScanId=c.id;
+  document.getElementById('viol-name').textContent=c.name+' · '+c.address;
+  document.getElementById('qs-code').textContent=c.qr_code;
+  document.getElementById('qs-name').textContent=c.name;
+  const s=document.getElementById('qr-success');s.style.display='flex';
+  setTimeout(()=>{s.style.display='none';document.getElementById('action-btns').style.display='block'},1500);
+  showToast('📱 '+c.qr_code+' — '+c.name);
 }
-
-function stopCamera() {
+function stopCamera(){
   clearInterval(scanInterval);
-  if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null;}
-  const video=document.getElementById('camera-video');
-  video.style.display='none'; video.srcObject=null;
-  document.getElementById('scanner-idle').style.display='flex';
-  document.getElementById('qr-overlay').style.display='none';
+  if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null}
+  const v=document.getElementById('camera-video');v.style.display='none';v.srcObject=null;
+  document.getElementById('qr-idle').style.display='flex';
+  ['qr-ot','qr-ob','qr-ol','qr-or'].forEach(id=>document.getElementById(id).style.display='none');
   document.getElementById('qr-frame').style.display='none';
   document.getElementById('qr-hint').style.display='none';
-  document.getElementById('btn-open-camera').style.display='flex';
-  document.getElementById('btn-stop-camera').style.display='none';
+  document.getElementById('btn-open').style.display='flex';
+  document.getElementById('btn-stop').style.display='none';
 }
-
-function startSimulatedScan() {
+function startSimScan(){
   const list=clients.filter(c=>c.trash_ready||c.status==='not_ready');
-  if(!list.length){showToast('No homes to scan');return;}
-  document.getElementById('scanner-idle').innerHTML='<div style="color:#4CAF50;font-size:13px;font-weight:700;animation:none">Scanning...</div>';
+  if(!list.length){showToast('No homes to scan');return}
+  document.getElementById('qr-idle').innerHTML='<div style="color:#4CAF50;font-size:.85rem;font-weight:700">Scanning...</div>';
   document.getElementById('qr-frame').style.display='block';
   setTimeout(()=>{
     const c=list[Math.floor(Math.random()*list.length)];
-    onQRDetected(c.qr_code);
-    document.getElementById('scanner-idle').innerHTML='<div class="scanner-idle-icon">▦</div><div class="scanner-idle-text">Tap to open camera</div>';
+    onQR(c.qr_code);
+    document.getElementById('qr-idle').innerHTML='<div class="qr-idle-icon">▦</div><div class="qr-idle-text">Tap to open camera</div>';
     document.getElementById('qr-frame').style.display='none';
-  },2000);
+  },1800);
 }
+function resetScanner(){currentScanId=null;stopCamera();document.getElementById('action-btns').style.display='none'}
 
-function resetScanner() {
-  currentScanId=null;
-  stopCamera();
-  document.getElementById('action-buttons').style.display='none';
-  document.getElementById('qr-success').style.display='none';
+// Actions
+async function markCollected(){
+  if(!currentScanId)return;
+  try{await fetch('/api/collect/'+currentScanId,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({collector:'Youssef B.'})});showToast('✅ Collected!');resetScanner();await loadClients()}catch(e){showToast('❌ Error')}
 }
-
-// ── Violation ──
-async function markCollected() {
-  if(!currentScanId) return;
-  try {
-    await fetch('/api/collect/'+currentScanId,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({collector:'Youssef B.'})});
-    showToast('✅ Marked as collected!');
-    resetScanner(); await loadClients();
-  } catch(e){showToast('❌ Error');}
-}
-
-function openViolModal() {
-  if(!currentScanId) return;
-  document.querySelectorAll('.viol-option').forEach(b=>b.classList.remove('selected'));
-  selectedViol=null;
-  document.getElementById('submit-viol-btn').disabled=true;
-  document.getElementById('submit-viol-btn').style.opacity='0.4';
+function openViolModal(){
+  if(!currentScanId)return;
+  document.querySelectorAll('.viol-opt').forEach(b=>b.classList.remove('selected'));
+  selectedViol=null;document.getElementById('btn-report').disabled=true;
   document.getElementById('viol-modal').style.display='flex';
 }
-
-function closeViolModal(){document.getElementById('viol-modal').style.display='none';}
-
-function selectViol(btn,reason){
-  document.querySelectorAll('.viol-option').forEach(b=>b.classList.remove('selected'));
-  btn.classList.add('selected'); selectedViol=reason;
-  document.getElementById('submit-viol-btn').disabled=false;
-  document.getElementById('submit-viol-btn').style.opacity='1';
+function closeViolModal(){document.getElementById('viol-modal').style.display='none'}
+function selViol(btn,r){
+  document.querySelectorAll('.viol-opt').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');selectedViol=r;document.getElementById('btn-report').disabled=false;
 }
-
 async function submitViol(){
-  if(!currentScanId||!selectedViol) return;
-  try {
-    await fetch('/api/violation/'+currentScanId,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({collector:'Youssef B.',reason:selectedViol})});
-    showToast('⚠️ Violation reported');
-    closeViolModal(); resetScanner(); await loadClients();
-  } catch(e){showToast('❌ Error');}
+  if(!currentScanId||!selectedViol)return;
+  try{await fetch('/api/violation/'+currentScanId,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({collector:'Youssef B.',reason:selectedViol})});showToast('⚠️ Violation reported');closeViolModal();resetScanner();await loadClients()}catch(e){showToast('❌ Error')}
 }
 
-// ── Init ──
 loadClients();
 startGPS();
 setInterval(loadClients,30000);
