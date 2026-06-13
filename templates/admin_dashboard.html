@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>NqiZbali — Syndic</title>
+  <title>NqiZbali — Admin</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -13,80 +13,88 @@
     .nav-icon{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,#1a7c3e,#25a25a);display:flex;align-items:center;justify-content:center;font-size:1.1rem;box-shadow:0 3px 10px rgba(26,124,62,.25)}
     .nav-brand{font-size:1rem;font-weight:800;color:#1C1C1E;letter-spacing:-.3px}
     .nav-sub{font-size:.65rem;color:#AEAEB2;margin-top:1px}
-    .nav-logout{background:#F2F2F7;border:none;border-radius:99px;padding:.4rem 1rem;color:#1C1C1E;font-size:.75rem;font-weight:600;text-decoration:none;cursor:pointer;font-family:inherit;transition:background .15s}
-    .nav-logout:hover{background:#E5E5EA}
+    .nav-right{display:flex;align-items:center;gap:8px}
+    .nav-chip{border-radius:99px;padding:.3rem .8rem;font-size:.7rem;font-weight:700}
+    .nav-chip.green{background:#D1FAE5;color:#065F46}
+    .nav-chip.red  {background:#FEE2E2;color:#991B1B}
+    .nav-logout{background:#F2F2F7;border:none;border-radius:99px;padding:.4rem 1rem;color:#1C1C1E;font-size:.75rem;font-weight:600;text-decoration:none;cursor:pointer;font-family:inherit}
 
-    .container{max-width:520px;margin:0 auto;padding:20px 16px 40px}
+    .container{max-width:900px;margin:0 auto;padding:20px 16px 40px}
+    .page-title{font-size:1.5rem;font-weight:900;color:#1C1C1E;letter-spacing:-.5px;margin-bottom:20px}
 
-    /* Greeting */
-    .greeting{margin-bottom:20px}
-    .greeting-hello{font-size:1.6rem;font-weight:900;color:#1C1C1E;letter-spacing:-.5px}
-    .greeting-sub{font-size:.88rem;color:#AEAEB2;margin-top:.25rem}
+    /* Pending banner */
+    .pending-banner{background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border:2px solid #FCD34D;border-radius:22px;padding:16px 18px;margin-bottom:20px;display:flex;align-items:center;gap:14px;box-shadow:0 4px 20px rgba(252,211,77,.2)}
+    .pending-banner-icon{font-size:2rem;flex-shrink:0}
+    .pending-banner-title{font-size:.9rem;font-weight:800;color:#92400E;margin-bottom:.15rem}
+    .pending-banner-sub{font-size:.75rem;color:#B45309}
 
     /* Stats */
-    .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
-    .stat-pill{background:#fff;border-radius:20px;padding:14px 12px;box-shadow:0 2px 12px rgba(0,0,0,.06);text-align:center;position:relative;overflow:hidden}
-    .stat-pill::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0}
-    .stat-pill.p1::before{background:linear-gradient(90deg,#1a7c3e,#4CAF50)}
-    .stat-pill.p2::before{background:linear-gradient(90deg,#FF6B00,#FF9500)}
-    .stat-pill.p3::before{background:linear-gradient(90deg,#FF3B30,#FF6961)}
-    .stat-val{font-size:1.5rem;font-weight:900;color:#1C1C1E;line-height:1}
-    .stat-val.green{color:#1a7c3e}
-    .stat-val.amber{color:#FF6B00}
-    .stat-val.red  {color:#FF3B30}
-    .stat-lbl{font-size:.62rem;color:#AEAEB2;margin-top:.3rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+    .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px}
+    @media(min-width:600px){.stats-grid{grid-template-columns:repeat(4,1fr)}}
+    .stat-card{background:#fff;border-radius:22px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);position:relative;overflow:hidden}
+    .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0}
+    .stat-card.c1::before{background:linear-gradient(90deg,#1a7c3e,#4CAF50)}
+    .stat-card.c2::before{background:linear-gradient(90deg,#007AFF,#5AC8FA)}
+    .stat-card.c3::before{background:linear-gradient(90deg,#5856D6,#AF52DE)}
+    .stat-card.c4::before{background:linear-gradient(90deg,#FF6B00,#FF9500)}
+    .stat-val{font-size:1.8rem;font-weight:900;color:#1C1C1E;line-height:1}
+    .stat-lbl{font-size:.68rem;color:#AEAEB2;margin-top:.3rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+    .stat-sub{font-size:.68rem;color:#AEAEB2;margin-top:.15rem}
 
     /* Section */
-    .sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-    .sec-title{font-size:1rem;font-weight:800;color:#1C1C1E;letter-spacing:-.2px}
-    .btn-add{background:linear-gradient(135deg,#1a7c3e,#25a25a);color:#fff;border:none;border-radius:99px;padding:.45rem 1.1rem;font-size:.75rem;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:.35rem;box-shadow:0 4px 12px rgba(26,124,62,.3);font-family:inherit;transition:transform .15s}
-    .btn-add:active{transform:scale(.96)}
+    .section{margin-bottom:28px}
+    .section-title{font-size:.9rem;font-weight:800;color:#1C1C1E;margin-bottom:14px;display:flex;align-items:center;gap:.5rem}
 
-    /* Building card */
-    .bcard{background:#fff;border-radius:28px;margin-bottom:14px;box-shadow:0 4px 24px rgba(0,0,0,.07);overflow:hidden;transition:transform .15s}
-    .bcard:active{transform:scale(.99)}
+    /* Syndic cards */
+    .syndic-grid{display:grid;grid-template-columns:1fr;gap:12px}
+    @media(min-width:600px){.syndic-grid{grid-template-columns:repeat(2,1fr)}}
+    .syndic-card{background:#fff;border-radius:24px;padding:18px;box-shadow:0 2px 12px rgba(0,0,0,.06);border-top:3px solid #1a7c3e;transition:transform .15s}
+    .syndic-card.pending{border-top-color:#FCD34D;background:#FFFDE7}
+    .syndic-card:hover{transform:translateY(-2px)}
+    .syndic-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+    .syndic-name{font-size:.95rem;font-weight:800;color:#1C1C1E;margin-bottom:.2rem}
+    .syndic-email{font-size:.72rem;color:#AEAEB2}
+    .s-badge{display:inline-flex;align-items:center;gap:.35rem;padding:.3rem .8rem;border-radius:99px;font-size:.68rem;font-weight:700}
+    .s-badge.ok {background:#D1FAE5;color:#065F46}
+    .s-badge.pnd{background:#FEF3C7;color:#92400E}
+    .syndic-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+    .ss{background:#F2F2F7;border-radius:12px;padding:10px;text-align:center}
+    .ss-val{font-size:1.1rem;font-weight:800;color:#1a7c3e}
+    .ss-lbl{font-size:.6rem;color:#AEAEB2;margin-top:.1rem;font-weight:500}
+    .syndic-tags{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:12px}
+    .syndic-tag{background:#F0FDF4;border:1px solid #D1FAE5;border-radius:8px;padding:.2rem .65rem;font-size:.68rem;color:#1a7c3e;font-weight:600}
+    .approve-row{display:flex;gap:.5rem}
+    .btn-ok{flex:1;background:linear-gradient(135deg,#1a7c3e,#25a25a);color:#fff;border:none;border-radius:12px;padding:.65rem;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 4px 12px rgba(26,124,62,.25);transition:transform .15s}
+    .btn-ok:active{transform:scale(.97)}
+    .btn-no{flex:1;background:#fff;color:#FF3B30;border:1.5px solid #FFCDD2;border-radius:12px;padding:.65rem;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s}
+    .btn-no:active{background:#FFF5F5}
 
-    .bcard-hero{padding:18px 18px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
-    .bcard-name{font-size:1rem;font-weight:800;color:#1C1C1E;margin-bottom:.2rem;letter-spacing:-.2px}
-    .bcard-addr{font-size:.73rem;color:#AEAEB2}
+    /* Table */
+    .table-wrap{background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+    table{width:100%;border-collapse:collapse}
+    th{background:#F9F9F9;font-size:.68rem;font-weight:700;color:#6C6C70;padding:.75rem 1rem;text-align:left;border-bottom:1px solid #F2F2F7;white-space:nowrap;text-transform:uppercase;letter-spacing:.5px}
+    td{font-size:.78rem;padding:.75rem 1rem;border-bottom:1px solid #F9F9F9;color:#3A3A3C}
+    tr:last-child td{border-bottom:none}
+    tr:hover td{background:#FAFAFA}
 
-    .status-chip{display:inline-flex;align-items:center;gap:.4rem;padding:.3rem .9rem;border-radius:99px;font-size:.7rem;font-weight:700;flex-shrink:0}
-    .chip-active  {background:#D1FAE5;color:#065F46}
-    .chip-inactive{background:#FEE2E2;color:#991B1B}
-    .chip-expiring{background:#FEF3C7;color:#92400E}
-    .chip-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+    /* Chips */
+    .chip{display:inline-block;border-radius:99px;padding:.2rem .7rem;font-size:.65rem;font-weight:700}
+    .chip-green{background:#D1FAE5;color:#065F46}
+    .chip-red  {background:#FEE2E2;color:#991B1B}
+    .chip-amber{background:#FEF3C7;color:#92400E}
+    .chip-gray {background:#F2F2F7;color:#6C6C70}
 
-    .bcard-stats{display:grid;grid-template-columns:repeat(3,1fr);margin:14px 0 0;border-top:1px solid #F2F2F7}
-    .bstat{text-align:center;padding:14px 8px;border-right:1px solid #F2F2F7}
-    .bstat:last-child{border-right:none}
-    .bstat-val{font-size:1.2rem;font-weight:900;color:#1a7c3e}
-    .bstat-lbl{font-size:.62rem;color:#AEAEB2;margin-top:.15rem;font-weight:500}
-
-    .bcard-foot{padding:12px 18px 18px}
-    .pay-btn{width:100%;background:linear-gradient(135deg,#1a7c3e,#25a25a);color:#fff;border:none;border-radius:16px;padding:.9rem;font-size:.9rem;font-weight:800;cursor:pointer;font-family:inherit;box-shadow:0 6px 18px rgba(26,124,62,.3);display:flex;align-items:center;justify-content:center;gap:.5rem;text-decoration:none;transition:transform .15s}
-    .pay-btn:active{transform:scale(.97)}
-    .pay-btn.renew{background:linear-gradient(135deg,#FF6B00,#FF9500);box-shadow:0 6px 18px rgba(255,107,0,.25)}
-
-    /* History */
-    .hist-card{background:#fff;border-radius:28px;box-shadow:0 4px 24px rgba(0,0,0,.07);overflow:hidden;margin-top:24px}
-    .hist-head{padding:16px 18px 12px;border-bottom:1px solid #F2F2F7}
-    .hist-title{font-size:.9rem;font-weight:800;color:#1C1C1E}
-
-    .pay-row{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid #F9F9F9}
-    .pay-row:last-child{border-bottom:none}
-    .pay-icon{width:40px;height:40px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
-    .pay-icon.approved{background:#D1FAE5}
-    .pay-icon.pending {background:#FEF3C7}
-    .pay-icon.failed  {background:#FEE2E2}
-    .pay-info{flex:1;min-width:0}
-    .pay-bname{font-size:.82rem;font-weight:700;color:#1C1C1E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .pay-date{font-size:.7rem;color:#AEAEB2;margin-top:.1rem}
-    .pay-amount{font-size:.88rem;font-weight:800;color:#1a7c3e;flex-shrink:0}
+    /* Revenue */
+    .rev-card{background:#fff;border-radius:22px;padding:18px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+    .rev-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+    .rev-row:last-child{margin-bottom:0}
+    .rev-name{font-size:.78rem;color:#3A3A3C;font-weight:600;width:130px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .rev-track{flex:1;background:#F2F2F7;border-radius:99px;height:10px;overflow:hidden}
+    .rev-fill{height:100%;background:linear-gradient(90deg,#1a7c3e,#4CAF50);border-radius:99px;transition:width .8s ease}
+    .rev-amt{font-size:.78rem;font-weight:800;color:#1a7c3e;width:65px;text-align:right;flex-shrink:0}
 
     /* Empty */
-    .empty{text-align:center;padding:3rem 1rem}
-    .empty-icon{font-size:2.5rem;opacity:.3;margin-bottom:.75rem}
-    .empty-text{font-size:.85rem;color:#AEAEB2;margin-bottom:1rem}
+    .empty{text-align:center;padding:2.5rem;color:#AEAEB2;font-size:.85rem}
 
     /* Toast */
     .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(28,28,30,.92);backdrop-filter:blur(10px);color:#fff;padding:.65rem 1.25rem;border-radius:99px;font-size:.8rem;font-weight:600;z-index:9999;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.2);transition:transform .4s cubic-bezier(.34,1.56,.64,1),opacity .3s;opacity:0;pointer-events:none}
@@ -100,114 +108,224 @@
     <div class="nav-icon">♻️</div>
     <div>
       <div class="nav-brand">NqiZbali</div>
-      <div class="nav-sub">Syndic Portal</div>
+      <div class="nav-sub">Admin Dashboard</div>
     </div>
   </div>
-  <a class="nav-logout" href="/syndic/logout">Log out</a>
+  <div class="nav-right">
+    <span class="nav-chip green">Admin</span>
+    {% if pending_syndics > 0 %}
+      <span class="nav-chip red">{{ pending_syndics }} pending</span>
+    {% endif %}
+    <a class="nav-logout" href="/admin/logout">Log out</a>
+  </div>
 </nav>
 
 <div class="container">
+  <div class="page-title">📊 Dashboard</div>
 
-  <div class="greeting">
-    <div class="greeting-hello">Hello, {{ syndic.name.split()[0] }} 👋</div>
-    <div class="greeting-sub">Manage your buildings and subscriptions</div>
+  {% if pending_syndics > 0 %}
+  <div class="pending-banner">
+    <div class="pending-banner-icon">⏳</div>
+    <div>
+      <div class="pending-banner-title">{{ pending_syndics }} syndic{{ 's' if pending_syndics > 1 }} waiting for approval</div>
+      <div class="pending-banner-sub">Review and approve or reject their accounts below.</div>
+    </div>
   </div>
+  {% endif %}
 
-  {% set active_count = buildings|selectattr('is_active')|list|length %}
-  {% set total_due    = buildings|selectattr('is_active','equalto',False)|sum(attribute='monthly_total') %}
-  <div class="stats-row">
-    <div class="stat-pill p1">
-      <div class="stat-val green">{{ buildings|length }}</div>
+  <div class="stats-grid">
+    <div class="stat-card c1">
+      <div class="stat-val">{{ syndics|length }}</div>
+      <div class="stat-lbl">Syndics</div>
+      <div class="stat-sub">{{ syndics|selectattr('approved')|list|length }} approved</div>
+    </div>
+    <div class="stat-card c2">
+      <div class="stat-val">{{ buildings|length }}</div>
       <div class="stat-lbl">Buildings</div>
+      <div class="stat-sub">{{ active_buildings }} active</div>
     </div>
-    <div class="stat-pill p2">
-      <div class="stat-val {% if active_count < buildings|length %}amber{% else %}green{% endif %}">{{ active_count }}/{{ buildings|length }}</div>
-      <div class="stat-lbl">Active</div>
+    <div class="stat-card c3">
+      <div class="stat-val" style="font-size:1.3rem;color:#1a7c3e">{{ total_revenue }} DH</div>
+      <div class="stat-lbl">Revenue</div>
+      <div class="stat-sub">Approved only</div>
     </div>
-    <div class="stat-pill p3">
-      <div class="stat-val {% if total_due > 0 %}red{% else %}green{% endif %}">{{ total_due }} DH</div>
-      <div class="stat-lbl">Due</div>
+    <div class="stat-card c4">
+      <div class="stat-val">{{ payments|length }}</div>
+      <div class="stat-lbl">Payments</div>
+      <div class="stat-sub">{{ pending_payments }} pending</div>
     </div>
   </div>
 
-  <div class="sec-head">
-    <div class="sec-title">My Buildings</div>
-    <a class="btn-add" href="/syndic/building/add">+ Add</a>
-  </div>
-
-  {% if buildings %}
-    {% for b in buildings %}
-    <div class="bcard">
-      <div class="bcard-hero">
-        <div>
-          <div class="bcard-name">{{ b.name }}</div>
-          <div class="bcard-addr">📍 {{ b.address }}, {{ b.neighborhood }}</div>
-        </div>
-        {% if b.is_active %}
-          {% set days = ((b.subscription_end - now).days) if b.subscription_end else 0 %}
-          {% if days <= 5 %}
-            <span class="status-chip chip-expiring"><span class="chip-dot"></span>{{ days }}d left</span>
+  <!-- Syndics -->
+  <div class="section">
+    <div class="section-title">👤 Syndics ({{ syndics|length }})</div>
+    {% if syndics %}
+    <div class="syndic-grid">
+      {% for s in syndics %}
+      {% set sb = buildings|selectattr('syndic_id','equalto',s.id)|list %}
+      {% set sp = payments|selectattr('syndic_id','equalto',s.id)|selectattr('status','equalto','approved')|list %}
+      {% set sr = sp|sum(attribute='amount_mad') %}
+      {% set sa = sb|selectattr('is_active')|list|length %}
+      <div class="syndic-card {% if not s.approved %}pending{% endif %}">
+        <div class="syndic-top">
+          <div>
+            <div class="syndic-name">{{ s.name }}</div>
+            <div class="syndic-email">{{ s.email }}</div>
+          </div>
+          {% if s.approved %}
+            <span class="s-badge ok">✅ Approved</span>
           {% else %}
-            <span class="status-chip chip-active"><span class="chip-dot"></span>{{ days }}d left</span>
+            <span class="s-badge pnd">⏳ Pending</span>
           {% endif %}
-        {% else %}
-          <span class="status-chip chip-inactive">❌ Inactive</span>
+        </div>
+        <div class="syndic-stats">
+          <div class="ss"><div class="ss-val">{{ sb|length }}</div><div class="ss-lbl">Buildings</div></div>
+          <div class="ss"><div class="ss-val">{{ sa }}</div><div class="ss-lbl">Active</div></div>
+          <div class="ss"><div class="ss-val" style="font-size:.85rem">{{ sr }} DH</div><div class="ss-lbl">Paid</div></div>
+        </div>
+        {% if sb %}
+        <div class="syndic-tags">
+          {% for b in sb %}
+          <span class="syndic-tag">{{ b.name }} {% if b.is_active %}✅{% else %}❌{% endif %}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% if not s.approved %}
+        <div class="approve-row">
+          <button class="btn-ok" onclick="approveSyndic({{ s.id }},this)">✅ Approve</button>
+          <button class="btn-no" onclick="rejectSyndic({{ s.id }},this)">❌ Reject</button>
+        </div>
         {% endif %}
       </div>
-
-      <div class="bcard-stats">
-        <div class="bstat">
-          <div class="bstat-val">{{ b.nb_apartments }}</div>
-          <div class="bstat-lbl">Apartments</div>
-        </div>
-        <div class="bstat">
-          <div class="bstat-val">{{ b.monthly_total }} DH</div>
-          <div class="bstat-lbl">Monthly</div>
-        </div>
-        <div class="bstat">
-          <div class="bstat-val">{{ b.clients|length }}</div>
-          <div class="bstat-lbl">Residents</div>
-        </div>
-      </div>
-
-      <div class="bcard-foot">
-        {% if b.is_active %}
-          <a class="pay-btn renew" href="/syndic/building/{{ b.id }}/pay">🔄 Renew Subscription</a>
-        {% else %}
-          <a class="pay-btn" href="/syndic/building/{{ b.id }}/pay">💳 Pay {{ b.monthly_total }} DH</a>
-        {% endif %}
-      </div>
+      {% endfor %}
     </div>
-    {% endfor %}
-  {% else %}
-    <div class="empty">
-      <div class="empty-icon">🏢</div>
-      <div class="empty-text">No buildings yet</div>
-      <a class="btn-add" href="/syndic/building/add">+ Add your first building</a>
-    </div>
-  {% endif %}
+    {% else %}
+    <div class="empty">No syndics yet.</div>
+    {% endif %}
+  </div>
 
-  {% set all_payments = syndic.payments|sort(attribute='created_at',reverse=True) %}
-  {% if all_payments %}
-  <div class="hist-card">
-    <div class="hist-head"><div class="hist-title">Payment History</div></div>
-    {% for p in all_payments[:8] %}
-    <div class="pay-row">
-      <div class="pay-icon {{ p.status }}">
-        {% if p.status=='approved' %}✅{% elif p.status=='pending' %}⏳{% else %}❌{% endif %}
-      </div>
-      <div class="pay-info">
-        <div class="pay-bname">{{ p.building.name }}</div>
-        <div class="pay-date">{{ p.created_at.strftime('%d/%m/%Y') }} · {{ p.nb_apartments }} apts</div>
-      </div>
-      <div class="pay-amount">{{ p.amount_mad }} DH</div>
+  <!-- Buildings -->
+  <div class="section">
+    <div class="section-title">🏢 Buildings ({{ buildings|length }})</div>
+    {% if buildings %}
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Building</th><th>Syndic</th><th>Apts</th><th>Monthly</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for b in buildings %}
+          <tr>
+            <td><strong>{{ b.name }}</strong><br><span style="font-size:.68rem;color:#AEAEB2">{{ b.neighborhood }}</span></td>
+            <td>{{ b.syndic.name }}</td>
+            <td style="text-align:center;font-weight:700">{{ b.nb_apartments }}</td>
+            <td><strong>{{ b.monthly_total }} DH</strong></td>
+            <td>{% if b.is_active %}<span class="chip chip-green">✅ Active</span>{% else %}<span class="chip chip-red">❌ Inactive</span>{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-    {% endfor %}
+    {% else %}<div class="empty">No buildings yet.</div>{% endif %}
+  </div>
+
+  <!-- Revenue -->
+  {% if syndics %}
+  <div class="section">
+    <div class="section-title">💰 Revenue by Syndic</div>
+    <div class="rev-card">
+      {% set max_rev = namespace(val=1) %}
+      {% for s in syndics %}
+        {% set sr = payments|selectattr('syndic_id','equalto',s.id)|selectattr('status','equalto','approved')|sum(attribute='amount_mad') %}
+        {% if sr > max_rev.val %}{% set max_rev.val = sr %}{% endif %}
+      {% endfor %}
+      {% for s in syndics %}
+        {% set sr = payments|selectattr('syndic_id','equalto',s.id)|selectattr('status','equalto','approved')|sum(attribute='amount_mad') %}
+        <div class="rev-row">
+          <div class="rev-name">{{ s.name }}</div>
+          <div class="rev-track"><div class="rev-fill" style="width:{{ (sr/max_rev.val*100)|int }}%"></div></div>
+          <div class="rev-amt">{{ sr }} DH</div>
+        </div>
+      {% endfor %}
+    </div>
   </div>
   {% endif %}
+
+  <!-- Payments -->
+  <div class="section">
+    <div class="section-title">💳 Payments ({{ payments|length }})</div>
+    {% if payments %}
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Date</th><th>Syndic</th><th>Building</th><th>Amount</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for p in payments %}
+          <tr>
+            <td style="white-space:nowrap">{{ p.created_at.strftime('%d/%m/%Y') }}</td>
+            <td>{{ p.syndic.name }}</td>
+            <td>{{ p.building.name }}</td>
+            <td><strong>{{ p.amount_mad }} DH</strong></td>
+            <td>
+              {% if p.status=='approved' %}<span class="chip chip-green">✅ Done</span>
+              {% elif p.status=='pending' %}<span class="chip chip-amber">⏳ Pending</span>
+              {% else %}<span class="chip chip-red">❌ Failed</span>{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}<div class="empty">No payments yet.</div>{% endif %}
+  </div>
+
+  <!-- Residents -->
+  <div class="section">
+    <div class="section-title">🏠 Residents ({{ clients|length }})</div>
+    {% if clients %}
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Name</th><th>QR</th><th>Building</th><th>Sub</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for c in clients %}
+          <tr>
+            <td><strong>{{ c.name }}</strong></td>
+            <td style="font-family:monospace;font-size:.7rem;color:#1a7c3e;font-weight:700">{{ c.qr_code }}</td>
+            <td style="font-size:.72rem">{{ c.building.name if c.building else '—' }}</td>
+            <td>{% if c.subscription_active %}<span class="chip chip-green">✅</span>{% else %}<span class="chip chip-red">❌</span>{% endif %}</td>
+            <td>
+              {% if c.status=='collected' %}<span class="chip chip-green">Done</span>
+              {% elif c.status=='ready'    %}<span class="chip chip-amber">Ready</span>
+              {% elif c.status=='violation'%}<span class="chip chip-red">⚠️</span>
+              {% else %}<span class="chip chip-gray">Waiting</span>{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}<div class="empty">No residents yet.</div>{% endif %}
+  </div>
 
 </div>
 
 <div class="toast" id="toast"></div>
+
+<script>
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800)}
+
+async function approveSyndic(id,btn){
+  if(!confirm('Approve this syndic?'))return;
+  btn.disabled=true;btn.textContent='⏳';
+  const r=await fetch('/admin/syndic/'+id+'/approve',{method:'POST'});
+  const d=await r.json();
+  if(d.success){showToast('✅ '+d.name+' approved!');setTimeout(()=>location.reload(),1000)}
+}
+
+async function rejectSyndic(id,btn){
+  if(!confirm('Reject and delete this account?'))return;
+  btn.disabled=true;btn.textContent='⏳';
+  const r=await fetch('/admin/syndic/'+id+'/reject',{method:'POST'});
+  const d=await r.json();
+  if(d.success){showToast('❌ Rejected');setTimeout(()=>location.reload(),1000)}
+}
+</script>
 </body>
 </html>
