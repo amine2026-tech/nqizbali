@@ -7,28 +7,29 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', -apple-system, sans-serif; background: #f0f9f0; color: #111; }
+    body { background: #f0f7f2; }
 
     /* ── Top bar ── */
     .top-bar {
-      background: linear-gradient(135deg, #0d4f29, #1a7c3e);
-      padding: .9rem 1.25rem;
+      background: linear-gradient(135deg, #051f10, #1a7c3e);
+      padding: 14px 20px 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       position: sticky;
       top: 0;
       z-index: 100;
+      box-shadow: 0 2px 20px rgba(0,0,0,.2);
     }
-    .top-bar-brand { font-size: 1.1rem; font-weight: 900; color: #fff; letter-spacing: -.5px; }
-    .top-bar-time  { font-size: .78rem; color: rgba(255,255,255,.7); font-weight: 600; }
-    .top-bar-avatar {
-      width: 32px; height: 32px;
+    .top-brand { font-size: 1rem; font-weight: 900; color: #fff; letter-spacing: -.3px; }
+    .top-time  { font-size: .75rem; color: rgba(255,255,255,.65); font-weight: 600; }
+    .top-avatar {
+      width: 34px; height: 34px;
       border-radius: 50%;
-      background: rgba(255,255,255,.2);
+      background: rgba(255,255,255,.15);
+      border: 2px solid rgba(255,255,255,.3);
       color: #fff;
-      font-size: .8rem;
+      font-size: .78rem;
       font-weight: 800;
       display: flex; align-items: center; justify-content: center;
       cursor: pointer;
@@ -38,86 +39,170 @@
     .bottom-nav {
       position: fixed;
       bottom: 0; left: 0; right: 0;
-      background: #fff;
-      border-top: 1px solid #e8f0e8;
+      background: rgba(255,255,255,.97);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(0,0,0,.06);
       display: flex;
       z-index: 200;
       padding-bottom: env(safe-area-inset-bottom);
-      box-shadow: 0 -4px 20px rgba(0,0,0,.08);
+      box-shadow: 0 -4px 24px rgba(0,0,0,.07);
     }
     .nav-item {
       flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: .6rem .5rem .5rem;
+      padding: .6rem .5rem .45rem;
       cursor: pointer;
       border: none;
       background: none;
       font-family: inherit;
-      transition: background .15s;
       text-decoration: none;
+      position: relative;
     }
-    .nav-item:active { background: #f0faf4; }
-    .nav-item .nav-icon { font-size: 1.4rem; line-height: 1; margin-bottom: .2rem; }
-    .nav-item .nav-label { font-size: .62rem; font-weight: 600; color: #aaa; }
+    .nav-icon  { font-size: 1.3rem; line-height: 1; margin-bottom: .15rem; transition: transform .2s; }
+    .nav-label { font-size: .6rem; font-weight: 600; color: #9CA3AF; transition: color .2s; }
     .nav-item.active .nav-label { color: #1a7c3e; }
-    .nav-item.active .nav-icon  { filter: none; }
-    .nav-dot {
-      width: 5px; height: 5px;
-      border-radius: 50%;
+    .nav-item.active .nav-icon  { transform: scale(1.1); }
+    .nav-indicator {
+      position: absolute;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 20px; height: 3px;
+      border-radius: 0 0 3px 3px;
       background: #1a7c3e;
-      margin: 0 auto .1rem;
+      opacity: 0;
+      transition: opacity .2s;
     }
+    .nav-item.active .nav-indicator { opacity: 1; }
 
     /* ── Pages ── */
-    .page { display: none; padding: 1rem 1rem 5rem; }
+    .page { display: none; padding: 1rem 1rem 5.5rem; animation: fadeUp .25s ease; }
     .page.active { display: block; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
 
-    /* ── Profile hero ── */
+    /* ── Profile hero card ── */
     .profile-hero {
-      background: linear-gradient(135deg, #0d4f29, #1a7c3e);
-      border-radius: 20px;
+      background: linear-gradient(135deg, #051f10, #1a7c3e);
+      border-radius: 24px;
       padding: 1.5rem;
-      color: #fff;
       margin-bottom: 1rem;
       position: relative;
       overflow: hidden;
+      box-shadow: 0 8px 32px rgba(10,61,32,.3);
     }
-    .profile-hero::after {
+    .profile-hero::before {
       content: '♻️';
       position: absolute;
-      right: 1rem; top: 50%;
-      transform: translateY(-50%);
-      font-size: 4rem;
-      opacity: .15;
+      right: -10px; bottom: -10px;
+      font-size: 6rem;
+      opacity: .07;
+      line-height: 1;
     }
-    .profile-hero-name { font-size: 1.3rem; font-weight: 800; margin-bottom: .2rem; }
-    .profile-hero-addr { font-size: .8rem; opacity: .75; margin-bottom: 1rem; }
-    .profile-hero-row  { display: flex; gap: .75rem; }
-    .profile-hero-pill {
+    .profile-hero-avatar {
+      width: 52px; height: 52px;
+      border-radius: 50%;
       background: rgba(255,255,255,.15);
-      border-radius: 8px;
-      padding: .35rem .75rem;
-      font-size: .72rem;
-      font-weight: 600;
+      border: 2.5px solid rgba(255,255,255,.3);
+      color: #fff;
+      font-size: 1.2rem;
+      font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: .75rem;
     }
-    .profile-hero-pill.green { background: rgba(76,175,80,.3); color: #a5d6a7; }
-    .profile-hero-pill.red   { background: rgba(244,67,54,.3);  color: #ef9a9a; }
+    .profile-hero-name { font-size: 1.3rem; font-weight: 800; color: #fff; margin-bottom: .2rem; }
+    .profile-hero-addr { font-size: .8rem; color: rgba(255,255,255,.65); margin-bottom: 1rem; }
+    .profile-hero-tags { display: flex; gap: .6rem; flex-wrap: wrap; }
+    .profile-tag {
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 99px;
+      padding: .3rem .85rem;
+      font-size: .72rem;
+      color: rgba(255,255,255,.9);
+      font-weight: 600;
+      backdrop-filter: blur(4px);
+    }
+    .profile-tag.green { background: rgba(76,175,80,.25); border-color: rgba(76,175,80,.4); color: #a5d6a7; }
+    .profile-tag.red   { background: rgba(244,67,54,.2);  border-color: rgba(244,67,54,.3);  color: #ef9a9a; }
+
+    /* ── Nearby alert ── */
+    .nearby-alert {
+      background: linear-gradient(135deg, #fff3e0, #fff8f0);
+      border: 2px solid #FF9800;
+      border-radius: 18px;
+      padding: 1rem 1.1rem;
+      margin-bottom: 1rem;
+      display: none;
+      align-items: center;
+      gap: .85rem;
+      box-shadow: 0 4px 20px rgba(255,152,0,.2);
+      animation: nearbyPulse 1.5s ease-in-out infinite;
+    }
+    @keyframes nearbyPulse {
+      0%,100% { box-shadow: 0 4px 20px rgba(255,152,0,.2); }
+      50%      { box-shadow: 0 4px 28px rgba(255,152,0,.4); }
+    }
+    .nearby-icon  { font-size: 2.2rem; animation: truckBounce .6s ease-in-out infinite alternate; }
+    @keyframes truckBounce { to { transform: translateX(4px); } }
+    .nearby-title { font-size: .92rem; font-weight: 800; color: #E65100; }
+    .nearby-desc  { font-size: .75rem; color: #BF360C; margin-top: .15rem; }
+
+    /* ── Sub alert ── */
+    .sub-alert {
+      background: #fffde7;
+      border: 1.5px solid #F9A825;
+      border-radius: 16px;
+      padding: .85rem 1rem;
+      margin-bottom: 1rem;
+      font-size: .8rem;
+      color: #F57F17;
+      display: flex;
+      align-items: flex-start;
+      gap: .65rem;
+    }
+    .sub-alert a { color: #1a7c3e; font-weight: 700; text-decoration: underline; }
 
     /* ── Status card ── */
     .status-card {
       background: #fff;
-      border-radius: 20px;
-      padding: 1.4rem;
+      border-radius: 24px;
+      padding: 1.5rem;
       margin-bottom: 1rem;
-      box-shadow: 0 2px 12px rgba(0,0,0,.06);
+      box-shadow: 0 4px 20px rgba(0,0,0,.06);
     }
-    .status-card-title { font-size: .8rem; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; }
-    .big-action {
+    .status-card-label {
+      font-size: .7rem;
+      font-weight: 700;
+      color: #9CA3AF;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 1rem;
+    }
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      margin-bottom: 1.25rem;
+    }
+    .status-dot-large {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .status-dot-large.waiting  { background: #E5E7EB; }
+    .status-dot-large.ready    { background: #4CAF50; box-shadow: 0 0 0 4px rgba(76,175,80,.2); animation: pulse 1.4s infinite; }
+    .status-dot-large.collected{ background: #2196F3; }
+    .status-text-main { font-size: 1rem; font-weight: 700; color: #111827; }
+    .status-text-sub  { font-size: .75rem; color: #9CA3AF; margin-top: .1rem; }
+
+    .big-btn {
       width: 100%;
       padding: 1.1rem;
-      border-radius: 14px;
+      border-radius: 16px;
       border: none;
       font-size: 1rem;
       font-weight: 800;
@@ -126,227 +211,213 @@
       align-items: center;
       justify-content: center;
       gap: .6rem;
-      transition: transform .15s, opacity .2s;
       font-family: inherit;
+      transition: transform .15s, box-shadow .15s;
       letter-spacing: -.2px;
     }
-    .big-action:active { transform: scale(.98); }
-    .big-action.ready  { background: linear-gradient(135deg,#1a7c3e,#25a25a); color: white; box-shadow: 0 4px 16px rgba(26,124,62,.35); }
-    .big-action.cancel { background: #fff0f0; color: #C62828; border: 1.5px solid #ffcdd2; }
-    .big-action.done   { background: #f0faf4; color: #1a7c3e; border: 1.5px solid #c8e6c9; }
-
-    .status-row {
-      display: flex;
-      align-items: center;
-      gap: .75rem;
-      margin-bottom: 1rem;
+    .big-btn:active { transform: scale(.97); }
+    .big-btn.ready {
+      background: linear-gradient(135deg, #1a7c3e, #25a25a);
+      color: #fff;
+      box-shadow: 0 6px 20px rgba(26,124,62,.35);
     }
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: .4rem;
-      padding: .4rem 1rem;
-      border-radius: 20px;
-      font-size: .78rem;
-      font-weight: 700;
+    .big-btn.cancel {
+      background: #FFF5F5;
+      color: #C62828;
+      border: 1.5px solid #FFCDD2;
     }
-    .status-badge.waiting  { background: #f0f4f8; color: #607D8B; }
-    .status-badge.ready    { background: #e8f5e9; color: #2E7D32; }
-    .status-badge.collected{ background: #e3f2fd; color: #1565c0; }
-    .hint-text { font-size: .75rem; color: #aaa; text-align: center; margin-top: .75rem; line-height: 1.5; }
-
-    /* ── Nearby alert ── */
-    .nearby-alert {
-      background: #fff3e0;
-      border: 2px solid #ff9800;
-      border-radius: 14px;
-      padding: 1rem 1.1rem;
-      margin-bottom: 1rem;
-      display: none;
-      align-items: center;
-      gap: .75rem;
-      animation: pulseBorder 1.2s infinite;
-    }
-    @keyframes pulseBorder {
-      0%,100% { border-color: #ff9800; }
-      50%      { border-color: #e65100; box-shadow: 0 0 0 4px rgba(255,152,0,.15); }
-    }
-    .nearby-icon  { font-size: 2rem; flex-shrink: 0; }
-    .nearby-title { font-size: .9rem; font-weight: 800; color: #e65100; }
-    .nearby-desc  { font-size: .75rem; color: #7a5c00; margin-top: .15rem; }
+    .hint { font-size: .75rem; color: #9CA3AF; text-align: center; margin-top: .85rem; line-height: 1.5; }
 
     /* ── Map ── */
+    .map-section {
+      background: #fff;
+      border-radius: 24px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,.06);
+    }
+    .map-section-label {
+      font-size: .7rem;
+      font-weight: 700;
+      color: #9CA3AF;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: .85rem;
+    }
     #client-map {
-      height: 320px;
+      height: 300px;
       border-radius: 16px;
       overflow: hidden;
-      border: .5px solid #CFD8DC;
       margin-bottom: .75rem;
       z-index: 1;
     }
     .map-wrap { position: relative; }
-    .map-btn {
+    .map-fab {
       position: absolute;
       bottom: 14px; right: 10px;
       z-index: 999;
-      background: white;
+      background: #fff;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       width: 38px; height: 38px;
       font-size: 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+      box-shadow: 0 2px 12px rgba(0,0,0,.15);
       cursor: pointer;
       display: flex; align-items: center; justify-content: center;
     }
     .legend {
-      display: flex; gap: .75rem; flex-wrap: wrap; margin-top: .5rem;
+      display: flex; gap: 1rem; flex-wrap: wrap;
     }
     .legend-item {
-      display: flex; align-items: center; gap: .3rem;
-      font-size: .7rem; color: #888;
+      display: flex; align-items: center; gap: 5px;
+      font-size: .7rem; color: #9CA3AF; font-weight: 500;
     }
-    .legend-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%; flex-shrink: 0;
-    }
+    .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
-    /* ── QR ── */
-    .qr-card {
+    /* ── History ── */
+    .history-section {
       background: #fff;
-      border-radius: 20px;
-      padding: 1.4rem;
-      box-shadow: 0 2px 12px rgba(0,0,0,.06);
+      border-radius: 24px;
+      padding: 1.25rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,.06);
+    }
+    .history-label {
+      font-size: .7rem; font-weight: 700; color: #9CA3AF;
+      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem;
+    }
+    .log-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: .85rem 0;
+      border-bottom: 1px solid #F3F4F6;
+    }
+    .log-item:last-child { border-bottom: none; }
+    .log-icon {
+      width: 36px; height: 36px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .9rem;
+      flex-shrink: 0;
+    }
+    .log-icon.collected { background: #e8f5e9; }
+    .log-icon.violation { background: #ffebee; }
+    .log-text-main { font-size: .82rem; font-weight: 600; color: #111827; }
+    .log-text-sub  { font-size: .72rem; color: #9CA3AF; margin-top: 2px; }
+    .log-badge {
+      margin-left: auto;
+      font-size: .68rem;
+      font-weight: 700;
+      padding: .25rem .65rem;
+      border-radius: 99px;
+      flex-shrink: 0;
+    }
+    .log-badge.collected { background: #e8f5e9; color: #2E7D32; }
+    .log-badge.violation { background: #ffebee; color: #C62828; }
+
+    /* ── QR section ── */
+    .qr-section {
+      background: #fff;
+      border-radius: 24px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,.06);
       display: flex;
       align-items: center;
       gap: 1.1rem;
-      margin-bottom: 1rem;
     }
-    .qr-code-text { font-size: .85rem; font-weight: 800; color: #1a7c3e; font-family: monospace; letter-spacing: 1px; }
-    .qr-addr-text { font-size: .75rem; color: #888; margin-top: .2rem; }
-    .btn-sm {
+    .qr-info-code { font-size: .9rem; font-weight: 800; color: #1a7c3e; font-family: monospace; letter-spacing: 1px; }
+    .qr-info-addr { font-size: .75rem; color: #9CA3AF; margin-top: .2rem; }
+    .qr-dl-btn {
       margin-top: .6rem;
-      background: #1a7c3e;
+      background: linear-gradient(135deg,#1a7c3e,#25a25a);
       color: #fff;
       border: none;
-      border-radius: 8px;
-      padding: .4rem .9rem;
+      border-radius: 10px;
+      padding: .45rem 1rem;
       font-size: .75rem;
       font-weight: 700;
       cursor: pointer;
       font-family: inherit;
     }
 
-    /* ── History ── */
-    .history-card {
-      background: #fff;
-      border-radius: 20px;
-      padding: 1.4rem;
-      box-shadow: 0 2px 12px rgba(0,0,0,.06);
-      margin-bottom: 1rem;
-    }
-    .history-title { font-size: .8rem; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; }
-    .log-item {
-      display: flex; align-items: center; gap: .75rem;
-      padding: .65rem 0;
-      border-bottom: .5px solid #f0f0f0;
-      font-size: .82rem;
-    }
-    .log-item:last-child { border-bottom: none; }
-    .log-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-    .log-text { flex: 1; color: #333; }
-    .log-status { font-size: .72rem; font-weight: 700; }
-
     /* ── Profile page ── */
     .profile-section {
       background: #fff;
-      border-radius: 20px;
+      border-radius: 24px;
       padding: 1.25rem 1.4rem;
-      box-shadow: 0 2px 12px rgba(0,0,0,.06);
+      box-shadow: 0 4px 20px rgba(0,0,0,.06);
       margin-bottom: 1rem;
     }
-    .profile-section-title { font-size: .72rem; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: .9rem; }
+    .profile-section-title {
+      font-size: .68rem; font-weight: 700; color: #9CA3AF;
+      text-transform: uppercase; letter-spacing: 1px; margin-bottom: .85rem;
+    }
     .profile-row-item {
       display: flex; align-items: center; justify-content: space-between;
-      padding: .65rem 0;
-      border-bottom: .5px solid #f5f5f5;
-      font-size: .85rem;
+      padding: .75rem 0;
+      border-bottom: 1px solid #F9FAFB;
     }
     .profile-row-item:last-child { border-bottom: none; }
-    .profile-row-label { color: #888; font-size: .78rem; }
-    .profile-row-value { font-weight: 700; color: #111; font-size: .85rem; }
+    .profile-row-key { font-size: .78rem; color: #9CA3AF; font-weight: 500; }
+    .profile-row-val { font-size: .82rem; font-weight: 700; color: #111827; }
     .logout-btn {
       width: 100%;
-      background: #fff0f0;
-      color: #c0392b;
-      border: 1.5px solid #ffcdd2;
-      border-radius: 14px;
+      background: #FFF5F5;
+      color: #C62828;
+      border: 1.5px solid #FFCDD2;
+      border-radius: 16px;
       padding: .9rem;
       font-size: .92rem;
       font-weight: 700;
       cursor: pointer;
       font-family: inherit;
-      margin-top: .5rem;
+      transition: background .15s;
     }
+    .logout-btn:active { background: #FFEBEE; }
 
     /* ── Toast ── */
     .toast {
       position: fixed;
-      bottom: 80px; left: 50%;
-      transform: translateX(-50%) translateY(80px);
-      background: #1A2332;
-      color: white;
-      padding: .7rem 1.25rem;
-      border-radius: 50px;
-      font-size: .82rem;
-      font-weight: 700;
+      bottom: 82px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(17,24,39,.92);
+      backdrop-filter: blur(8px);
+      color: #fff;
+      padding: .65rem 1.25rem;
+      border-radius: 99px;
+      font-size: .8rem;
+      font-weight: 600;
       z-index: 9999;
       white-space: nowrap;
-      box-shadow: 0 4px 16px rgba(0,0,0,.25);
-      transition: transform .35s cubic-bezier(0.34,1.56,0.64,1), opacity .35s;
+      box-shadow: 0 8px 24px rgba(0,0,0,.2);
+      transition: transform .35s cubic-bezier(.34,1.56,.64,1), opacity .3s;
       opacity: 0;
       pointer-events: none;
     }
     .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-
-    /* ── Sub alert ── */
-    .sub-alert {
-      background: #fff8e1;
-      border: 1.5px solid #ffd54f;
-      border-radius: 12px;
-      padding: .85rem 1rem;
-      margin-bottom: 1rem;
-      font-size: .78rem;
-      color: #7a5c00;
-      display: flex;
-      align-items: center;
-      gap: .6rem;
-    }
-    .sub-alert a { color: #1a7c3e; font-weight: 700; }
   </style>
 </head>
 <body>
 
   <!-- Top Bar -->
   <div class="top-bar">
-    <div class="top-bar-brand">♻️ NqiZbali</div>
-    <span class="top-bar-time" id="clock">--:--</span>
-    <div class="top-bar-avatar" id="top-avatar" onclick="switchTab('profile')">?</div>
+    <div class="top-brand">♻️ NqiZbali</div>
+    <div class="top-time" id="clock">--:--</div>
+    <div class="top-avatar" id="top-avatar" onclick="switchTab('profile')">?</div>
   </div>
 
-  <!-- ── PAGE: Home ── -->
+  <!-- PAGE: Home -->
   <div class="page active" id="page-home">
 
-    <!-- Profile hero -->
     <div class="profile-hero" id="profile-hero">
+      <div class="profile-hero-avatar" id="hero-avatar">?</div>
       <div class="profile-hero-name" id="hero-name">Loading...</div>
       <div class="profile-hero-addr" id="hero-addr">📍 Marrakech</div>
-      <div class="profile-hero-row">
-        <span class="profile-hero-pill" id="hero-sub-pill">⏳ Loading...</span>
-        <span class="profile-hero-pill" id="hero-qr-pill">🏷️ —</span>
+      <div class="profile-hero-tags">
+        <span class="profile-tag" id="hero-sub-tag">⏳ Loading...</span>
+        <span class="profile-tag" id="hero-qr-tag">🏷️ —</span>
       </div>
     </div>
 
-    <!-- Nearby alert -->
     <div class="nearby-alert" id="nearby-alert">
       <div class="nearby-icon">🚛</div>
       <div>
@@ -355,37 +426,39 @@
       </div>
     </div>
 
-    <!-- Sub alert -->
     <div class="sub-alert" id="sub-alert" style="display:none">
-      <span style="font-size:18px">⚠️</span>
-      <div>Subscription <strong>not active</strong>.
-      <a href="/syndic/login">Contact your syndic</a>.</div>
+      <span style="font-size:1.1rem;flex-shrink:0">⚠️</span>
+      <div>Building subscription <strong>not active</strong> —
+      <a href="/syndic/login">contact your syndic</a>.</div>
     </div>
 
-    <!-- Status card -->
     <div class="status-card">
-      <div class="status-card-title">Trash status</div>
-      <div class="status-row">
-        <span class="status-badge waiting" id="status-badge">⏳ Not ready</span>
+      <div class="status-card-label">Trash Status</div>
+      <div class="status-indicator">
+        <div class="status-dot-large waiting" id="status-dot"></div>
+        <div>
+          <div class="status-text-main" id="status-main">Not ready</div>
+          <div class="status-text-sub" id="status-sub">Signal when your trash is outside</div>
+        </div>
       </div>
-      <button class="big-action ready" id="action-btn" onclick="toggleTrash()">
+      <button class="big-btn ready" id="action-btn" onclick="toggleTrash()">
         🗑️ My trash is ready
       </button>
-      <div class="hint-text" id="hint-text">Tap to signal the collector your trash is ready.</div>
+      <div class="hint" id="hint-text">Tap to notify your collector</div>
     </div>
 
   </div>
 
-  <!-- ── PAGE: Map ── -->
+  <!-- PAGE: Map -->
   <div class="page" id="page-map">
-    <div style="background:#fff;border-radius:20px;padding:1.1rem;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-      <div style="font-size:.8rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:.75rem">Live Map</div>
+    <div class="map-section">
+      <div class="map-section-label">Live Map</div>
       <div class="map-wrap">
         <div id="client-map"></div>
-        <button class="map-btn" onclick="centerMap()">🎯</button>
+        <button class="map-fab" onclick="centerMap()">🎯</button>
       </div>
       <div class="legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#2E7D32"></div> My home</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#1a7c3e"></div> My home</div>
         <div class="legend-item"><div class="legend-dot" style="background:#00695C"></div> Collector</div>
         <div class="legend-item"><div class="legend-dot" style="background:#ffd54f"></div> Ready</div>
         <div class="legend-item"><div class="legend-dot" style="background:rgba(255,152,0,.4)"></div> 300m zone</div>
@@ -393,104 +466,103 @@
     </div>
   </div>
 
-  <!-- ── PAGE: History ── -->
+  <!-- PAGE: History -->
   <div class="page" id="page-history">
-    <div class="history-card">
-      <div class="history-title">Collection History</div>
+    <div class="history-section" style="margin-bottom:1rem">
+      <div class="history-label">Collection History</div>
       <div id="history-list">
-        <div style="text-align:center;color:#aaa;padding:2rem;font-size:.85rem">Loading...</div>
+        <div style="text-align:center;color:#9CA3AF;padding:2rem;font-size:.85rem">Loading...</div>
       </div>
     </div>
-    <!-- QR -->
-    <div class="qr-card">
-      <svg width="80" height="80" viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg">
-        <rect width="90" height="90" rx="6" fill="white"/>
-        <rect x="5" y="5" width="30" height="30" rx="2" fill="none" stroke="#2E7D32" stroke-width="2.5"/>
-        <rect x="11" y="11" width="18" height="18" rx="1" fill="#2E7D32"/>
-        <rect x="55" y="5" width="30" height="30" rx="2" fill="none" stroke="#2E7D32" stroke-width="2.5"/>
-        <rect x="61" y="11" width="18" height="18" rx="1" fill="#2E7D32"/>
-        <rect x="5" y="55" width="30" height="30" rx="2" fill="none" stroke="#2E7D32" stroke-width="2.5"/>
-        <rect x="11" y="61" width="18" height="18" rx="1" fill="#2E7D32"/>
-        <rect x="42" y="7" width="5" height="5" fill="#2E7D32"/>
-        <rect x="42" y="14" width="5" height="5" fill="#2E7D32"/>
-        <rect x="42" y="28" width="5" height="5" fill="#2E7D32"/>
-        <rect x="55" y="42" width="5" height="5" fill="#2E7D32"/>
-        <rect x="63" y="42" width="5" height="5" fill="#2E7D32"/>
-        <rect x="71" y="42" width="5" height="5" fill="#2E7D32"/>
-        <rect x="42" y="42" width="5" height="5" fill="#2E7D32"/>
-        <rect x="42" y="58" width="5" height="5" fill="#2E7D32"/>
-        <rect x="42" y="74" width="5" height="5" fill="#2E7D32"/>
+    <div class="qr-section">
+      <svg width="72" height="72" viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg">
+        <rect width="90" height="90" rx="8" fill="#f0faf2"/>
+        <rect x="5" y="5" width="30" height="30" rx="2" fill="none" stroke="#1a7c3e" stroke-width="3"/>
+        <rect x="11" y="11" width="18" height="18" rx="1" fill="#1a7c3e"/>
+        <rect x="55" y="5" width="30" height="30" rx="2" fill="none" stroke="#1a7c3e" stroke-width="3"/>
+        <rect x="61" y="11" width="18" height="18" rx="1" fill="#1a7c3e"/>
+        <rect x="5" y="55" width="30" height="30" rx="2" fill="none" stroke="#1a7c3e" stroke-width="3"/>
+        <rect x="11" y="61" width="18" height="18" rx="1" fill="#1a7c3e"/>
+        <rect x="42" y="7" width="5" height="5" fill="#1a7c3e"/>
+        <rect x="42" y="14" width="5" height="5" fill="#1a7c3e"/>
+        <rect x="42" y="28" width="5" height="5" fill="#1a7c3e"/>
+        <rect x="55" y="42" width="5" height="5" fill="#1a7c3e"/>
+        <rect x="63" y="42" width="5" height="5" fill="#1a7c3e"/>
+        <rect x="71" y="42" width="5" height="5" fill="#1a7c3e"/>
+        <rect x="42" y="42" width="5" height="5" fill="#1a7c3e"/>
+        <rect x="42" y="58" width="5" height="5" fill="#1a7c3e"/>
+        <rect x="42" y="74" width="5" height="5" fill="#1a7c3e"/>
       </svg>
       <div>
-        <div class="qr-code-text" id="qr-code-text">—</div>
-        <div class="qr-addr-text" id="qr-addr">—</div>
-        <button class="btn-sm" onclick="showToast('📄 QR ready!')">📥 Download QR</button>
+        <div class="qr-info-code" id="qr-code">—</div>
+        <div class="qr-info-addr" id="qr-addr">—</div>
+        <button class="qr-dl-btn" onclick="showToast('📄 QR ready!')">📥 Download QR</button>
       </div>
     </div>
   </div>
 
-  <!-- ── PAGE: Profile ── -->
+  <!-- PAGE: Profile -->
   <div class="page" id="page-profile">
     <div class="profile-section">
-      <div class="profile-section-title">My Info</div>
+      <div class="profile-section-title">My Account</div>
       <div class="profile-row-item">
-        <span class="profile-row-label">Name</span>
-        <span class="profile-row-value" id="info-name">—</span>
+        <span class="profile-row-key">Name</span>
+        <span class="profile-row-val" id="info-name">—</span>
       </div>
       <div class="profile-row-item">
-        <span class="profile-row-label">Address</span>
-        <span class="profile-row-value" id="info-addr">—</span>
+        <span class="profile-row-key">Address</span>
+        <span class="profile-row-val" id="info-addr">—</span>
       </div>
       <div class="profile-row-item">
-        <span class="profile-row-label">Neighborhood</span>
-        <span class="profile-row-value" id="info-hood">—</span>
+        <span class="profile-row-key">Neighborhood</span>
+        <span class="profile-row-val" id="info-hood">—</span>
       </div>
       <div class="profile-row-item">
-        <span class="profile-row-label">QR Code</span>
-        <span class="profile-row-value" id="info-qr" style="color:#1a7c3e;font-family:monospace">—</span>
+        <span class="profile-row-key">QR Code</span>
+        <span class="profile-row-val" id="info-qr" style="color:#1a7c3e;font-family:monospace">—</span>
       </div>
       <div class="profile-row-item">
-        <span class="profile-row-label">Subscription</span>
-        <span class="profile-row-value" id="info-sub">—</span>
+        <span class="profile-row-key">Subscription</span>
+        <span class="profile-row-val" id="info-sub">—</span>
       </div>
     </div>
-
     <div class="profile-section">
-      <div class="profile-section-title">App</div>
+      <div class="profile-section-title">App Info</div>
       <div class="profile-row-item">
-        <span class="profile-row-label">Version</span>
-        <span class="profile-row-value">NqiZbali v1.0</span>
+        <span class="profile-row-key">Version</span>
+        <span class="profile-row-val">NqiZbali v2.0</span>
       </div>
       <div class="profile-row-item">
-        <span class="profile-row-label">Location</span>
-        <span class="profile-row-value">Marrakech, Morocco</span>
+        <span class="profile-row-key">City</span>
+        <span class="profile-row-val">Marrakech, Morocco 🇲🇦</span>
       </div>
     </div>
-
-    <button class="logout-btn" onclick="window.location.href='/resident/logout'">🚪 Log out</button>
+    <button class="logout-btn" onclick="window.location.href='/resident/logout'">
+      🚪 Log out
+    </button>
   </div>
 
-  <!-- Bottom Navigation -->
+  <!-- Bottom Nav -->
   <nav class="bottom-nav">
     <button class="nav-item active" id="nav-home" onclick="switchTab('home')">
-      <span class="nav-icon">🏠</span>
-      <div class="nav-dot" id="dot-home"></div>
-      <span class="nav-label">Home</span>
+      <div class="nav-indicator" id="ind-home"></div>
+      <div class="nav-icon">🏠</div>
+      <div class="nav-label">Home</div>
     </button>
     <button class="nav-item" id="nav-map" onclick="switchTab('map')">
-      <span class="nav-icon">🗺️</span>
-      <div class="nav-dot" style="opacity:0" id="dot-map"></div>
-      <span class="nav-label">Map</span>
+      <div class="nav-indicator" id="ind-map"></div>
+      <div class="nav-icon">🗺️</div>
+      <div class="nav-label">Map</div>
     </button>
     <button class="nav-item" id="nav-history" onclick="switchTab('history')">
-      <span class="nav-icon">📋</span>
-      <div class="nav-dot" style="opacity:0" id="dot-history"></div>
-      <span class="nav-label">History</span>
+      <div class="nav-indicator" id="ind-history"></div>
+      <div class="nav-icon">📋</div>
+      <div class="nav-label">History</div>
     </button>
     <button class="nav-item" id="nav-profile" onclick="switchTab('profile')">
-      <span class="nav-icon">👤</span>
-      <div class="nav-dot" style="opacity:0" id="dot-profile"></div>
-      <span class="nav-label">Profile</span>
+      <div class="nav-indicator" id="ind-profile"></div>
+      <div class="nav-icon">👤</div>
+      <div class="nav-label">Profile</div>
     </button>
   </nav>
 
@@ -499,12 +571,12 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
   // ── Clock ──
-  function updateClock() {
+  function tick() {
     const n = new Date();
     document.getElementById('clock').textContent =
       n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0');
   }
-  updateClock(); setInterval(updateClock, 10000);
+  tick(); setInterval(tick, 10000);
 
   // ── Toast ──
   function showToast(msg) {
@@ -513,124 +585,115 @@
     setTimeout(() => t.classList.remove('show'), 2800);
   }
 
-  // ── Tab switching ──
-  let currentTab = 'home';
-  let mapInited  = false;
-
+  // ── Tabs ──
+  let mapInited = false;
   function switchTab(tab) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => {
       n.classList.remove('active');
-      n.querySelector('.nav-dot').style.opacity = '0';
     });
     document.getElementById('page-'+tab).classList.add('active');
     document.getElementById('nav-'+tab).classList.add('active');
-    document.getElementById('dot-'+tab).style.opacity = '1';
-    currentTab = tab;
     if (tab === 'map' && !mapInited && currentClient) {
-      setTimeout(() => { initMap(currentClient); mapInited = true; }, 100);
+      setTimeout(() => { initMap(currentClient); mapInited = true; }, 80);
     }
+    if (tab === 'history' && currentClient) loadHistory(currentClient.id);
   }
 
   // ── State ──
   let currentClient   = null;
-  let map             = null;
-  let myMarker        = null;
-  let collectorMarker = null;
-  let trashReady      = false;
-  let nearbyAlerted   = false;
+  let map = null, myMarker = null, collectorMarker = null;
+  let trashReady = false, nearbyAlerted = false;
 
-  // ── Distance ──
-  function getDistance(lat1,lng1,lat2,lng2) {
-    const R=6371000, d1=lat1*Math.PI/180, d2=lat2*Math.PI/180;
-    const dl=(lat2-lat1)*Math.PI/180, dg=(lng2-lng1)*Math.PI/180;
+  function dist(lat1,lng1,lat2,lng2) {
+    const R=6371000,d1=lat1*Math.PI/180,d2=lat2*Math.PI/180;
+    const dl=(lat2-lat1)*Math.PI/180,dg=(lng2-lng1)*Math.PI/180;
     const a=Math.sin(dl/2)**2+Math.cos(d1)*Math.cos(d2)*Math.sin(dg/2)**2;
     return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
   }
 
   // ── Load data ──
-  async function loadMyData() {
+  async function loadMe() {
     try {
       const res = await fetch('/api/client/me');
-      if (res.status===401) { window.location.href='/resident/login'; return; }
+      if (res.status===401) { location.href='/resident/login'; return; }
       currentClient = await res.json();
-      updateUI(currentClient);
-      loadHistory(currentClient.id);
-      pollCollector();
+      renderUI(currentClient);
     } catch(e) { console.error(e); }
   }
 
-  function updateUI(c) {
-    // Top avatar
+  function renderUI(c) {
     const init = c.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-    document.getElementById('top-avatar').textContent = init;
-
-    // Hero
-    document.getElementById('hero-name').textContent = c.name;
-    document.getElementById('hero-addr').textContent = '📍 '+c.address+', '+c.neighborhood;
-    document.getElementById('hero-qr-pill').textContent = '🏷️ '+c.qr_code;
-
-    // QR
-    document.getElementById('qr-code-text').textContent = c.qr_code;
-    document.getElementById('qr-addr').textContent = c.address+' · '+c.neighborhood;
-
-    // Profile page
-    document.getElementById('info-name').textContent = c.name;
-    document.getElementById('info-addr').textContent = c.address;
-    document.getElementById('info-hood').textContent = c.neighborhood;
-    document.getElementById('info-qr').textContent   = c.qr_code;
+    document.getElementById('top-avatar').textContent  = init;
+    document.getElementById('hero-avatar').textContent = init;
+    document.getElementById('hero-name').textContent   = c.name;
+    document.getElementById('hero-addr').textContent   = '📍 '+c.address+', '+c.neighborhood;
+    document.getElementById('hero-qr-tag').textContent = '🏷️ '+c.qr_code;
+    document.getElementById('qr-code').textContent     = c.qr_code;
+    document.getElementById('qr-addr').textContent     = c.address+' · '+c.neighborhood;
+    document.getElementById('info-name').textContent   = c.name;
+    document.getElementById('info-addr').textContent   = c.address;
+    document.getElementById('info-hood').textContent   = c.neighborhood;
+    document.getElementById('info-qr').textContent     = c.qr_code;
 
     if (c.subscription_active) {
-      document.getElementById('hero-sub-pill').textContent = '✅ Subscription active';
-      document.getElementById('hero-sub-pill').className   = 'profile-hero-pill green';
+      document.getElementById('hero-sub-tag').textContent  = '✅ Active';
+      document.getElementById('hero-sub-tag').className    = 'profile-tag green';
       document.getElementById('info-sub').textContent      = '✅ Active';
       document.getElementById('sub-alert').style.display   = 'none';
       document.getElementById('action-btn').disabled       = false;
       document.getElementById('action-btn').style.opacity  = '1';
     } else {
-      document.getElementById('hero-sub-pill').textContent = '❌ Not active';
-      document.getElementById('hero-sub-pill').className   = 'profile-hero-pill red';
+      document.getElementById('hero-sub-tag').textContent  = '❌ Inactive';
+      document.getElementById('hero-sub-tag').className    = 'profile-tag red';
       document.getElementById('info-sub').textContent      = '❌ Inactive';
       document.getElementById('sub-alert').style.display   = 'flex';
       document.getElementById('action-btn').disabled       = true;
-      document.getElementById('action-btn').style.opacity  = '0.5';
+      document.getElementById('action-btn').style.opacity  = '0.45';
     }
     trashReady = c.trash_ready;
-    updateActionBtn();
+    renderBtn();
+    pollCollector();
+    setInterval(pollCollector, 5000);
   }
 
-  function updateActionBtn() {
-    const btn   = document.getElementById('action-btn');
-    const badge = document.getElementById('status-badge');
-    const hint  = document.getElementById('hint-text');
+  function renderBtn() {
+    const btn  = document.getElementById('action-btn');
+    const dot  = document.getElementById('status-dot');
+    const main = document.getElementById('status-main');
+    const sub  = document.getElementById('status-sub');
+    const hint = document.getElementById('hint-text');
     if (trashReady) {
-      btn.className = 'big-action cancel';
-      btn.innerHTML = '✅ Trash signalled — Cancel';
-      badge.className = 'status-badge ready';
-      badge.textContent = '✅ Ready for collection';
-      hint.textContent = 'Your collector has been notified. Tap to cancel.';
+      btn.className = 'big-btn cancel';
+      btn.innerHTML = '✅ Trash signalled — tap to cancel';
+      dot.className = 'status-dot-large ready';
+      main.textContent = 'Ready for collection';
+      sub.textContent  = 'Collector has been notified';
+      hint.textContent = 'Tap to cancel the signal';
     } else {
-      btn.className = 'big-action ready';
+      btn.className = 'big-btn ready';
       btn.innerHTML = '🗑️ My trash is ready';
-      badge.className = 'status-badge waiting';
-      badge.textContent = '⏳ Not ready';
-      hint.textContent = 'Tap to signal the collector your trash is ready.';
+      dot.className = 'status-dot-large waiting';
+      main.textContent = 'Not ready';
+      sub.textContent  = 'Signal when your trash is outside';
+      hint.textContent = 'Tap to notify your collector';
     }
   }
 
   async function toggleTrash() {
-    if (!currentClient) return;
-    if (!currentClient.subscription_active) { showToast('⚠️ Subscription not active'); return; }
+    if (!currentClient || !currentClient.subscription_active) {
+      showToast('⚠️ Subscription not active'); return;
+    }
     try {
-      const res  = await fetch('/api/trash_ready/'+currentClient.id, {method:'POST'});
-      const data = await res.json();
-      if (data.success) {
+      const r = await fetch('/api/trash_ready/'+currentClient.id, {method:'POST'});
+      const d = await r.json();
+      if (d.success) {
         trashReady = !trashReady;
-        updateActionBtn();
+        renderBtn();
         updateMapMarker();
-        showToast(trashReady ? '✅ Collector notified!' : '↩️ Cancelled');
+        showToast(trashReady ? '✅ Collector notified!' : '↩️ Signal cancelled');
       }
-    } catch(e) { showToast('❌ Error'); }
+    } catch(e) { showToast('❌ Error — try again'); }
   }
 
   // ── History ──
@@ -640,16 +703,17 @@
       const data = await res.json();
       const list = document.getElementById('history-list');
       if (!data.length) {
-        list.innerHTML = '<div style="text-align:center;color:#aaa;padding:2rem;font-size:.85rem">No collections yet.</div>';
+        list.innerHTML = '<div style="text-align:center;color:#9CA3AF;padding:2rem;font-size:.85rem">No collections yet</div>';
         return;
       }
-      list.innerHTML = data.map(c=>`
+      list.innerHTML = data.map(c => `
         <div class="log-item">
-          <div class="log-dot" style="background:${c.status==='collected'?'#4CAF50':'#C62828'}"></div>
-          <div class="log-text">${c.date} · ${c.collector}</div>
-          <div class="log-status" style="color:${c.status==='collected'?'#2E7D32':'#C62828'}">
-            ${c.status==='collected'?'✓ Collected':'⚠️ Violation'}
+          <div class="log-icon ${c.status}">${c.status==='collected'?'✅':'⚠️'}</div>
+          <div>
+            <div class="log-text-main">${c.collector}</div>
+            <div class="log-text-sub">${c.date}</div>
           </div>
+          <span class="log-badge ${c.status}">${c.status==='collected'?'Collected':'Violation'}</span>
         </div>`).join('');
     } catch(e) {}
   }
@@ -661,51 +725,42 @@
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution:'© OpenStreetMap', maxZoom:19
     }).addTo(map);
-
     const homeIcon = L.divIcon({
-      html:`<div style="background:#2E7D32;color:white;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,.3);border:3px solid white">🏠</div>`,
+      html:`<div style="background:#1a7c3e;color:white;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 3px 12px rgba(0,0,0,.3);border:3px solid white">🏠</div>`,
       className:'', iconSize:[36,36], iconAnchor:[18,18]
     });
-    myMarker = L.marker([c.lat,c.lng],{icon:homeIcon}).addTo(map)
-      .bindPopup('<b>'+c.name+'</b><br>'+c.address);
-
-    L.circle([c.lat,c.lng],{radius:80,color:'#2E7D32',fillColor:'#2E7D32',fillOpacity:.08,weight:1}).addTo(map);
-    L.circle([c.lat,c.lng],{radius:300,color:'#ff9800',fillColor:'#ff9800',fillOpacity:.04,weight:1,dashArray:'6,6'}).addTo(map);
+    myMarker = L.marker([c.lat,c.lng],{icon:homeIcon}).addTo(map).bindPopup('<b>'+c.name+'</b><br>'+c.address);
+    L.circle([c.lat,c.lng],{radius:80,color:'#1a7c3e',fillColor:'#1a7c3e',fillOpacity:.08,weight:1}).addTo(map);
+    L.circle([c.lat,c.lng],{radius:300,color:'#FF9800',fillColor:'#FF9800',fillOpacity:.04,weight:1.5,dashArray:'6,6'}).addTo(map);
   }
 
-  // ── Collector polling ──
   async function pollCollector() {
     try {
       const res  = await fetch('/api/collector/location');
       const data = await res.json();
       if (!data.active || !currentClient) return;
-
       if (map) {
-        const truckIcon = L.divIcon({
-          html:`<div style="background:#00695C;color:white;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,.3);border:3px solid white">🚛</div>`,
+        const ti = L.divIcon({
+          html:`<div style="background:#00695C;color:white;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 3px 12px rgba(0,0,0,.3);border:3px solid white">🚛</div>`,
           className:'', iconSize:[40,40], iconAnchor:[20,20]
         });
         if (collectorMarker) collectorMarker.setLatLng([data.lat,data.lng]);
-        else collectorMarker = L.marker([data.lat,data.lng],{icon:truckIcon}).addTo(map).bindPopup('<b>Collector</b><br>Live GPS');
+        else collectorMarker = L.marker([data.lat,data.lng],{icon:ti}).addTo(map).bindPopup('<b>Collector</b><br>Live GPS');
       }
-
-      const dist = getDistance(currentClient.lat, currentClient.lng, data.lat, data.lng);
-      const alert = document.getElementById('nearby-alert');
-      if (dist <= 300) {
-        alert.style.display = 'flex';
-        document.getElementById('nearby-desc').textContent = `Collector is ${Math.round(dist)}m away — put your trash out now!`;
-        if (!nearbyAlerted) { nearbyAlerted=true; showToast('🚛 Collector nearby! '+Math.round(dist)+'m'); }
-      } else {
-        alert.style.display = 'none';
-        if (dist > 500) nearbyAlerted = false;
-      }
+      const d = dist(currentClient.lat,currentClient.lng,data.lat,data.lng);
+      const al = document.getElementById('nearby-alert');
+      if (d<=300) {
+        al.style.display='flex';
+        document.getElementById('nearby-desc').textContent=`${Math.round(d)}m away — put your trash out now!`;
+        if (!nearbyAlerted) { nearbyAlerted=true; showToast('🚛 Collector is '+Math.round(d)+'m away!'); }
+      } else { al.style.display='none'; if(d>500) nearbyAlerted=false; }
     } catch(e) {}
   }
 
   function updateMapMarker() {
     if (!myMarker) return;
     const icon = L.divIcon({
-      html:`<div style="background:${trashReady?'#ffd54f':'#2E7D32'};color:${trashReady?'#111':'white'};border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,.3);border:3px solid white">${trashReady?'🗑️':'🏠'}</div>`,
+      html:`<div style="background:${trashReady?'#ffd54f':'#1a7c3e'};color:${trashReady?'#111':'white'};border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 3px 12px rgba(0,0,0,.3);border:3px solid white">${trashReady?'🗑️':'🏠'}</div>`,
       className:'', iconSize:[36,36], iconAnchor:[18,18]
     });
     myMarker.setIcon(icon);
@@ -715,8 +770,7 @@
     if (map && currentClient) map.flyTo([currentClient.lat,currentClient.lng],16,{duration:.8});
   }
 
-  loadMyData();
-  setInterval(pollCollector, 5000);
+  loadMe();
   </script>
 </body>
 </html>
