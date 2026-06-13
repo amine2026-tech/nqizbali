@@ -1,78 +1,348 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>NqiZbali — Smart Trash Collection</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <meta name="theme-color" content="#0d4f29">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="NqiZbali">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192.png') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Inter',sans-serif;background:linear-gradient(160deg,#0d4f29 0%,#1a7c3e 50%,#0d4f29 100%);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1rem}
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    .logo{font-size:3.5rem;margin-bottom:.5rem}
-    .brand{font-size:2rem;font-weight:800;color:#fff;letter-spacing:-1px}
-    .tagline{font-size:.95rem;color:rgba(255,255,255,.7);margin-bottom:3rem;margin-top:.4rem}
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0d4f29;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
 
-    .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;width:100%;max-width:780px}
+    /* ── Splash Screen ── */
+    #splash {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(160deg, #0d4f29 0%, #1a7c3e 60%, #25a25a 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    #splash.hidden {
+      opacity: 0;
+      transform: scale(1.05);
+      pointer-events: none;
+    }
+    .splash-logo {
+      font-size: 5rem;
+      margin-bottom: 1rem;
+      animation: bounce 1s ease infinite alternate;
+    }
+    @keyframes bounce {
+      from { transform: translateY(0); }
+      to   { transform: translateY(-12px); }
+    }
+    .splash-title {
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: -1px;
+    }
+    .splash-sub {
+      font-size: .9rem;
+      color: rgba(255,255,255,.7);
+      margin-top: .4rem;
+    }
+    .splash-bar {
+      width: 120px;
+      height: 4px;
+      background: rgba(255,255,255,.2);
+      border-radius: 99px;
+      margin-top: 2.5rem;
+      overflow: hidden;
+    }
+    .splash-bar-fill {
+      height: 100%;
+      background: #fff;
+      border-radius: 99px;
+      animation: load 1.8s ease forwards;
+    }
+    @keyframes load {
+      from { width: 0; }
+      to   { width: 100%; }
+    }
+    .splash-tagline {
+      font-size: .75rem;
+      color: rgba(255,255,255,.4);
+      margin-top: 1rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
 
-    .role-card{background:#fff;border-radius:20px;padding:2rem 1.5rem;text-align:center;text-decoration:none;transition:transform .2s,box-shadow .2s;box-shadow:0 4px 24px rgba(0,0,0,.15);display:flex;flex-direction:column;align-items:center;gap:.75rem}
-    .role-card:hover{transform:translateY(-4px);box-shadow:0 8px 32px rgba(0,0,0,.25)}
-    .role-card:active{transform:scale(.98)}
+    /* ── Main Page ── */
+    #main {
+      min-height: 100vh;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+    #main.visible { opacity: 1; }
 
-    .role-icon{font-size:2.8rem;line-height:1}
-    .role-title{font-size:1.1rem;font-weight:800;color:#111}
-    .role-desc{font-size:.8rem;color:#888;line-height:1.5}
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(160deg, #0d4f29 0%, #1a7c3e 100%);
+      padding: 3rem 1.5rem 2.5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      width: 300px; height: 300px;
+      background: rgba(255,255,255,.04);
+      border-radius: 50%;
+      top: -100px; right: -80px;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      width: 200px; height: 200px;
+      background: rgba(255,255,255,.04);
+      border-radius: 50%;
+      bottom: -60px; left: -40px;
+    }
+    .hero-logo {
+      font-size: 4rem;
+      margin-bottom: .75rem;
+      display: block;
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-8px); }
+    }
+    .hero-title {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: -1px;
+      line-height: 1.1;
+    }
+    .hero-title span { color: #4CAF50; }
+    .hero-sub {
+      font-size: .88rem;
+      color: rgba(255,255,255,.7);
+      margin-top: .5rem;
+      line-height: 1.5;
+    }
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-top: 1.75rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255,255,255,.1);
+    }
+    .hero-stat-val  { font-size: 1.4rem; font-weight: 900; color: #fff; }
+    .hero-stat-lbl  { font-size: .7rem; color: rgba(255,255,255,.5); margin-top: .15rem; }
 
-    .role-card.resident .role-badge{background:#e6f4ff;color:#0c6cbf}
-    .role-card.collector .role-badge{background:#fff8e1;color:#7a5c00}
-    .role-card.syndic .role-badge{background:#f0faf4;color:#0d6e35}
+    /* ── Role Cards ── */
+    .roles {
+      padding: 1.75rem 1.25rem 2rem;
+      background: #f0f9f0;
+      min-height: calc(100vh - 280px);
+    }
+    .roles-title {
+      font-size: .8rem;
+      font-weight: 700;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    .role-cards { display: flex; flex-direction: column; gap: 1rem; }
 
-    .role-badge{border-radius:20px;padding:.3rem .9rem;font-size:.72rem;font-weight:700;margin-top:.25rem}
+    .role-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 1.4rem 1.5rem;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 1.1rem;
+      box-shadow: 0 2px 16px rgba(0,0,0,.07);
+      border: 1.5px solid transparent;
+      transition: transform .2s, box-shadow .2s, border-color .2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .role-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+      border-radius: 4px 0 0 4px;
+    }
+    .role-card:active { transform: scale(.98); }
 
-    .footer{color:rgba(255,255,255,.4);font-size:.75rem;margin-top:2.5rem;text-align:center}
+    .role-card.resident::before  { background: #2196F3; }
+    .role-card.collector::before { background: #FF9800; }
+    .role-card.syndic::before    { background: #1a7c3e; }
 
-    @media(max-width:600px){
-      .cards{grid-template-columns:1fr;max-width:340px}
-      .brand{font-size:1.6rem}
+    .role-card.resident:active  { border-color: #2196F3; background: #f0f8ff; }
+    .role-card.collector:active { border-color: #FF9800; background: #fff8f0; }
+    .role-card.syndic:active    { border-color: #1a7c3e; background: #f0faf4; }
+
+    .role-icon-wrap {
+      width: 56px; height: 56px;
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.75rem;
+      flex-shrink: 0;
+    }
+    .resident  .role-icon-wrap { background: #e3f2fd; }
+    .collector .role-icon-wrap { background: #fff3e0; }
+    .syndic    .role-icon-wrap { background: #e8f5e9; }
+
+    .role-info { flex: 1; }
+    .role-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #111;
+      margin-bottom: .2rem;
+    }
+    .role-desc {
+      font-size: .78rem;
+      color: #888;
+      line-height: 1.4;
+    }
+    .role-arrow {
+      font-size: 1.1rem;
+      color: #ccc;
+      flex-shrink: 0;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      background: #f0f9f0;
+      padding: 1rem 1.5rem 2rem;
+      text-align: center;
+    }
+    .footer-text {
+      font-size: .72rem;
+      color: #bbb;
+    }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-top: .5rem;
+    }
+    .footer-links a {
+      font-size: .72rem;
+      color: #1a7c3e;
+      text-decoration: none;
+      font-weight: 600;
     }
   </style>
 </head>
 <body>
 
-  <div class="logo">♻️</div>
-  <div class="brand">NqiZbali</div>
-  <div class="tagline">Smart trash collection · Marrakech</div>
+  <!-- Splash Screen -->
+  <div id="splash">
+    <div class="splash-logo">♻️</div>
+    <div class="splash-title">NqiZbali</div>
+    <div class="splash-sub">Smart trash collection · Marrakech</div>
+    <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+    <div class="splash-tagline">Loading...</div>
+  </div>
 
-  <div class="cards">
+  <!-- Main Page -->
+  <div id="main">
 
-    <!-- Resident -->
-    <a class="role-card resident" href="/client">
-      <div class="role-icon">🏠</div>
-      <div class="role-title">I am a Resident</div>
-      <div class="role-desc">Signal when your trash is ready and track your collection</div>
-      <div class="role-badge">Resident access</div>
-    </a>
+    <!-- Hero -->
+    <div class="hero">
+      <span class="hero-logo">♻️</span>
+      <div class="hero-title">NqiZ<span>bali</span></div>
+      <div class="hero-sub">Smart trash collection for Marrakech<br>جمع الزبالة الذكية بمراكش</div>
+      <div class="hero-stats">
+        <div>
+          <div class="hero-stat-val">60 DH</div>
+          <div class="hero-stat-lbl">Per apartment/month</div>
+        </div>
+        <div>
+          <div class="hero-stat-val">24/7</div>
+          <div class="hero-stat-lbl">Live tracking</div>
+        </div>
+        <div>
+          <div class="hero-stat-val">100%</div>
+          <div class="hero-stat-lbl">Digital</div>
+        </div>
+      </div>
+    </div>
 
-    <!-- Collector -->
-    <a class="role-card collector" href="/collector">
-      <div class="role-icon">🚛</div>
-      <div class="role-title">I am a Collector</div>
-      <div class="role-desc">See ready buildings, scan QR codes and confirm collections</div>
-      <div class="role-badge">Collector access</div>
-    </a>
+    <!-- Role Cards -->
+    <div class="roles">
+      <div class="roles-title">Who are you?</div>
+      <div class="role-cards">
 
-    <!-- Syndic -->
-    <a class="role-card syndic" href="/syndic/login">
-      <div class="role-icon">🏢</div>
-      <div class="role-title">I am a Syndic</div>
-      <div class="role-desc">Manage your buildings and pay the monthly subscription</div>
-      <div class="role-badge">Syndic portal</div>
-    </a>
+        <a class="role-card resident" href="/resident/login">
+          <div class="role-icon-wrap">🏠</div>
+          <div class="role-info">
+            <div class="role-title">I am a Resident</div>
+            <div class="role-desc">Signal your trash · Track collection · View history</div>
+          </div>
+          <div class="role-arrow">›</div>
+        </a>
+
+        <a class="role-card collector" href="/collector">
+          <div class="role-icon-wrap">🚛</div>
+          <div class="role-info">
+            <div class="role-title">I am a Collector</div>
+            <div class="role-desc">Live map · QR scan · Confirm collections</div>
+          </div>
+          <div class="role-arrow">›</div>
+        </a>
+
+        <a class="role-card syndic" href="/syndic/login">
+          <div class="role-icon-wrap">🏢</div>
+          <div class="role-info">
+            <div class="role-title">I am a Syndic</div>
+            <div class="role-desc">Manage buildings · Pay subscription · View reports</div>
+          </div>
+          <div class="role-arrow">›</div>
+        </a>
+
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <div class="footer-text">NqiZbali · Marrakech 2026</div>
+      <div class="footer-links">
+        <a href="/admin/login">Admin</a>
+        <a href="/syndic/register">Register as Syndic</a>
+      </div>
+    </div>
 
   </div>
 
-  <div class="footer">
-    nqizbali.onrender.com · Marrakech 2026
-  </div>
+  <script>
+    // Show splash for 2 seconds then reveal main
+    setTimeout(() => {
+      document.getElementById('splash').classList.add('hidden');
+      document.getElementById('main').classList.add('visible');
+    }, 2000);
 
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+  </script>
 </body>
 </html>
