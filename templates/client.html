@@ -71,6 +71,25 @@
       font-weight: 700;
       margin-bottom: 14px;
     }
+    /* Nearby alert */
+    .nearby-alert {
+      background: #fff3e0;
+      border: 2px solid #ff9800;
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      animation: pulse-border 1s infinite;
+    }
+    @keyframes pulse-border {
+      0%,100% { border-color: #ff9800; }
+      50%      { border-color: #e65100; }
+    }
+    .nearby-alert-icon { font-size: 2rem; flex-shrink: 0; }
+    .nearby-alert-title { font-size: .9rem; font-weight: 800; color: #e65100; }
+    .nearby-alert-desc  { font-size: .78rem; color: #7a5c00; margin-top: .2rem; }
     .logout-btn {
       display: block;
       text-align: center;
@@ -122,6 +141,15 @@
       Contact your syndic or <a href="/syndic/login">access the syndic portal</a>.</div>
     </div>
 
+    <!-- Collector nearby alert -->
+    <div class="nearby-alert" id="nearby-alert">
+      <div class="nearby-alert-icon">🚛</div>
+      <div>
+        <div class="nearby-alert-title">Collector is nearby!</div>
+        <div class="nearby-alert-desc" id="nearby-dist">The collector is less than 300m away. Put your trash out now!</div>
+      </div>
+    </div>
+
     <!-- Action Card -->
     <div class="card">
       <div class="card-title">My trash status</div>
@@ -148,7 +176,7 @@
       </div>
       <div class="legend">
         <div class="legend-item"><div class="legend-dot" style="background:#2E7D32"></div> My home</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#00695C"></div> Collector</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#00695C"></div> Collector (live GPS)</div>
         <div class="legend-item"><div class="legend-dot" style="background:#ffd54f"></div> Trash ready</div>
       </div>
     </div>
@@ -185,7 +213,7 @@
       </div>
     </div>
 
-    <!-- Collection History -->
+    <!-- History -->
     <div class="card">
       <div class="card-title">📋 Collection history</div>
       <div id="history-list">
@@ -193,7 +221,6 @@
       </div>
     </div>
 
-    <!-- Logout -->
     <a class="logout-btn" href="/resident/logout">🚪 Log out</a>
 
   </div>
@@ -211,7 +238,6 @@ function updateClock() {
 }
 updateClock(); setInterval(updateClock, 10000);
 
-// ── Toast ──
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
@@ -219,20 +245,30 @@ function showToast(msg) {
 }
 
 // ── State ──
-let currentClient = null;
-let map = null;
-let myMarker = null;
+let currentClient   = null;
+let map             = null;
+let myMarker        = null;
 let collectorMarker = null;
-let trashReady = false;
+let trashReady      = false;
+let nearbyAlerted   = false;
 
-// ── Load MY data ──
+// ── Distance helper (Haversine) ──
+function getDistanceMeters(lat1, lng1, lat2, lng2) {
+  const R  = 6371000;
+  const d1 = lat1 * Math.PI/180;
+  const d2 = lat2 * Math.PI/180;
+  const dl = (lat2-lat1) * Math.PI/180;
+  const dg = (lng2-lng1) * Math.PI/180;
+  const a  = Math.sin(dl/2)*Math.sin(dl/2) +
+             Math.cos(d1)*Math.cos(d2)*Math.sin(dg/2)*Math.sin(dg/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+// ── Load my data ──
 async function loadMyData() {
   try {
     const res = await fetch('/api/client/me');
-    if (res.status === 401) {
-      window.location.href = '/resident/login';
-      return;
-    }
+    if (res.status === 401) { window.location.href = '/resident/login'; return; }
     currentClient = await res.json();
     updateUI(currentClient);
     if (!map) initMap(currentClient);
@@ -250,21 +286,20 @@ function updateUI(c) {
   document.getElementById('qr-addr').textContent         = c.address + ' · ' + c.neighborhood;
 
   if (c.subscription_active) {
-    document.getElementById('sub-badge').innerHTML   = '<span class="pulse-dot"></span> Active';
-    document.getElementById('sub-badge').className   = 'badge badge-green';
-    document.getElementById('sub-info').textContent  = '🏢 Building subscription active · Collection unlocked';
+    document.getElementById('sub-badge').innerHTML  = '<span class="pulse-dot"></span> Active';
+    document.getElementById('sub-badge').className  = 'badge badge-green';
+    document.getElementById('sub-info').textContent = '🏢 Building subscription active · Collection unlocked';
     document.getElementById('sub-alert').style.display = 'none';
-    document.getElementById('action-btn').disabled   = false;
+    document.getElementById('action-btn').disabled  = false;
     document.getElementById('action-btn').style.opacity = '1';
   } else {
-    document.getElementById('sub-badge').innerHTML   = '❌ Inactive';
-    document.getElementById('sub-badge').className   = 'badge badge-red';
-    document.getElementById('sub-info').textContent  = '⚠️ Building subscription not active — contact your syndic';
+    document.getElementById('sub-badge').innerHTML  = '❌ Inactive';
+    document.getElementById('sub-badge').className  = 'badge badge-red';
+    document.getElementById('sub-info').textContent = '⚠️ Building subscription not active — contact your syndic';
     document.getElementById('sub-alert').style.display = 'flex';
-    document.getElementById('action-btn').disabled   = true;
+    document.getElementById('action-btn').disabled  = true;
     document.getElementById('action-btn').style.opacity = '0.5';
   }
-
   trashReady = c.trash_ready;
   updateActionBtn();
 }
@@ -276,24 +311,22 @@ function updateActionBtn() {
     btn.className = 'big-action cancel';
     btn.innerHTML = '✅ Trash signalled — Tap to cancel';
     pill.style.background = '#e8f5e9'; pill.style.color = '#2E7D32';
-    document.getElementById('status-dot').textContent       = '✅';
-    document.getElementById('status-label-text').textContent= 'Ready for collection';
-    document.getElementById('action-hint').textContent      = 'The collector has been notified. Tap to cancel.';
+    document.getElementById('status-dot').textContent        = '✅';
+    document.getElementById('status-label-text').textContent = 'Ready for collection';
+    document.getElementById('action-hint').textContent       = 'The collector has been notified. Tap to cancel.';
   } else {
     btn.className = 'big-action ready';
     btn.innerHTML = '🗑️ My trash is ready — Signal now';
     pill.style.background = '#f0f4f8'; pill.style.color = '#607D8B';
-    document.getElementById('status-dot').textContent       = '⏳';
-    document.getElementById('status-label-text').textContent= 'Not ready';
-    document.getElementById('action-hint').textContent      = 'Tap to let the collector know your trash is ready.';
+    document.getElementById('status-dot').textContent        = '⏳';
+    document.getElementById('status-label-text').textContent = 'Not ready';
+    document.getElementById('action-hint').textContent       = 'Tap to let the collector know your trash is ready.';
   }
 }
 
 async function toggleTrash() {
   if (!currentClient) return;
-  if (!currentClient.subscription_active) {
-    showToast('⚠️ Subscription not active'); return;
-  }
+  if (!currentClient.subscription_active) { showToast('⚠️ Subscription not active'); return; }
   try {
     const res  = await fetch('/api/trash_ready/' + currentClient.id, {method:'POST'});
     const data = await res.json();
@@ -331,38 +364,74 @@ async function loadHistory(id) {
 function initMap(c) {
   map = L.map('client-map').setView([c.lat, c.lng], 15);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap', maxZoom: 19
+    attribution:'© OpenStreetMap', maxZoom:19
   }).addTo(map);
 
   const homeIcon = L.divIcon({
-    html: `<div style="background:#2E7D32;color:white;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,.3);border:3px solid white">🏠</div>`,
+    html:`<div style="background:#2E7D32;color:white;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,.3);border:3px solid white">🏠</div>`,
     className:'', iconSize:[36,36], iconAnchor:[18,18]
   });
-  myMarker = L.marker([c.lat, c.lng], {icon: homeIcon}).addTo(map)
+  myMarker = L.marker([c.lat, c.lng], {icon:homeIcon}).addTo(map)
     .bindPopup('<b>'+c.name+'</b><br>'+c.address+'<br>'+c.neighborhood);
-
-  const truckIcon = L.divIcon({
-    html: `<div style="background:#00695C;color:white;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,.3);border:3px solid white">🚛</div>`,
-    className:'', iconSize:[40,40], iconAnchor:[20,20]
-  });
-  const cl = c.lat + 0.003, cn = c.lng + 0.002;
-  collectorMarker = L.marker([cl, cn], {icon: truckIcon}).addTo(map)
-    .bindPopup('<b>Collector</b><br>En route');
 
   L.circle([c.lat, c.lng], {
     radius:80, color:'#2E7D32', fillColor:'#2E7D32',
     fillOpacity:0.08, weight:1
   }).addTo(map);
 
-  let step = 0;
-  const steps = [[cl,cn],[cl-0.001,cn-0.001],[cl-0.002,cn],[c.lat+0.0005,c.lng+0.0005]];
-  setInterval(() => { step=(step+1)%steps.length; collectorMarker.setLatLng(steps[step]); }, 4000);
+  // Draw 300m proximity circle
+  L.circle([c.lat, c.lng], {
+    radius:300, color:'#ff9800', fillColor:'#ff9800',
+    fillOpacity:0.04, weight:1, dashArray:'6,6'
+  }).addTo(map);
+
+  // Start polling collector location
+  pollCollectorLocation();
+  setInterval(pollCollectorLocation, 5000);
+}
+
+async function pollCollectorLocation() {
+  try {
+    const res  = await fetch('/api/collector/location');
+    const data = await res.json();
+    if (!data.active || !data.lat) return;
+
+    const truckIcon = L.divIcon({
+      html:`<div style="background:#00695C;color:white;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,.3);border:3px solid white">🚛</div>`,
+      className:'', iconSize:[40,40], iconAnchor:[20,20]
+    });
+
+    if (collectorMarker) {
+      collectorMarker.setLatLng([data.lat, data.lng]);
+    } else {
+      collectorMarker = L.marker([data.lat, data.lng], {icon:truckIcon})
+        .addTo(map).bindPopup('<b>Collector</b><br>Live GPS location');
+    }
+
+    // Check proximity
+    if (currentClient) {
+      const dist = getDistanceMeters(currentClient.lat, currentClient.lng, data.lat, data.lng);
+      const alert = document.getElementById('nearby-alert');
+      if (dist <= 300) {
+        alert.style.display = 'flex';
+        document.getElementById('nearby-dist').textContent =
+          `Collector is ${Math.round(dist)}m away — put your trash out now!`;
+        if (!nearbyAlerted) {
+          nearbyAlerted = true;
+          showToast('🚛 Collector is nearby! ' + Math.round(dist) + 'm away');
+        }
+      } else {
+        alert.style.display = 'none';
+        if (dist > 500) nearbyAlerted = false;
+      }
+    }
+  } catch(e) {}
 }
 
 function updateMapMarker() {
   if (!myMarker) return;
   const icon = L.divIcon({
-    html: `<div style="background:${trashReady?'#ffd54f':'#2E7D32'};color:${trashReady?'#111':'white'};border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,.3);border:3px solid white">${trashReady?'🗑️':'🏠'}</div>`,
+    html:`<div style="background:${trashReady?'#ffd54f':'#2E7D32'};color:${trashReady?'#111':'white'};border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,.3);border:3px solid white">${trashReady?'🗑️':'🏠'}</div>`,
     className:'', iconSize:[36,36], iconAnchor:[18,18]
   });
   myMarker.setIcon(icon);
