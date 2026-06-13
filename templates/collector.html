@@ -19,25 +19,20 @@
     .map-wrapper { position: relative; }
     .map-center-btn {
       position: absolute;
-      bottom: 18px;
-      right: 12px;
+      bottom: 18px; right: 12px;
       z-index: 999;
       background: white;
       border: none;
       border-radius: 10px;
-      width: 40px;
-      height: 40px;
+      width: 40px; height: 40px;
       font-size: 18px;
       box-shadow: 0 2px 8px rgba(0,0,0,.2);
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
     }
     .map-filter-btn {
       position: absolute;
-      bottom: 18px;
-      left: 12px;
+      bottom: 18px; left: 12px;
       z-index: 999;
       background: white;
       border: none;
@@ -50,6 +45,19 @@
       cursor: pointer;
       color: #1A2332;
     }
+    .gps-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    .gps-status.active  { background: #e8f5e9; color: #2E7D32; border: 1px solid #c8e6c9; }
+    .gps-status.inactive{ background: #fff8e1; color: #7a5c00; border: 1px solid #ffe082; }
+    .gps-status.error   { background: #fff0f0; color: #c0392b; border: 1px solid #ffb3b3; }
     .route-card {
       background: #f0faf4;
       border: 1px solid #d1f0dc;
@@ -75,7 +83,7 @@
       cursor: pointer;
       transition: background 0.15s;
     }
-    .client-row.ready { border-color: #ffd54f; background: #fffde7; }
+    .client-row.ready     { border-color: #ffd54f; background: #fffde7; }
     .client-row.collected { border-color: #c8e6c9; background: #f1f8f2; opacity: 0.7; }
     .client-row.violation { border-color: #ffcdd2; background: #fff5f5; }
     .client-status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
@@ -84,7 +92,7 @@
     .client-addr { font-size: 11px; color: #607D8B; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .mini-btn { border: none; border-radius: 8px; padding: 6px 10px; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; }
     .mini-btn-green { background: #2E7D32; color: white; }
-    .mini-btn-gray { background: #e0e0e0; color: #607D8B; }
+    .mini-btn-gray  { background: #e0e0e0; color: #607D8B; }
   </style>
 </head>
 <body>
@@ -98,6 +106,7 @@
 
   <div class="content">
 
+    <!-- Profile -->
     <div class="card card-dark">
       <div class="profile-row">
         <div class="avatar avatar-teal">YB</div>
@@ -117,6 +126,13 @@
       </div>
     </div>
 
+    <!-- GPS Status -->
+    <div class="gps-status inactive" id="gps-status">
+      <span id="gps-icon">📡</span>
+      <span id="gps-text">Getting your GPS location...</span>
+    </div>
+
+    <!-- Stats -->
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon">🏠</div>
@@ -140,12 +156,14 @@
       </div>
     </div>
 
+    <!-- Route -->
     <div class="route-card" id="route-card" style="display:none">
       <span class="route-icon">🗺️</span>
       <div class="route-text" id="route-text">Loading route...</div>
       <span class="route-badge" id="route-badge">0 stops</span>
     </div>
 
+    <!-- Map -->
     <div class="card">
       <div class="card-title">🗺️ Live collection map</div>
       <div class="map-wrapper">
@@ -158,10 +176,11 @@
         <div class="legend-item"><div class="legend-dot" style="background:#2E7D32"></div> Collected</div>
         <div class="legend-item"><div class="legend-dot" style="background:#C62828"></div> Violation</div>
         <div class="legend-item"><div class="legend-dot" style="background:#CFD8DC"></div> Waiting</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#00695C"></div> You</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#00695C"></div> You (GPS)</div>
       </div>
     </div>
 
+    <!-- Client List -->
     <div class="card">
       <div class="card-title">🏠 Homes on your route</div>
       <div class="client-list" id="client-list">
@@ -169,6 +188,7 @@
       </div>
     </div>
 
+    <!-- QR Scanner -->
     <div class="card">
       <div class="card-title">📷 QR Scanner</div>
       <div class="scanner-box" id="scanner-box">
@@ -185,18 +205,17 @@
         <div id="scan-line" class="scan-line" style="display:none;top:20%"></div>
       </div>
       <div id="scan-btn-area">
-        <button class="btn btn-teal" id="scan-btn" onclick="startScan()">
-          📷 Simulate QR Scan
-        </button>
+        <button class="btn btn-teal" onclick="startScan()">📷 Simulate QR Scan</button>
       </div>
       <div id="action-buttons" style="display:none">
         <div class="action-row">
           <button class="btn btn-green" onclick="markCollected()">✅ Collected</button>
-          <button class="btn btn-red" onclick="openViolModal()">📸 Violation</button>
+          <button class="btn btn-red"   onclick="openViolModal()">📸 Violation</button>
         </div>
       </div>
     </div>
 
+    <!-- Performance -->
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
         <div class="card-title" style="margin-bottom:0">🏆 Performance</div>
@@ -233,6 +252,7 @@
   </div>
 </div>
 
+<!-- Violation Modal -->
 <div class="modal-overlay" id="viol-modal" style="display:none">
   <div class="modal-box">
     <div class="modal-header">
@@ -261,10 +281,11 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+// ── Clock ──
 function updateClock() {
   const t = new Date();
   const s = t.getHours().toString().padStart(2,'0')+':'+t.getMinutes().toString().padStart(2,'0');
-  document.getElementById('clock').textContent = s;
+  document.getElementById('clock').textContent  = s;
   document.getElementById('clock2').textContent = s;
 }
 updateClock(); setInterval(updateClock, 10000);
@@ -275,15 +296,69 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2800);
 }
 
+// ── State ──
 let clients = [];
 let map = null;
 let markers = {};
-let collectorMarker = null;
-let collectorPos = [31.6258, -8.0038];
+let myMarker = null;
+let myPos = null;
 let showReadyOnly = false;
 let currentScanId = null;
-let selectedViol = null;
+let selectedViol  = null;
+let scanInterval  = null;
 
+// ── GPS Tracking ──
+function startGPS() {
+  if (!navigator.geolocation) {
+    setGPSStatus('error', '❌', 'GPS not supported on this device');
+    return;
+  }
+  navigator.geolocation.watchPosition(
+    pos => {
+      myPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      setGPSStatus('active', '📍', `GPS active · Accuracy: ${Math.round(pos.coords.accuracy)}m`);
+      updateMyMarker();
+      sendLocationToServer(myPos.lat, myPos.lng);
+    },
+    err => {
+      setGPSStatus('error', '❌', 'GPS denied — enable location in browser settings');
+    },
+    { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+  );
+}
+
+function setGPSStatus(type, icon, text) {
+  const el = document.getElementById('gps-status');
+  el.className = 'gps-status ' + type;
+  document.getElementById('gps-icon').textContent = icon;
+  document.getElementById('gps-text').textContent  = text;
+}
+
+async function sendLocationToServer(lat, lng) {
+  try {
+    await fetch('/api/collector/location', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({lat, lng})
+    });
+  } catch(e) {}
+}
+
+function updateMyMarker() {
+  if (!map || !myPos) return;
+  const icon = L.divIcon({
+    html: `<div style="background:#00695C;color:white;border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 3px 12px rgba(0,0,0,.4);border:3px solid white">🚛</div>`,
+    className:'', iconSize:[44,44], iconAnchor:[22,22]
+  });
+  if (myMarker) {
+    myMarker.setLatLng([myPos.lat, myPos.lng]);
+  } else {
+    myMarker = L.marker([myPos.lat, myPos.lng], {icon, zIndexOffset:1000})
+      .addTo(map).bindPopup('<b>You (Collector)</b><br>Live GPS location');
+  }
+}
+
+// ── Load clients ──
 async function loadClients() {
   try {
     const res = await fetch('/api/clients');
@@ -318,7 +393,7 @@ function updateRoute() {
   const card  = document.getElementById('route-card');
   if (ready > 0) {
     card.style.display = 'flex';
-    document.getElementById('route-text').textContent = ready + ' home'+(ready>1?'s':'')+' ready for collection';
+    document.getElementById('route-text').textContent  = ready + ' home'+(ready>1?'s':'')+' ready for collection';
     document.getElementById('route-badge').textContent = ready + ' stop'+(ready>1?'s':'');
   } else {
     card.style.display = 'none';
@@ -332,11 +407,11 @@ function updateClientList() {
     return;
   }
   list.innerHTML = clients.map(c => {
-    const dot   = c.trash_ready ? '#ffd54f' : c.status==='collected' ? '#2E7D32' : c.status==='violation' ? '#C62828' : '#CFD8DC';
-    const rowCls= c.trash_ready ? 'ready'   : c.status==='collected' ? 'collected' : c.status==='violation' ? 'violation' : '';
-    const sub   = c.subscription_active ? '✅' : '❌';
+    const dot    = c.trash_ready ? '#ffd54f' : c.status==='collected' ? '#2E7D32' : c.status==='violation' ? '#C62828' : '#CFD8DC';
+    const rowCls = c.trash_ready ? 'ready'   : c.status==='collected' ? 'collected' : c.status==='violation' ? 'violation' : '';
+    const sub    = c.subscription_active ? '✅' : '❌';
     let btn = '';
-    if (c.trash_ready)             btn = `<button class="mini-btn mini-btn-green" onclick="event.stopPropagation();quickCollect(${c.id})">✅ Collect</button>`;
+    if (c.trash_ready)              btn = `<button class="mini-btn mini-btn-green" onclick="event.stopPropagation();quickCollect(${c.id})">✅ Collect</button>`;
     else if (c.status==='collected') btn = `<button class="mini-btn mini-btn-gray" disabled>Done</button>`;
     else                             btn = `<button class="mini-btn mini-btn-gray" style="opacity:.5" disabled>Waiting</button>`;
     return `<div class="client-row ${rowCls}" onclick="focusClient(${c.id})">
@@ -352,43 +427,42 @@ function updateClientList() {
 
 async function quickCollect(id) {
   try {
-    await fetch('/api/collect/'+id, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({collector:'Youssef B.'})});
+    await fetch('/api/collect/'+id, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({collector:'Youssef B.'})
+    });
     showToast('✅ Collected!');
     await loadClients();
   } catch(e) { showToast('❌ Error'); }
 }
 
+// ── Map ──
 function initMap() {
   const center = clients.length ? [clients[0].lat, clients[0].lng] : [31.6258, -8.0038];
   map = L.map('collector-map').setView(center, 14);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'© OpenStreetMap', maxZoom:19}).addTo(map);
-
-  const truckIcon = L.divIcon({
-    html:`<div style="background:#00695C;color:white;border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 2px 10px rgba(0,0,0,.35);border:3px solid white">🚛</div>`,
-    className:'', iconSize:[44,44], iconAnchor:[22,22]
-  });
-  collectorMarker = L.marker(collectorPos, {icon:truckIcon, zIndexOffset:1000}).addTo(map).bindPopup('<b>Youssef B.</b><br>Collector · On duty');
-
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution:'© OpenStreetMap', maxZoom:19
+  }).addTo(map);
   updateMapMarkers();
-
-  let step = 0;
-  const path = clients.slice(0,5).map(c=>[c.lat+(Math.random()-.5)*.002, c.lng+(Math.random()-.5)*.002]);
-  if (path.length) setInterval(()=>{ step=(step+1)%path.length; collectorPos=path[step]; collectorMarker.setLatLng(collectorPos); }, 3500);
+  if (myPos) updateMyMarker();
 }
 
 function getMarkerHtml(c) {
-  if (c.trash_ready)           return `<div style="background:#ffd54f;color:#111;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 2px 8px rgba(0,0,0,.25);border:2px solid white">🗑️</div>`;
-  if (c.status==='collected')  return `<div style="background:#2E7D32;color:white;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 2px 6px rgba(0,0,0,.2);border:2px solid white">✅</div>`;
-  if (c.status==='violation')  return `<div style="background:#C62828;color:white;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 2px 6px rgba(0,0,0,.2);border:2px solid white">⚠️</div>`;
+  if (c.trash_ready)          return `<div style="background:#ffd54f;color:#111;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 2px 8px rgba(0,0,0,.25);border:2px solid white">🗑️</div>`;
+  if (c.status==='collected') return `<div style="background:#2E7D32;color:white;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 2px 6px rgba(0,0,0,.2);border:2px solid white">✅</div>`;
+  if (c.status==='violation') return `<div style="background:#C62828;color:white;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 2px 6px rgba(0,0,0,.2);border:2px solid white">⚠️</div>`;
   return `<div style="background:#CFD8DC;color:#607D8B;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:12px;box-shadow:0 1px 4px rgba(0,0,0,.15);border:2px solid white">🏠</div>`;
 }
 
 function updateMapMarkers() {
   if (!map) return;
   clients.forEach(c => {
-    if (showReadyOnly && !c.trash_ready) { if (markers[c.id]) { map.removeLayer(markers[c.id]); delete markers[c.id]; } return; }
-    const icon = L.divIcon({html:getMarkerHtml(c), className:'', iconSize:[34,34], iconAnchor:[17,17]});
-    const popup = `<b>${c.name}</b><br>${c.address}<br>Status: <b>${c.status}</b><br>${c.subscription_active?'✅ Subscribed':'❌ Not subscribed'}`;
+    if (showReadyOnly && !c.trash_ready) {
+      if (markers[c.id]) { map.removeLayer(markers[c.id]); delete markers[c.id]; }
+      return;
+    }
+    const icon   = L.divIcon({html:getMarkerHtml(c), className:'', iconSize:[34,34], iconAnchor:[17,17]});
+    const popup  = `<b>${c.name}</b><br>${c.address}<br>Status: <b>${c.status}</b><br>${c.subscription_active?'✅ Subscribed':'❌ Not subscribed'}`;
     if (markers[c.id]) markers[c.id].setIcon(icon);
     else markers[c.id] = L.marker([c.lat,c.lng],{icon}).addTo(map).bindPopup(popup);
   });
@@ -409,21 +483,21 @@ function toggleFilter() {
 }
 
 function centerMap() {
-  if (map) map.flyTo(collectorPos, 15, {duration:0.8});
+  if (map && myPos) map.flyTo([myPos.lat, myPos.lng], 16, {duration:0.8});
+  else if (map && clients.length) map.flyTo([clients[0].lat, clients[0].lng], 15, {duration:0.8});
 }
 
-let scanInterval = null;
-
+// ── QR Scanner ──
 function startScan() {
-  const ready = clients.filter(c=>c.trash_ready || c.status==='not_ready');
-  if (!ready.length) { showToast('No homes to scan'); return; }
+  const list = clients.filter(c => c.trash_ready || c.status==='not_ready');
+  if (!list.length) { showToast('No homes to scan'); return; }
   const line = document.getElementById('scan-line');
   document.getElementById('scan-btn-area').style.display = 'none';
   document.getElementById('scan-content').innerHTML = '<div style="color:#4CAF50;font-size:11px;font-weight:700">Scanning...</div>';
   line.style.display = 'block';
   let pos=20, dir=1;
   scanInterval = setInterval(()=>{ pos+=dir*3; if(pos>80||pos<20) dir*=-1; line.style.top=pos+'%'; }, 40);
-  setTimeout(()=>completeScan(ready), 2000);
+  setTimeout(()=>completeScan(list), 2000);
 }
 
 function completeScan(list) {
@@ -440,7 +514,10 @@ function completeScan(list) {
 async function markCollected() {
   if (!currentScanId) return;
   try {
-    await fetch('/api/collect/'+currentScanId, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({collector:'Youssef B.'})});
+    await fetch('/api/collect/'+currentScanId, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({collector:'Youssef B.'})
+    });
     showToast('✅ Marked as collected!');
     resetScanner(); await loadClients();
   } catch(e) { showToast('❌ Error'); }
@@ -450,16 +527,16 @@ function resetScanner() {
   currentScanId = null;
   document.getElementById('scan-content').innerHTML = `<div class="scan-idle"><div class="scan-idle-icon">▦</div><div>Point at the QR sticker</div></div>`;
   document.getElementById('action-buttons').style.display = 'none';
-  document.getElementById('scan-btn-area').style.display = 'block';
+  document.getElementById('scan-btn-area').style.display  = 'block';
 }
 
 function openViolModal() {
   if (!currentScanId) return;
   document.querySelectorAll('.viol-option').forEach(b=>b.classList.remove('selected'));
   selectedViol = null;
-  document.getElementById('submit-viol-btn').disabled = true;
+  document.getElementById('submit-viol-btn').disabled      = true;
   document.getElementById('submit-viol-btn').style.opacity = '0.4';
-  document.getElementById('viol-modal').style.display = 'flex';
+  document.getElementById('viol-modal').style.display      = 'flex';
 }
 
 function closeViolModal() { document.getElementById('viol-modal').style.display = 'none'; }
@@ -467,20 +544,25 @@ function closeViolModal() { document.getElementById('viol-modal').style.display 
 function selectViol(btn, reason) {
   document.querySelectorAll('.viol-option').forEach(b=>b.classList.remove('selected'));
   btn.classList.add('selected'); selectedViol = reason;
-  document.getElementById('submit-viol-btn').disabled = false;
+  document.getElementById('submit-viol-btn').disabled      = false;
   document.getElementById('submit-viol-btn').style.opacity = '1';
 }
 
 async function submitViol() {
   if (!currentScanId || !selectedViol) return;
   try {
-    await fetch('/api/violation/'+currentScanId, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({collector:'Youssef B.', reason:selectedViol})});
+    await fetch('/api/violation/'+currentScanId, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({collector:'Youssef B.', reason:selectedViol})
+    });
     showToast('⚠️ Violation reported');
     closeViolModal(); resetScanner(); await loadClients();
   } catch(e) { showToast('❌ Error'); }
 }
 
+// ── Init ──
 loadClients();
+startGPS();
 setInterval(loadClients, 30000);
 </script>
 </body>
