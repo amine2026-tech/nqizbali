@@ -2,377 +2,360 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-  <title>NqiZbali — My Home</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NqiZbali</title>
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <meta name="theme-color" content="#0a3d20">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="NqiZbali">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192.png') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
-    #client-map {
-      height: 340px;
-      border-radius: 16px;
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0a3d20;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Splash ── */
+    #splash {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(160deg, #051f10 0%, #0a3d20 40%, #1a7c3e 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity .5s ease, transform .5s ease;
+    }
+    #splash.out { opacity: 0; transform: scale(1.04); pointer-events: none; }
+
+    .splash-ring {
+      width: 100px; height: 100px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.08);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px;
+      box-shadow: 0 0 0 12px rgba(255,255,255,.04), 0 0 0 24px rgba(255,255,255,.02);
+      animation: splashPulse 2s ease-in-out infinite;
+    }
+    @keyframes splashPulse {
+      0%,100% { transform: scale(1); }
+      50%      { transform: scale(1.06); }
+    }
+    .splash-emoji { font-size: 3rem; }
+    .splash-title { font-size: 2.2rem; font-weight: 900; color: #fff; letter-spacing: -1px; }
+    .splash-sub   { font-size: .85rem; color: rgba(255,255,255,.5); margin-top: .4rem; letter-spacing: .5px; }
+    .splash-dots  { display: flex; gap: 8px; margin-top: 2.5rem; }
+    .splash-dot   { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.3); }
+    .splash-dot.active { background: #4CAF50; animation: dotPop .4s ease forwards; }
+    @keyframes dotPop { to { transform: scale(1.4); background: #fff; } }
+
+    /* ── Main ── */
+    #main { min-height: 100vh; opacity: 0; transition: opacity .5s ease; }
+    #main.in { opacity: 1; }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(160deg, #051f10 0%, #0a3d20 50%, #1a7c3e 100%);
+      padding: 3.5rem 1.5rem 2rem;
+      position: relative;
       overflow: hidden;
-      border: 0.5px solid #CFD8DC;
-      margin-bottom: 10px;
+    }
+    .hero-bg-circle {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,.04);
+    }
+    .hero-bg-circle.c1 { width:280px;height:280px;top:-80px;right:-60px; }
+    .hero-bg-circle.c2 { width:180px;height:180px;bottom:-40px;left:-40px; }
+    .hero-bg-circle.c3 { width:120px;height:120px;top:40px;left:30%; }
+
+    .hero-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
       position: relative;
       z-index: 1;
     }
-    .map-wrapper { position: relative; }
-    .map-center-btn {
-      position: absolute;
-      bottom: 18px; right: 12px;
-      z-index: 999;
-      background: white;
-      border: none;
-      border-radius: 10px;
-      width: 40px; height: 40px;
-      font-size: 18px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.2);
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .sub-alert {
-      background: #fff8e1;
-      border: 1.5px solid #ffd54f;
-      border-radius: 12px;
-      padding: 12px 14px;
-      margin-bottom: 12px;
-      font-size: 12px;
-      color: #7a5c00;
+    .hero-brand {
       display: flex;
       align-items: center;
-      gap: 8px;
-    }
-    .sub-alert a { color: #1a7c3e; font-weight: 700; }
-    .big-action {
-      width: 100%;
-      padding: 18px;
-      border-radius: 16px;
-      border: none;
-      font-size: 16px;
-      font-weight: 800;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       gap: 10px;
-      transition: transform 0.15s, opacity 0.2s;
-      font-family: inherit;
     }
-    .big-action:active { transform: scale(0.97); }
-    .big-action.ready  { background: #2E7D32; color: white; }
-    .big-action.cancel { background: #FFEBEE; color: #C62828; }
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 700;
-      margin-bottom: 14px;
+    .hero-logo-wrap {
+      width: 42px; height: 42px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.12);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
     }
-    .logout-btn {
-      display: block;
+    .hero-brand-name { font-size: 1.3rem; font-weight: 900; color: #fff; letter-spacing: -.5px; }
+    .hero-brand-sub  { font-size: .68rem; color: rgba(255,255,255,.5); margin-top: 1px; }
+
+    .hero-body {
+      position: relative;
+      z-index: 1;
       text-align: center;
-      padding: .6rem;
-      background: #fff0f0;
-      color: #c0392b;
-      border-radius: 10px;
-      font-size: .82rem;
-      font-weight: 700;
-      text-decoration: none;
-      margin-top: .5rem;
+      padding: 1rem 0 .5rem;
     }
+    .hero-tagline {
+      font-size: 2rem;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.15;
+      letter-spacing: -1px;
+      margin-bottom: .75rem;
+    }
+    .hero-tagline em { color: #4CAF50; font-style: normal; }
+    .hero-desc {
+      font-size: .85rem;
+      color: rgba(255,255,255,.6);
+      line-height: 1.6;
+    }
+
+    .hero-pills {
+      display: flex;
+      justify-content: center;
+      gap: .6rem;
+      margin-top: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .hero-pill {
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 99px;
+      padding: .4rem 1rem;
+      font-size: .75rem;
+      color: rgba(255,255,255,.85);
+      font-weight: 600;
+      backdrop-filter: blur(4px);
+    }
+    .hero-pill.highlight { background: rgba(76,175,80,.25); border-color: rgba(76,175,80,.4); color: #a5d6a7; }
+
+    /* ── Wave separator ── */
+    .wave {
+      width: 100%;
+      line-height: 0;
+      margin-bottom: -2px;
+    }
+    .wave svg { display: block; width: 100%; }
+
+    /* ── Roles section ── */
+    .roles-section {
+      background: #f0f7f2;
+      padding: 1.5rem 1.25rem 1rem;
+    }
+    .roles-label {
+      font-size: .72rem;
+      font-weight: 700;
+      color: #9CA3AF;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      text-align: center;
+      margin-bottom: 1.25rem;
+    }
+    .roles-list { display: flex; flex-direction: column; gap: .85rem; }
+
+    .role-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 1.25rem 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      text-decoration: none;
+      box-shadow: 0 2px 12px rgba(0,0,0,.06), 0 1px 3px rgba(0,0,0,.04);
+      border: 1.5px solid rgba(255,255,255,.9);
+      position: relative;
+      overflow: hidden;
+      transition: transform .18s ease, box-shadow .18s ease;
+    }
+    .role-card:active { transform: scale(.975); box-shadow: 0 1px 6px rgba(0,0,0,.08); }
+
+    .role-card-accent {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+      border-radius: 4px 0 0 4px;
+    }
+    .resident  .role-card-accent { background: linear-gradient(180deg,#42A5F5,#1E88E5); }
+    .collector .role-card-accent { background: linear-gradient(180deg,#FFA726,#FB8C00); }
+    .syndic    .role-card-accent { background: linear-gradient(180deg,#66BB6A,#43A047); }
+
+    .role-icon-box {
+      width: 52px; height: 52px;
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem;
+      flex-shrink: 0;
+    }
+    .resident  .role-icon-box { background: #e3f2fd; }
+    .collector .role-icon-box { background: #fff3e0; }
+    .syndic    .role-icon-box { background: #e8f5e9; }
+
+    .role-info { flex: 1; }
+    .role-name { font-size: 1rem; font-weight: 800; color: #111827; margin-bottom: .2rem; }
+    .role-desc { font-size: .75rem; color: #9CA3AF; line-height: 1.4; font-weight: 500; }
+
+    .role-chevron {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: #f3f4f6;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .8rem;
+      color: #9CA3AF;
+      flex-shrink: 0;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      background: #f0f7f2;
+      padding: .5rem 1.5rem 2.5rem;
+      text-align: center;
+    }
+    .footer-divider {
+      height: 1px;
+      background: linear-gradient(90deg,transparent,#d1fae5,transparent);
+      margin-bottom: 1.25rem;
+    }
+    .footer-links { display: flex; justify-content: center; gap: 1.5rem; margin-bottom: .75rem; }
+    .footer-links a {
+      font-size: .72rem;
+      color: #1a7c3e;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .footer-copy { font-size: .68rem; color: #9CA3AF; }
   </style>
 </head>
 <body>
-<div class="app-container">
 
-  <div class="top-bar">
-    <a href="/" class="back-btn">← Home</a>
-    <span class="top-bar-title">♻️ NQIZBALI</span>
-    <span class="top-bar-time" id="clock">--:--</span>
-  </div>
-
-  <div class="content">
-
-    <!-- Profile Card -->
-    <div class="card card-dark">
-      <div class="profile-row">
-        <div class="avatar avatar-green" id="avatar-initials">?</div>
-        <div>
-          <div class="profile-name" style="color:white" id="profile-name">Loading...</div>
-          <div class="profile-sub" style="color:#ffffff88" id="profile-addr">📍 Marrakech</div>
-        </div>
-        <div style="margin-left:auto">
-          <span class="badge badge-green" id="sub-badge">
-            <span class="pulse-dot"></span> Active
-          </span>
-        </div>
-      </div>
-      <div style="background:#ffffff14;border-radius:9px;padding:9px 12px;font-size:12px;color:#ffffffcc;font-weight:600" id="sub-info">
-        🏢 Loading building info...
-      </div>
-    </div>
-
-    <!-- Subscription alert -->
-    <div class="sub-alert" id="sub-alert" style="display:none">
-      <span style="font-size:20px;flex-shrink:0">⚠️</span>
-      <div>Your building subscription is <strong>not active</strong>.
-      Contact your syndic or <a href="/syndic/login">access the syndic portal</a>.</div>
-    </div>
-
-    <!-- Action Card -->
-    <div class="card">
-      <div class="card-title">My trash status</div>
-      <div style="text-align:center">
-        <span class="status-pill" id="status-pill" style="background:#f0f4f8;color:#607D8B">
-          <span id="status-dot">⏳</span>
-          <span id="status-label-text">Not ready</span>
-        </span>
-      </div>
-      <button class="big-action ready" id="action-btn" onclick="toggleTrash()">
-        🗑️ My trash is ready — Signal now
-      </button>
-      <div style="font-size:11px;color:#607D8B;text-align:center;margin-top:10px;line-height:1.6" id="action-hint">
-        Tap to let the collector know your trash is ready for pickup.
-      </div>
-    </div>
-
-    <!-- Live Map -->
-    <div class="card">
-      <div class="card-title">📍 Live map</div>
-      <div class="map-wrapper">
-        <div id="client-map"></div>
-        <button class="map-center-btn" onclick="centerMap()">🎯</button>
-      </div>
-      <div class="legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#2E7D32"></div> My home</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#00695C"></div> Collector</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#ffd54f"></div> Trash ready</div>
-      </div>
-    </div>
-
-    <!-- QR Code -->
-    <div class="card">
-      <div class="card-title">🏷️ My QR Code</div>
-      <div class="qr-row">
-        <svg width="90" height="90" viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg">
-          <rect width="90" height="90" rx="6" fill="white"/>
-          <rect x="5" y="5" width="30" height="30" rx="2" fill="none" stroke="#2E7D32" stroke-width="2.5"/>
-          <rect x="11" y="11" width="18" height="18" rx="1" fill="#2E7D32"/>
-          <rect x="55" y="5" width="30" height="30" rx="2" fill="none" stroke="#2E7D32" stroke-width="2.5"/>
-          <rect x="61" y="11" width="18" height="18" rx="1" fill="#2E7D32"/>
-          <rect x="5" y="55" width="30" height="30" rx="2" fill="none" stroke="#2E7D32" stroke-width="2.5"/>
-          <rect x="11" y="61" width="18" height="18" rx="1" fill="#2E7D32"/>
-          <rect x="42" y="7" width="5" height="5" fill="#2E7D32"/>
-          <rect x="42" y="14" width="5" height="5" fill="#2E7D32"/>
-          <rect x="42" y="28" width="5" height="5" fill="#2E7D32"/>
-          <rect x="55" y="42" width="5" height="5" fill="#2E7D32"/>
-          <rect x="63" y="42" width="5" height="5" fill="#2E7D32"/>
-          <rect x="71" y="42" width="5" height="5" fill="#2E7D32"/>
-          <rect x="42" y="42" width="5" height="5" fill="#2E7D32"/>
-          <rect x="42" y="58" width="5" height="5" fill="#2E7D32"/>
-          <rect x="42" y="74" width="5" height="5" fill="#2E7D32"/>
-        </svg>
-        <div class="qr-info">
-          <div class="qr-code" id="qr-code-text">—</div>
-          <div class="qr-addr" id="qr-name">—</div>
-          <div class="qr-addr" id="qr-addr">—</div>
-          <button class="btn btn-green btn-sm" style="margin-top:10px"
-                  onclick="showToast('📄 QR ready!')">📥 Download</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Collection History -->
-    <div class="card">
-      <div class="card-title">📋 Collection history</div>
-      <div id="history-list">
-        <div style="text-align:center;color:#607D8B;font-size:13px;padding:20px">Loading...</div>
-      </div>
-    </div>
-
-    <!-- Logout -->
-    <a class="logout-btn" href="/resident/logout">🚪 Log out</a>
-
+<!-- Splash -->
+<div id="splash">
+  <div class="splash-ring"><span class="splash-emoji">♻️</span></div>
+  <div class="splash-title">NqiZbali</div>
+  <div class="splash-sub">Marrakech · مراكش</div>
+  <div class="splash-dots">
+    <div class="splash-dot active" id="d1"></div>
+    <div class="splash-dot" id="d2"></div>
+    <div class="splash-dot" id="d3"></div>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<!-- Main -->
+<div id="main">
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-// ── Clock ──
-function updateClock() {
-  const n = new Date();
-  document.getElementById('clock').textContent =
-    n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0');
-}
-updateClock(); setInterval(updateClock, 10000);
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-bg-circle c1"></div>
+    <div class="hero-bg-circle c2"></div>
+    <div class="hero-bg-circle c3"></div>
 
-// ── Toast ──
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
-}
-
-// ── State ──
-let currentClient = null;
-let map = null;
-let myMarker = null;
-let collectorMarker = null;
-let trashReady = false;
-
-// ── Load MY data ──
-async function loadMyData() {
-  try {
-    const res = await fetch('/api/client/me');
-    if (res.status === 401) {
-      window.location.href = '/resident/login';
-      return;
-    }
-    currentClient = await res.json();
-    updateUI(currentClient);
-    if (!map) initMap(currentClient);
-    loadHistory(currentClient.id);
-  } catch(e) { console.error(e); }
-}
-
-function updateUI(c) {
-  const initials = c.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-  document.getElementById('avatar-initials').textContent = initials;
-  document.getElementById('profile-name').textContent    = c.name;
-  document.getElementById('profile-addr').textContent    = '📍 ' + c.neighborhood + ', Marrakech';
-  document.getElementById('qr-code-text').textContent    = c.qr_code;
-  document.getElementById('qr-name').textContent         = c.name;
-  document.getElementById('qr-addr').textContent         = c.address + ' · ' + c.neighborhood;
-
-  if (c.subscription_active) {
-    document.getElementById('sub-badge').innerHTML   = '<span class="pulse-dot"></span> Active';
-    document.getElementById('sub-badge').className   = 'badge badge-green';
-    document.getElementById('sub-info').textContent  = '🏢 Building subscription active · Collection unlocked';
-    document.getElementById('sub-alert').style.display = 'none';
-    document.getElementById('action-btn').disabled   = false;
-    document.getElementById('action-btn').style.opacity = '1';
-  } else {
-    document.getElementById('sub-badge').innerHTML   = '❌ Inactive';
-    document.getElementById('sub-badge').className   = 'badge badge-red';
-    document.getElementById('sub-info').textContent  = '⚠️ Building subscription not active — contact your syndic';
-    document.getElementById('sub-alert').style.display = 'flex';
-    document.getElementById('action-btn').disabled   = true;
-    document.getElementById('action-btn').style.opacity = '0.5';
-  }
-
-  trashReady = c.trash_ready;
-  updateActionBtn();
-}
-
-function updateActionBtn() {
-  const btn  = document.getElementById('action-btn');
-  const pill = document.getElementById('status-pill');
-  if (trashReady) {
-    btn.className = 'big-action cancel';
-    btn.innerHTML = '✅ Trash signalled — Tap to cancel';
-    pill.style.background = '#e8f5e9'; pill.style.color = '#2E7D32';
-    document.getElementById('status-dot').textContent       = '✅';
-    document.getElementById('status-label-text').textContent= 'Ready for collection';
-    document.getElementById('action-hint').textContent      = 'The collector has been notified. Tap to cancel.';
-  } else {
-    btn.className = 'big-action ready';
-    btn.innerHTML = '🗑️ My trash is ready — Signal now';
-    pill.style.background = '#f0f4f8'; pill.style.color = '#607D8B';
-    document.getElementById('status-dot').textContent       = '⏳';
-    document.getElementById('status-label-text').textContent= 'Not ready';
-    document.getElementById('action-hint').textContent      = 'Tap to let the collector know your trash is ready.';
-  }
-}
-
-async function toggleTrash() {
-  if (!currentClient) return;
-  if (!currentClient.subscription_active) {
-    showToast('⚠️ Subscription not active'); return;
-  }
-  try {
-    const res  = await fetch('/api/trash_ready/' + currentClient.id, {method:'POST'});
-    const data = await res.json();
-    if (data.success) {
-      trashReady = !trashReady;
-      updateActionBtn();
-      updateMapMarker();
-      showToast(trashReady ? '✅ Collector notified!' : '↩️ Cancelled');
-    }
-  } catch(e) { showToast('❌ Error — try again'); }
-}
-
-// ── History ──
-async function loadHistory(id) {
-  try {
-    const res  = await fetch('/api/collections/' + id);
-    const data = await res.json();
-    const list = document.getElementById('history-list');
-    if (!data.length) {
-      list.innerHTML = '<div style="text-align:center;color:#607D8B;font-size:13px;padding:20px">No collections yet.</div>';
-      return;
-    }
-    list.innerHTML = data.map(c => `
-      <div class="log-item">
-        <div class="log-dot" style="background:${c.status==='collected'?'#4CAF50':'#C62828'}"></div>
-        <div class="log-text">${c.date} · ${c.collector}</div>
-        <div class="log-status" style="color:${c.status==='collected'?'#2E7D32':'#C62828'}">
-          ${c.status==='collected'?'✓ Collected':'⚠️ Violation'}
+    <div class="hero-top">
+      <div class="hero-brand">
+        <div class="hero-logo-wrap">♻️</div>
+        <div>
+          <div class="hero-brand-name">NqiZbali</div>
+          <div class="hero-brand-sub">Smart Collection</div>
         </div>
-      </div>`).join('');
-  } catch(e) {}
-}
+      </div>
+    </div>
 
-// ── Map ──
-function initMap(c) {
-  map = L.map('client-map').setView([c.lat, c.lng], 15);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap', maxZoom: 19
-  }).addTo(map);
+    <div class="hero-body">
+      <div class="hero-tagline">Smarter trash<br>collection in <em>Marrakech</em></div>
+      <div class="hero-desc">Digital · Trackable · Affordable<br>جمع الزبالة الذكية بمراكش</div>
+      <div class="hero-pills">
+        <span class="hero-pill highlight">✅ 60 DH/apt/month</span>
+        <span class="hero-pill">📍 Live GPS tracking</span>
+        <span class="hero-pill">📱 100% Digital</span>
+      </div>
+    </div>
+  </div>
 
-  const homeIcon = L.divIcon({
-    html: `<div style="background:#2E7D32;color:white;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,.3);border:3px solid white">🏠</div>`,
-    className:'', iconSize:[36,36], iconAnchor:[18,18]
-  });
-  myMarker = L.marker([c.lat, c.lng], {icon: homeIcon}).addTo(map)
-    .bindPopup('<b>'+c.name+'</b><br>'+c.address+'<br>'+c.neighborhood);
+  <!-- Wave -->
+  <div class="wave">
+    <svg viewBox="0 0 430 40" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+      <path d="M0,20 C80,40 180,0 280,20 C360,36 400,10 430,20 L430,40 L0,40 Z" fill="#f0f7f2"/>
+    </svg>
+  </div>
 
-  const truckIcon = L.divIcon({
-    html: `<div style="background:#00695C;color:white;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,.3);border:3px solid white">🚛</div>`,
-    className:'', iconSize:[40,40], iconAnchor:[20,20]
-  });
-  const cl = c.lat + 0.003, cn = c.lng + 0.002;
-  collectorMarker = L.marker([cl, cn], {icon: truckIcon}).addTo(map)
-    .bindPopup('<b>Collector</b><br>En route');
+  <!-- Roles -->
+  <div class="roles-section">
+    <div class="roles-label">Choose your role</div>
+    <div class="roles-list">
 
-  L.circle([c.lat, c.lng], {
-    radius:80, color:'#2E7D32', fillColor:'#2E7D32',
-    fillOpacity:0.08, weight:1
-  }).addTo(map);
+      <a class="role-card resident" href="/resident/login">
+        <div class="role-card-accent"></div>
+        <div class="role-icon-box">🏠</div>
+        <div class="role-info">
+          <div class="role-name">I am a Resident</div>
+          <div class="role-desc">Signal trash · Track collection · View history</div>
+        </div>
+        <div class="role-chevron">›</div>
+      </a>
 
+      <a class="role-card collector" href="/collector">
+        <div class="role-card-accent"></div>
+        <div class="role-icon-box">🚛</div>
+        <div class="role-info">
+          <div class="role-name">I am a Collector</div>
+          <div class="role-desc">Live GPS map · Scan QR codes · Confirm pickups</div>
+        </div>
+        <div class="role-chevron">›</div>
+      </a>
+
+      <a class="role-card syndic" href="/syndic/login">
+        <div class="role-card-accent"></div>
+        <div class="role-icon-box">🏢</div>
+        <div class="role-info">
+          <div class="role-name">I am a Syndic</div>
+          <div class="role-desc">Manage buildings · Pay subscription · Reports</div>
+        </div>
+        <div class="role-chevron">›</div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer-divider"></div>
+    <div class="footer-links">
+      <a href="/admin/login">⚙️ Admin</a>
+      <a href="/syndic/register">📝 Register as Syndic</a>
+    </div>
+    <div class="footer-copy">NqiZbali © 2026 · Marrakech, Morocco</div>
+  </div>
+
+</div>
+
+<script>
+  // Animated splash dots
   let step = 0;
-  const steps = [[cl,cn],[cl-0.001,cn-0.001],[cl-0.002,cn],[c.lat+0.0005,c.lng+0.0005]];
-  setInterval(() => { step=(step+1)%steps.length; collectorMarker.setLatLng(steps[step]); }, 4000);
-}
+  const dots = ['d1','d2','d3'];
+  const dotInterval = setInterval(() => {
+    dots.forEach(d => document.getElementById(d).classList.remove('active'));
+    step = (step + 1) % 3;
+    document.getElementById(dots[step]).classList.add('active');
+  }, 500);
 
-function updateMapMarker() {
-  if (!myMarker) return;
-  const icon = L.divIcon({
-    html: `<div style="background:${trashReady?'#ffd54f':'#2E7D32'};color:${trashReady?'#111':'white'};border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,.3);border:3px solid white">${trashReady?'🗑️':'🏠'}</div>`,
-    className:'', iconSize:[36,36], iconAnchor:[18,18]
-  });
-  myMarker.setIcon(icon);
-}
+  // Show main after 2s
+  setTimeout(() => {
+    clearInterval(dotInterval);
+    dots.forEach(d => document.getElementById(d).classList.add('active'));
+    document.getElementById('splash').classList.add('out');
+    document.getElementById('main').classList.add('in');
+  }, 2000);
 
-function centerMap() {
-  if (map && currentClient) map.flyTo([currentClient.lat, currentClient.lng], 16, {duration:0.8});
-}
-
-loadMyData();
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }
 </script>
 </body>
 </html>
