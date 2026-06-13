@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>NqiZbali</title>
   <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-  <meta name="theme-color" content="#0a3d20">
+  <meta name="theme-color" content="#ffffff">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="NqiZbali">
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192.png') }}">
@@ -15,237 +15,262 @@
 
     body {
       font-family: 'Inter', sans-serif;
-      background: #0a3d20;
+      background: #fff;
       min-height: 100vh;
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
 
     /* ── Splash ── */
     #splash {
-      position: fixed;
-      inset: 0;
-      background: linear-gradient(160deg, #051f10 0%, #0a3d20 40%, #1a7c3e 100%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      position: fixed; inset: 0;
+      background: #fff;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
       z-index: 9999;
-      transition: opacity .5s ease, transform .5s ease;
+      transition: opacity .4s ease, transform .4s ease;
     }
-    #splash.out { opacity: 0; transform: scale(1.04); pointer-events: none; }
+    #splash.out { opacity: 0; transform: scale(1.03); pointer-events: none; }
 
-    .splash-ring {
-      width: 100px; height: 100px;
-      border-radius: 50%;
-      background: rgba(255,255,255,.08);
+    .splash-logo-wrap {
+      width: 96px; height: 96px;
+      border-radius: 28px;
+      background: linear-gradient(145deg, #1a7c3e, #25a25a);
       display: flex; align-items: center; justify-content: center;
+      font-size: 3rem;
       margin-bottom: 20px;
-      box-shadow: 0 0 0 12px rgba(255,255,255,.04), 0 0 0 24px rgba(255,255,255,.02);
-      animation: splashPulse 2s ease-in-out infinite;
+      box-shadow: 0 20px 48px rgba(26,124,62,.3);
+      animation: splashFloat 2s ease-in-out infinite;
     }
-    @keyframes splashPulse {
-      0%,100% { transform: scale(1); }
-      50%      { transform: scale(1.06); }
+    @keyframes splashFloat {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-8px); }
     }
-    .splash-emoji { font-size: 3rem; }
-    .splash-title { font-size: 2.2rem; font-weight: 900; color: #fff; letter-spacing: -1px; }
-    .splash-sub   { font-size: .85rem; color: rgba(255,255,255,.5); margin-top: .4rem; letter-spacing: .5px; }
-    .splash-dots  { display: flex; gap: 8px; margin-top: 2.5rem; }
-    .splash-dot   { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.3); }
-    .splash-dot.active { background: #4CAF50; animation: dotPop .4s ease forwards; }
-    @keyframes dotPop { to { transform: scale(1.4); background: #fff; } }
+    .splash-name { font-size: 2rem; font-weight: 900; color: #1C1C1E; letter-spacing: -1px; }
+    .splash-city { font-size: .85rem; color: #AEAEB2; margin-top: .3rem; font-weight: 500; }
+    .splash-loader {
+      width: 48px; height: 4px;
+      background: #E5E5EA;
+      border-radius: 99px;
+      margin-top: 2rem;
+      overflow: hidden;
+    }
+    .splash-loader-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #1a7c3e, #4CAF50);
+      border-radius: 99px;
+      animation: loaderFill 1.8s ease forwards;
+    }
+    @keyframes loaderFill { from { width: 0; } to { width: 100%; } }
 
     /* ── Main ── */
-    #main { min-height: 100vh; opacity: 0; transition: opacity .5s ease; }
+    #main { opacity: 0; transition: opacity .5s ease; }
     #main.in { opacity: 1; }
 
     /* ── Hero ── */
     .hero {
-      background: linear-gradient(160deg, #051f10 0%, #0a3d20 50%, #1a7c3e 100%);
-      padding: 3.5rem 1.5rem 2rem;
+      padding: 60px 24px 32px;
+      background: #fff;
       position: relative;
       overflow: hidden;
     }
-    .hero-bg-circle {
+    .hero-bg {
       position: absolute;
-      border-radius: 50%;
-      background: rgba(255,255,255,.04);
+      inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(26,124,62,.08) 0%, transparent 70%);
+      pointer-events: none;
     }
-    .hero-bg-circle.c1 { width:280px;height:280px;top:-80px;right:-60px; }
-    .hero-bg-circle.c2 { width:180px;height:180px;bottom:-40px;left:-40px; }
-    .hero-bg-circle.c3 { width:120px;height:120px;top:40px;left:30%; }
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #D1FAE5;
+      color: #065F46;
+      border-radius: 99px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      letter-spacing: .3px;
+    }
+    .hero-tag-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #065F46;
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
 
-    .hero-top {
+    .hero-title {
+      font-size: 2.6rem;
+      font-weight: 900;
+      color: #1C1C1E;
+      line-height: 1.1;
+      letter-spacing: -1.5px;
+      margin-bottom: 14px;
+    }
+    .hero-title span { color: #1a7c3e; }
+
+    .hero-desc {
+      font-size: 1rem;
+      color: #6C6C70;
+      line-height: 1.6;
+      margin-bottom: 28px;
+      font-weight: 400;
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 0;
+      background: #F2F2F7;
+      border-radius: 20px;
+      padding: 4px;
+      margin-bottom: 0;
+    }
+    .hero-stat {
+      flex: 1;
+      text-align: center;
+      padding: 14px 8px;
+      border-radius: 16px;
+      transition: background .2s;
+    }
+    .hero-stat.hl { background: #fff; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+    .hero-stat-val { font-size: 1.3rem; font-weight: 900; color: #1a7c3e; line-height: 1; }
+    .hero-stat-lbl { font-size: .68rem; color: #AEAEB2; margin-top: .2rem; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+
+    /* ── Divider ── */
+    .divider {
+      height: 8px;
+      background: #F2F2F7;
+    }
+
+    /* ── Role section ── */
+    .roles-section { padding: 28px 20px 20px; background: #fff; }
+    .roles-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 2rem;
-      position: relative;
-      z-index: 1;
+      margin-bottom: 20px;
     }
-    .hero-brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .hero-logo-wrap {
-      width: 42px; height: 42px;
-      border-radius: 14px;
-      background: rgba(255,255,255,.12);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.4rem;
-    }
-    .hero-brand-name { font-size: 1.3rem; font-weight: 900; color: #fff; letter-spacing: -.5px; }
-    .hero-brand-sub  { font-size: .68rem; color: rgba(255,255,255,.5); margin-top: 1px; }
+    .roles-title { font-size: 1.2rem; font-weight: 800; color: #1C1C1E; letter-spacing: -.3px; }
+    .roles-sub   { font-size: .8rem; color: #AEAEB2; font-weight: 500; margin-top: .15rem; }
 
-    .hero-body {
-      position: relative;
-      z-index: 1;
-      text-align: center;
-      padding: 1rem 0 .5rem;
-    }
-    .hero-tagline {
-      font-size: 2rem;
-      font-weight: 900;
-      color: #fff;
-      line-height: 1.15;
-      letter-spacing: -1px;
-      margin-bottom: .75rem;
-    }
-    .hero-tagline em { color: #4CAF50; font-style: normal; }
-    .hero-desc {
-      font-size: .85rem;
-      color: rgba(255,255,255,.6);
-      line-height: 1.6;
-    }
-
-    .hero-pills {
-      display: flex;
-      justify-content: center;
-      gap: .6rem;
-      margin-top: 1.5rem;
-      flex-wrap: wrap;
-    }
-    .hero-pill {
-      background: rgba(255,255,255,.1);
-      border: 1px solid rgba(255,255,255,.15);
-      border-radius: 99px;
-      padding: .4rem 1rem;
-      font-size: .75rem;
-      color: rgba(255,255,255,.85);
-      font-weight: 600;
-      backdrop-filter: blur(4px);
-    }
-    .hero-pill.highlight { background: rgba(76,175,80,.25); border-color: rgba(76,175,80,.4); color: #a5d6a7; }
-
-    /* ── Wave separator ── */
-    .wave {
-      width: 100%;
-      line-height: 0;
-      margin-bottom: -2px;
-    }
-    .wave svg { display: block; width: 100%; }
-
-    /* ── Roles section ── */
-    .roles-section {
-      background: #f0f7f2;
-      padding: 1.5rem 1.25rem 1rem;
-    }
-    .roles-label {
-      font-size: .72rem;
-      font-weight: 700;
-      color: #9CA3AF;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      text-align: center;
-      margin-bottom: 1.25rem;
-    }
-    .roles-list { display: flex; flex-direction: column; gap: .85rem; }
+    .role-cards { display: flex; flex-direction: column; gap: 12px; }
 
     .role-card {
-      background: #fff;
-      border-radius: 20px;
-      padding: 1.25rem 1.4rem;
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 16px;
+      padding: 18px 18px;
+      border-radius: 22px;
       text-decoration: none;
-      box-shadow: 0 2px 12px rgba(0,0,0,.06), 0 1px 3px rgba(0,0,0,.04);
-      border: 1.5px solid rgba(255,255,255,.9);
       position: relative;
       overflow: hidden;
-      transition: transform .18s ease, box-shadow .18s ease;
+      transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease;
+      box-shadow: 0 4px 20px rgba(0,0,0,.07);
     }
-    .role-card:active { transform: scale(.975); box-shadow: 0 1px 6px rgba(0,0,0,.08); }
+    .role-card:active { transform: scale(.97); box-shadow: 0 2px 8px rgba(0,0,0,.06); }
 
-    .role-card-accent {
+    .role-card.resident {
+      background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+    }
+    .role-card.collector {
+      background: linear-gradient(135deg, #FFF7ED 0%, #FED7AA 100%);
+    }
+    .role-card.syndic {
+      background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%);
+    }
+
+    .role-card-pattern {
       position: absolute;
-      left: 0; top: 0; bottom: 0;
-      width: 4px;
-      border-radius: 4px 0 0 4px;
-    }
-    .resident  .role-card-accent { background: linear-gradient(180deg,#42A5F5,#1E88E5); }
-    .collector .role-card-accent { background: linear-gradient(180deg,#FFA726,#FB8C00); }
-    .syndic    .role-card-accent { background: linear-gradient(180deg,#66BB6A,#43A047); }
-
-    .role-icon-box {
-      width: 52px; height: 52px;
-      border-radius: 16px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.6rem;
-      flex-shrink: 0;
-    }
-    .resident  .role-icon-box { background: #e3f2fd; }
-    .collector .role-icon-box { background: #fff3e0; }
-    .syndic    .role-icon-box { background: #e8f5e9; }
-
-    .role-info { flex: 1; }
-    .role-name { font-size: 1rem; font-weight: 800; color: #111827; margin-bottom: .2rem; }
-    .role-desc { font-size: .75rem; color: #9CA3AF; line-height: 1.4; font-weight: 500; }
-
-    .role-chevron {
-      width: 28px; height: 28px;
+      right: -20px; top: -20px;
+      width: 100px; height: 100px;
       border-radius: 50%;
-      background: #f3f4f6;
+      opacity: .12;
+    }
+    .resident .role-card-pattern  { background: #2563EB; }
+    .collector .role-card-pattern { background: #EA580C; }
+    .syndic .role-card-pattern    { background: #16A34A; }
+
+    .role-icon-wrap {
+      width: 56px; height: 56px;
+      border-radius: 18px;
       display: flex; align-items: center; justify-content: center;
-      font-size: .8rem;
-      color: #9CA3AF;
+      font-size: 1.75rem;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,.08);
+    }
+    .resident  .role-icon-wrap { background: #DBEAFE; }
+    .collector .role-icon-wrap { background: #FED7AA; }
+    .syndic    .role-icon-wrap { background: #DCFCE7; }
+
+    .role-body { flex: 1; }
+    .role-name {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #1C1C1E;
+      margin-bottom: .25rem;
+      letter-spacing: -.2px;
+    }
+    .role-desc { font-size: .78rem; color: #6C6C70; line-height: 1.4; font-weight: 500; }
+
+    .role-arrow {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.7);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      color: #6C6C70;
       flex-shrink: 0;
     }
+
+    /* ── Features ── */
+    .features-section { padding: 28px 20px; background: #F2F2F7; }
+    .features-title { font-size: 1.2rem; font-weight: 800; color: #1C1C1E; letter-spacing: -.3px; margin-bottom: 16px; }
+    .features-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .feature-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 18px 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.05);
+    }
+    .feature-icon { font-size: 1.75rem; margin-bottom: 10px; display: block; }
+    .feature-name { font-size: .88rem; font-weight: 700; color: #1C1C1E; margin-bottom: .25rem; }
+    .feature-desc { font-size: .72rem; color: #AEAEB2; line-height: 1.4; }
 
     /* ── Footer ── */
     .footer {
-      background: #f0f7f2;
-      padding: .5rem 1.5rem 2.5rem;
-      text-align: center;
+      background: #fff;
+      padding: 24px 20px 40px;
+      border-top: 1px solid #F2F2F7;
     }
-    .footer-divider {
-      height: 1px;
-      background: linear-gradient(90deg,transparent,#d1fae5,transparent);
-      margin-bottom: 1.25rem;
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 12px;
     }
-    .footer-links { display: flex; justify-content: center; gap: 1.5rem; margin-bottom: .75rem; }
     .footer-links a {
-      font-size: .72rem;
+      font-size: .78rem;
       color: #1a7c3e;
       text-decoration: none;
       font-weight: 600;
     }
-    .footer-copy { font-size: .68rem; color: #9CA3AF; }
+    .footer-copy {
+      text-align: center;
+      font-size: .72rem;
+      color: #AEAEB2;
+    }
   </style>
 </head>
 <body>
 
 <!-- Splash -->
 <div id="splash">
-  <div class="splash-ring"><span class="splash-emoji">♻️</span></div>
-  <div class="splash-title">NqiZbali</div>
-  <div class="splash-sub">Marrakech · مراكش</div>
-  <div class="splash-dots">
-    <div class="splash-dot active" id="d1"></div>
-    <div class="splash-dot" id="d2"></div>
-    <div class="splash-dot" id="d3"></div>
-  </div>
+  <div class="splash-logo-wrap">♻️</div>
+  <div class="splash-name">NqiZbali</div>
+  <div class="splash-city">Marrakech · مراكش</div>
+  <div class="splash-loader"><div class="splash-loader-fill"></div></div>
 </div>
 
 <!-- Main -->
@@ -253,102 +278,114 @@
 
   <!-- Hero -->
   <div class="hero">
-    <div class="hero-bg-circle c1"></div>
-    <div class="hero-bg-circle c2"></div>
-    <div class="hero-bg-circle c3"></div>
-
-    <div class="hero-top">
-      <div class="hero-brand">
-        <div class="hero-logo-wrap">♻️</div>
-        <div>
-          <div class="hero-brand-name">NqiZbali</div>
-          <div class="hero-brand-sub">Smart Collection</div>
-        </div>
-      </div>
+    <div class="hero-bg"></div>
+    <div class="hero-tag">
+      <div class="hero-tag-dot"></div>
+      Live in Marrakech
     </div>
-
-    <div class="hero-body">
-      <div class="hero-tagline">Smarter trash<br>collection in <em>Marrakech</em></div>
-      <div class="hero-desc">Digital · Trackable · Affordable<br>جمع الزبالة الذكية بمراكش</div>
-      <div class="hero-pills">
-        <span class="hero-pill highlight">✅ 60 DH/apt/month</span>
-        <span class="hero-pill">📍 Live GPS tracking</span>
-        <span class="hero-pill">📱 100% Digital</span>
+    <div class="hero-title">Smart<br>trash <span>collection</span><br>for everyone</div>
+    <div class="hero-desc">Digital · Trackable · Affordable<br>جمع الزبالة الذكية بمراكش</div>
+    <div class="hero-stats">
+      <div class="hero-stat hl">
+        <div class="hero-stat-val">60 DH</div>
+        <div class="hero-stat-lbl">Per apt</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val">24/7</div>
+        <div class="hero-stat-lbl">Tracking</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val">100%</div>
+        <div class="hero-stat-lbl">Digital</div>
       </div>
     </div>
   </div>
 
-  <!-- Wave -->
-  <div class="wave">
-    <svg viewBox="0 0 430 40" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-      <path d="M0,20 C80,40 180,0 280,20 C360,36 400,10 430,20 L430,40 L0,40 Z" fill="#f0f7f2"/>
-    </svg>
-  </div>
+  <div class="divider"></div>
 
   <!-- Roles -->
   <div class="roles-section">
-    <div class="roles-label">Choose your role</div>
-    <div class="roles-list">
+    <div class="roles-header">
+      <div>
+        <div class="roles-title">Who are you?</div>
+        <div class="roles-sub">Choose your role to get started</div>
+      </div>
+    </div>
+    <div class="role-cards">
 
       <a class="role-card resident" href="/resident/login">
-        <div class="role-card-accent"></div>
-        <div class="role-icon-box">🏠</div>
-        <div class="role-info">
+        <div class="role-card-pattern"></div>
+        <div class="role-icon-wrap">🏠</div>
+        <div class="role-body">
           <div class="role-name">I am a Resident</div>
           <div class="role-desc">Signal trash · Track collection · View history</div>
         </div>
-        <div class="role-chevron">›</div>
+        <div class="role-arrow">›</div>
       </a>
 
       <a class="role-card collector" href="/collector">
-        <div class="role-card-accent"></div>
-        <div class="role-icon-box">🚛</div>
-        <div class="role-info">
+        <div class="role-card-pattern"></div>
+        <div class="role-icon-wrap">🚛</div>
+        <div class="role-body">
           <div class="role-name">I am a Collector</div>
           <div class="role-desc">Live GPS map · Scan QR codes · Confirm pickups</div>
         </div>
-        <div class="role-chevron">›</div>
+        <div class="role-arrow">›</div>
       </a>
 
       <a class="role-card syndic" href="/syndic/login">
-        <div class="role-card-accent"></div>
-        <div class="role-icon-box">🏢</div>
-        <div class="role-info">
+        <div class="role-card-pattern"></div>
+        <div class="role-icon-wrap">🏢</div>
+        <div class="role-body">
           <div class="role-name">I am a Syndic</div>
           <div class="role-desc">Manage buildings · Pay subscription · Reports</div>
         </div>
-        <div class="role-chevron">›</div>
+        <div class="role-arrow">›</div>
       </a>
 
+    </div>
+  </div>
+
+  <!-- Features -->
+  <div class="features-section">
+    <div class="features-title">Why NqiZbali?</div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <span class="feature-icon">📍</span>
+        <div class="feature-name">Live GPS</div>
+        <div class="feature-desc">Track your collector in real time</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📱</span>
+        <div class="feature-name">QR Scan</div>
+        <div class="feature-desc">Instant verification with your door sticker</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">💳</span>
+        <div class="feature-name">Easy Pay</div>
+        <div class="feature-desc">Pay by card via CMI network</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🔔</span>
+        <div class="feature-name">Alerts</div>
+        <div class="feature-desc">Know when collector is nearby</div>
+      </div>
     </div>
   </div>
 
   <!-- Footer -->
   <div class="footer">
-    <div class="footer-divider"></div>
     <div class="footer-links">
       <a href="/admin/login">⚙️ Admin</a>
-      <a href="/syndic/register">📝 Register as Syndic</a>
+      <a href="/syndic/register">📝 Become a Syndic</a>
     </div>
-    <div class="footer-copy">NqiZbali © 2026 · Marrakech, Morocco</div>
+    <div class="footer-copy">NqiZbali © 2026 · Marrakech, Morocco 🇲🇦</div>
   </div>
 
 </div>
 
 <script>
-  // Animated splash dots
-  let step = 0;
-  const dots = ['d1','d2','d3'];
-  const dotInterval = setInterval(() => {
-    dots.forEach(d => document.getElementById(d).classList.remove('active'));
-    step = (step + 1) % 3;
-    document.getElementById(dots[step]).classList.add('active');
-  }, 500);
-
-  // Show main after 2s
   setTimeout(() => {
-    clearInterval(dotInterval);
-    dots.forEach(d => document.getElementById(d).classList.add('active'));
     document.getElementById('splash').classList.add('out');
     document.getElementById('main').classList.add('in');
   }, 2000);
