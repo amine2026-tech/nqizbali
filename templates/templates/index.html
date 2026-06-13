@@ -2,397 +2,655 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>NqiZbali</title>
-  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-  <meta name="theme-color" content="#ffffff">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="NqiZbali">
-  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192.png') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <title>NqiZbali — My Home</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { font-family: 'Inter', sans-serif; background: #F2F2F7; color: #1C1C1E; -webkit-font-smoothing: antialiased; }
 
-    body {
-      font-family: 'Inter', sans-serif;
+    /* ── Top bar ── */
+    .topbar {
       background: #fff;
-      min-height: 100vh;
-      overflow-x: hidden;
-      -webkit-font-smoothing: antialiased;
+      padding: 14px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+      border-bottom: 1px solid rgba(0,0,0,.06);
     }
-
-    /* ── Splash ── */
-    #splash {
-      position: fixed; inset: 0;
-      background: #fff;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      z-index: 9999;
-      transition: opacity .4s ease, transform .4s ease;
-    }
-    #splash.out { opacity: 0; transform: scale(1.03); pointer-events: none; }
-
-    .splash-logo-wrap {
-      width: 96px; height: 96px;
-      border-radius: 28px;
-      background: linear-gradient(145deg, #1a7c3e, #25a25a);
+    .topbar-brand { font-size: 17px; font-weight: 800; color: #1C1C1E; letter-spacing: -.3px; }
+    .topbar-time  { font-size: 13px; color: #AEAEB2; font-weight: 500; }
+    .topbar-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: linear-gradient(135deg, #1a7c3e, #25a25a);
+      color: #fff; font-size: .8rem; font-weight: 800;
       display: flex; align-items: center; justify-content: center;
-      font-size: 3rem;
-      margin-bottom: 20px;
-      box-shadow: 0 20px 48px rgba(26,124,62,.3);
-      animation: splashFloat 2s ease-in-out infinite;
-    }
-    @keyframes splashFloat {
-      0%,100% { transform: translateY(0); }
-      50%      { transform: translateY(-8px); }
-    }
-    .splash-name { font-size: 2rem; font-weight: 900; color: #1C1C1E; letter-spacing: -1px; }
-    .splash-city { font-size: .85rem; color: #AEAEB2; margin-top: .3rem; font-weight: 500; }
-    .splash-loader {
-      width: 48px; height: 4px;
-      background: #E5E5EA;
-      border-radius: 99px;
-      margin-top: 2rem;
-      overflow: hidden;
-    }
-    .splash-loader-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #1a7c3e, #4CAF50);
-      border-radius: 99px;
-      animation: loaderFill 1.8s ease forwards;
-    }
-    @keyframes loaderFill { from { width: 0; } to { width: 100%; } }
-
-    /* ── Main ── */
-    #main { opacity: 0; transition: opacity .5s ease; }
-    #main.in { opacity: 1; }
-
-    /* ── Hero ── */
-    .hero {
-      padding: 60px 24px 32px;
-      background: #fff;
-      position: relative;
-      overflow: hidden;
-    }
-    .hero-bg {
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(26,124,62,.08) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    .hero-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: #D1FAE5;
-      color: #065F46;
-      border-radius: 99px;
-      padding: 6px 14px;
-      font-size: 12px;
-      font-weight: 700;
-      margin-bottom: 20px;
-      letter-spacing: .3px;
-    }
-    .hero-tag-dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: #065F46;
-      animation: pulse 1.4s ease-in-out infinite;
-    }
-    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
-
-    .hero-title {
-      font-size: 2.6rem;
-      font-weight: 900;
-      color: #1C1C1E;
-      line-height: 1.1;
-      letter-spacing: -1.5px;
-      margin-bottom: 14px;
-    }
-    .hero-title span { color: #1a7c3e; }
-
-    .hero-desc {
-      font-size: 1rem;
-      color: #6C6C70;
-      line-height: 1.6;
-      margin-bottom: 28px;
-      font-weight: 400;
+      cursor: pointer; box-shadow: 0 2px 8px rgba(26,124,62,.3);
     }
 
-    .hero-stats {
-      display: flex;
-      gap: 0;
-      background: #F2F2F7;
-      border-radius: 20px;
-      padding: 4px;
-      margin-bottom: 0;
+    /* ── Bottom nav ── */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: rgba(255,255,255,.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(0,0,0,.06);
+      display: flex; z-index: 200;
+      padding-bottom: env(safe-area-inset-bottom);
     }
-    .hero-stat {
-      flex: 1;
-      text-align: center;
-      padding: 14px 8px;
-      border-radius: 16px;
+    .nav-item {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; padding: 10px 8px 8px;
+      cursor: pointer; border: none; background: none;
+      font-family: inherit; text-decoration: none;
+      position: relative; transition: transform .15s;
+    }
+    .nav-item:active { transform: scale(.9); }
+    .nav-icon-wrap {
+      width: 32px; height: 32px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; margin-bottom: .2rem;
       transition: background .2s;
     }
-    .hero-stat.hl { background: #fff; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
-    .hero-stat-val { font-size: 1.3rem; font-weight: 900; color: #1a7c3e; line-height: 1; }
-    .hero-stat-lbl { font-size: .68rem; color: #AEAEB2; margin-top: .2rem; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+    .nav-item.active .nav-icon-wrap { background: #D1FAE5; }
+    .nav-label { font-size: .62rem; font-weight: 600; color: #AEAEB2; transition: color .2s; }
+    .nav-item.active .nav-label { color: #1a7c3e; }
 
-    /* ── Divider ── */
-    .divider {
-      height: 8px;
-      background: #F2F2F7;
-    }
+    /* ── Pages ── */
+    .page { display: none; padding: 16px 16px 90px; }
+    .page.active { display: block; animation: fadeUp .25s ease; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* ── Role section ── */
-    .roles-section { padding: 28px 20px 20px; background: #fff; }
-    .roles-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 20px;
-    }
-    .roles-title { font-size: 1.2rem; font-weight: 800; color: #1C1C1E; letter-spacing: -.3px; }
-    .roles-sub   { font-size: .8rem; color: #AEAEB2; font-weight: 500; margin-top: .15rem; }
-
-    .role-cards { display: flex; flex-direction: column; gap: 12px; }
-
-    .role-card {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 18px 18px;
-      border-radius: 22px;
-      text-decoration: none;
+    /* ── Profile story header ── */
+    .story-header {
+      background: linear-gradient(145deg, #0a3d20, #1a7c3e, #25a25a);
+      border-radius: 28px;
+      padding: 22px 20px 20px;
+      margin-bottom: 14px;
       position: relative;
       overflow: hidden;
-      transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease;
-      box-shadow: 0 4px 20px rgba(0,0,0,.07);
+      box-shadow: 0 12px 40px rgba(10,61,32,.25);
     }
-    .role-card:active { transform: scale(.97); box-shadow: 0 2px 8px rgba(0,0,0,.06); }
-
-    .role-card.resident {
-      background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
-    }
-    .role-card.collector {
-      background: linear-gradient(135deg, #FFF7ED 0%, #FED7AA 100%);
-    }
-    .role-card.syndic {
-      background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%);
-    }
-
-    .role-card-pattern {
+    .story-header::before {
+      content: '';
       position: absolute;
-      right: -20px; top: -20px;
-      width: 100px; height: 100px;
+      width: 200px; height: 200px;
       border-radius: 50%;
-      opacity: .12;
+      background: rgba(255,255,255,.05);
+      top: -80px; right: -60px;
     }
-    .resident .role-card-pattern  { background: #2563EB; }
-    .collector .role-card-pattern { background: #EA580C; }
-    .syndic .role-card-pattern    { background: #16A34A; }
-
-    .role-icon-wrap {
-      width: 56px; height: 56px;
-      border-radius: 18px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.75rem;
+    .story-header::after {
+      content: '';
+      position: absolute;
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.04);
+      bottom: -40px; left: 20px;
+    }
+    .story-top { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; position: relative; z-index: 1; }
+    .story-avatar-ring {
+      padding: 3px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #4CAF50, #A5D6A7);
       flex-shrink: 0;
-      box-shadow: 0 4px 12px rgba(0,0,0,.08);
     }
-    .resident  .role-icon-wrap { background: #DBEAFE; }
-    .collector .role-icon-wrap { background: #FED7AA; }
-    .syndic    .role-icon-wrap { background: #DCFCE7; }
+    .story-avatar {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: rgba(255,255,255,.15);
+      color: #fff; font-size: 1.2rem; font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+      border: 2px solid #0a3d20;
+    }
+    .story-name { font-size: 1.15rem; font-weight: 800; color: #fff; margin-bottom: .2rem; letter-spacing: -.3px; }
+    .story-addr { font-size: .78rem; color: rgba(255,255,255,.65); }
+    .story-tags { display: flex; gap: .5rem; flex-wrap: wrap; position: relative; z-index: 1; }
+    .story-tag {
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 99px;
+      padding: .35rem .9rem;
+      font-size: .72rem; font-weight: 700;
+      color: rgba(255,255,255,.9);
+      backdrop-filter: blur(4px);
+    }
+    .story-tag.ok  { background: rgba(76,175,80,.25); border-color: rgba(76,175,80,.4); color: #A5D6A7; }
+    .story-tag.bad { background: rgba(255,59,48,.2);  border-color: rgba(255,59,48,.3);  color: #FCA5A5; }
 
-    .role-body { flex: 1; }
-    .role-name {
+    /* ── Nearby alert ── */
+    .nearby-card {
+      background: linear-gradient(135deg, #FFF7ED, #FFEDD5);
+      border: 2px solid #FB923C;
+      border-radius: 22px;
+      padding: 14px 16px;
+      margin-bottom: 14px;
+      display: none;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 6px 24px rgba(251,146,60,.2);
+    }
+    .nearby-truck { font-size: 2.2rem; animation: truckMove .5s ease-in-out infinite alternate; }
+    @keyframes truckMove { to { transform: translateX(6px); } }
+    .nearby-title { font-size: .92rem; font-weight: 800; color: #C2410C; }
+    .nearby-sub   { font-size: .75rem; color: #9A3412; margin-top: .1rem; }
+
+    /* ── Sub alert ── */
+    .sub-alert {
+      background: #FFFBEB;
+      border: 1.5px solid #FCD34D;
+      border-radius: 18px;
+      padding: .85rem 1rem;
+      margin-bottom: 14px;
+      font-size: .8rem; color: #92400E;
+      display: flex; align-items: flex-start; gap: .6rem;
+    }
+    .sub-alert a { color: #1a7c3e; font-weight: 700; }
+
+    /* ── Status card ── */
+    .status-card {
+      background: #fff;
+      border-radius: 28px;
+      padding: 22px 20px;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.07);
+    }
+    .status-label { font-size: .7rem; font-weight: 700; color: #AEAEB2; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+    .status-row { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+    .status-indicator {
+      width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0;
+      transition: all .3s;
+    }
+    .status-indicator.idle     { background: #E5E5EA; }
+    .status-indicator.ready    { background: #34C759; box-shadow: 0 0 0 4px rgba(52,199,89,.2); animation: pulse 1.4s infinite; }
+    .status-indicator.done     { background: #007AFF; }
+    @keyframes pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(.7);opacity:.5} }
+    .status-text h3 { font-size: 1rem; font-weight: 700; color: #1C1C1E; }
+    .status-text p  { font-size: .75rem; color: #AEAEB2; margin-top: .15rem; }
+
+    .action-btn {
+      width: 100%;
+      padding: 17px;
+      border-radius: 18px;
+      border: none;
       font-size: 1rem;
       font-weight: 800;
-      color: #1C1C1E;
-      margin-bottom: .25rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      font-family: inherit;
+      transition: transform .15s cubic-bezier(.34,1.56,.64,1), box-shadow .15s;
       letter-spacing: -.2px;
     }
-    .role-desc { font-size: .78rem; color: #6C6C70; line-height: 1.4; font-weight: 500; }
+    .action-btn:active { transform: scale(.96); }
+    .action-btn.ready  { background: linear-gradient(135deg, #1a7c3e, #25a25a); color: #fff; box-shadow: 0 8px 24px rgba(26,124,62,.35); }
+    .action-btn.cancel { background: #FFF5F5; color: #FF3B30; border: 1.5px solid #FFCDD2; box-shadow: none; }
+    .action-hint { font-size: .75rem; color: #AEAEB2; text-align: center; margin-top: 10px; }
 
-    .role-arrow {
-      width: 32px; height: 32px;
-      border-radius: 50%;
-      background: rgba(255,255,255,.7);
+    /* ── Map card ── */
+    .map-card {
+      background: #fff;
+      border-radius: 28px;
+      padding: 18px 18px 14px;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.07);
+    }
+    .map-card-label { font-size: .7rem; font-weight: 700; color: #AEAEB2; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+    #client-map { height: 280px; border-radius: 18px; overflow: hidden; z-index: 1; }
+    .map-wrap { position: relative; }
+    .map-btn {
+      position: absolute; bottom: 12px; right: 10px; z-index: 999;
+      background: #fff; border: none; border-radius: 12px;
+      width: 38px; height: 38px; font-size: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.12); cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1rem;
-      color: #6C6C70;
-      flex-shrink: 0;
+    }
+    .legend { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
+    .legend-item { display: flex; align-items: center; gap: 5px; font-size: .68rem; color: #AEAEB2; font-weight: 500; }
+    .legend-dot  { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ── History ── */
+    .history-card {
+      background: #fff;
+      border-radius: 28px;
+      padding: 18px 20px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.07);
+      margin-bottom: 14px;
+    }
+    .history-label { font-size: .7rem; font-weight: 700; color: #AEAEB2; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+    .log-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 11px 0;
+      border-bottom: 1px solid #F2F2F7;
+    }
+    .log-row:last-child { border-bottom: none; }
+    .log-icon {
+      width: 38px; height: 38px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; flex-shrink: 0;
+    }
+    .log-icon.ok  { background: #D1FAE5; }
+    .log-icon.bad { background: #FEE2E2; }
+    .log-main { font-size: .82rem; font-weight: 600; color: #1C1C1E; }
+    .log-sub  { font-size: .7rem; color: #AEAEB2; margin-top: .1rem; }
+    .log-chip { margin-left: auto; flex-shrink: 0; padding: .25rem .7rem; border-radius: 99px; font-size: .68rem; font-weight: 700; }
+    .log-chip.ok  { background: #D1FAE5; color: #065F46; }
+    .log-chip.bad { background: #FEE2E2; color: #991B1B; }
+
+    /* ── QR card ── */
+    .qr-card {
+      background: #fff;
+      border-radius: 28px;
+      padding: 18px 20px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.07);
+      display: flex; align-items: center; gap: 16px;
+      margin-bottom: 14px;
+    }
+    .qr-code { font-size: .9rem; font-weight: 800; color: #1a7c3e; font-family: monospace; letter-spacing: 1px; }
+    .qr-addr { font-size: .75rem; color: #AEAEB2; margin-top: .2rem; }
+    .qr-btn {
+      margin-top: .6rem;
+      background: linear-gradient(135deg, #1a7c3e, #25a25a);
+      color: #fff; border: none; border-radius: 10px;
+      padding: .45rem 1rem; font-size: .75rem; font-weight: 700;
+      cursor: pointer; font-family: inherit;
+      box-shadow: 0 3px 10px rgba(26,124,62,.25);
     }
 
-    /* ── Features ── */
-    .features-section { padding: 28px 20px; background: #F2F2F7; }
-    .features-title { font-size: 1.2rem; font-weight: 800; color: #1C1C1E; letter-spacing: -.3px; margin-bottom: 16px; }
-    .features-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .feature-card {
+    /* ── Profile page ── */
+    .profile-card {
       background: #fff;
-      border-radius: 20px;
-      padding: 18px 16px;
-      box-shadow: 0 2px 12px rgba(0,0,0,.05);
+      border-radius: 28px;
+      padding: 18px 20px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.07);
+      margin-bottom: 14px;
     }
-    .feature-icon { font-size: 1.75rem; margin-bottom: 10px; display: block; }
-    .feature-name { font-size: .88rem; font-weight: 700; color: #1C1C1E; margin-bottom: .25rem; }
-    .feature-desc { font-size: .72rem; color: #AEAEB2; line-height: 1.4; }
+    .profile-card-label { font-size: .68rem; font-weight: 700; color: #AEAEB2; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+    .profile-row-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: .85rem 0;
+      border-bottom: 1px solid #F2F2F7;
+    }
+    .profile-row-item:last-child { border-bottom: none; }
+    .profile-key { font-size: .8rem; color: #AEAEB2; font-weight: 500; }
+    .profile-val { font-size: .82rem; font-weight: 700; color: #1C1C1E; text-align: right; }
+    .logout-btn {
+      width: 100%; background: #FFF5F5; color: #FF3B30;
+      border: 1.5px solid #FFCDD2; border-radius: 18px;
+      padding: 1rem; font-size: .95rem; font-weight: 700;
+      cursor: pointer; font-family: inherit;
+      transition: background .15s;
+    }
+    .logout-btn:active { background: #FEE2E2; }
 
-    /* ── Footer ── */
-    .footer {
-      background: #fff;
-      padding: 24px 20px 40px;
-      border-top: 1px solid #F2F2F7;
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 82px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(28,28,30,.92); backdrop-filter: blur(10px);
+      color: #fff; padding: .65rem 1.25rem; border-radius: 99px;
+      font-size: .82rem; font-weight: 600; z-index: 9999;
+      white-space: nowrap; box-shadow: 0 8px 32px rgba(0,0,0,.2);
+      transition: transform .4s cubic-bezier(.34,1.56,.64,1), opacity .3s;
+      opacity: 0; pointer-events: none;
     }
-    .footer-links {
-      display: flex;
-      justify-content: center;
-      gap: 24px;
-      margin-bottom: 12px;
-    }
-    .footer-links a {
-      font-size: .78rem;
-      color: #1a7c3e;
-      text-decoration: none;
-      font-weight: 600;
-    }
-    .footer-copy {
-      text-align: center;
-      font-size: .72rem;
-      color: #AEAEB2;
-    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
   </style>
 </head>
 <body>
 
-<!-- Splash -->
-<div id="splash">
-  <div class="splash-logo-wrap">♻️</div>
-  <div class="splash-name">NqiZbali</div>
-  <div class="splash-city">Marrakech · مراكش</div>
-  <div class="splash-loader"><div class="splash-loader-fill"></div></div>
-</div>
-
-<!-- Main -->
-<div id="main">
-
-  <!-- Hero -->
-  <div class="hero">
-    <div class="hero-bg"></div>
-    <div class="hero-tag">
-      <div class="hero-tag-dot"></div>
-      Live in Marrakech
-    </div>
-    <div class="hero-title">Smart<br>trash <span>collection</span><br>for everyone</div>
-    <div class="hero-desc">Digital · Trackable · Affordable<br>جمع الزبالة الذكية بمراكش</div>
-    <div class="hero-stats">
-      <div class="hero-stat hl">
-        <div class="hero-stat-val">60 DH</div>
-        <div class="hero-stat-lbl">Per apt</div>
-      </div>
-      <div class="hero-stat">
-        <div class="hero-stat-val">24/7</div>
-        <div class="hero-stat-lbl">Tracking</div>
-      </div>
-      <div class="hero-stat">
-        <div class="hero-stat-val">100%</div>
-        <div class="hero-stat-lbl">Digital</div>
-      </div>
-    </div>
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="topbar-brand">♻️ NqiZbali</div>
+    <div class="topbar-time" id="clock">--:--</div>
+    <div class="topbar-avatar" id="top-av" onclick="switchTab('profile')">?</div>
   </div>
 
-  <div class="divider"></div>
+  <!-- HOME page -->
+  <div class="page active" id="page-home">
 
-  <!-- Roles -->
-  <div class="roles-section">
-    <div class="roles-header">
+    <div class="story-header">
+      <div class="story-top">
+        <div class="story-avatar-ring">
+          <div class="story-avatar" id="s-av">?</div>
+        </div>
+        <div>
+          <div class="story-name" id="s-name">Loading...</div>
+          <div class="story-addr" id="s-addr">📍 Marrakech</div>
+        </div>
+      </div>
+      <div class="story-tags">
+        <span class="story-tag" id="s-sub">⏳ Loading...</span>
+        <span class="story-tag" id="s-qr">🏷️ —</span>
+      </div>
+    </div>
+
+    <div class="nearby-card" id="nearby-card">
+      <div class="nearby-truck">🚛</div>
       <div>
-        <div class="roles-title">Who are you?</div>
-        <div class="roles-sub">Choose your role to get started</div>
+        <div class="nearby-title">Collector is nearby!</div>
+        <div class="nearby-sub" id="nearby-sub">Put your trash out now!</div>
       </div>
     </div>
-    <div class="role-cards">
 
-      <a class="role-card resident" href="/resident/login">
-        <div class="role-card-pattern"></div>
-        <div class="role-icon-wrap">🏠</div>
-        <div class="role-body">
-          <div class="role-name">I am a Resident</div>
-          <div class="role-desc">Signal trash · Track collection · View history</div>
-        </div>
-        <div class="role-arrow">›</div>
-      </a>
-
-      <a class="role-card collector" href="/collector">
-        <div class="role-card-pattern"></div>
-        <div class="role-icon-wrap">🚛</div>
-        <div class="role-body">
-          <div class="role-name">I am a Collector</div>
-          <div class="role-desc">Live GPS map · Scan QR codes · Confirm pickups</div>
-        </div>
-        <div class="role-arrow">›</div>
-      </a>
-
-      <a class="role-card syndic" href="/syndic/login">
-        <div class="role-card-pattern"></div>
-        <div class="role-icon-wrap">🏢</div>
-        <div class="role-body">
-          <div class="role-name">I am a Syndic</div>
-          <div class="role-desc">Manage buildings · Pay subscription · Reports</div>
-        </div>
-        <div class="role-arrow">›</div>
-      </a>
-
+    <div class="sub-alert" id="sub-alert" style="display:none">
+      <span>⚠️</span>
+      <div>Subscription <strong>not active</strong> —
+      <a href="/syndic/login">contact your syndic</a>.</div>
     </div>
+
+    <div class="status-card">
+      <div class="status-label">Trash status</div>
+      <div class="status-row">
+        <div class="status-indicator idle" id="s-dot"></div>
+        <div class="status-text">
+          <h3 id="s-title">Not ready</h3>
+          <p id="s-desc">Signal when your trash is outside</p>
+        </div>
+      </div>
+      <button class="action-btn ready" id="action-btn" onclick="toggleTrash()">
+        🗑️ My trash is ready
+      </button>
+      <div class="action-hint" id="action-hint">Tap to notify your collector</div>
+    </div>
+
   </div>
 
-  <!-- Features -->
-  <div class="features-section">
-    <div class="features-title">Why NqiZbali?</div>
-    <div class="features-grid">
-      <div class="feature-card">
-        <span class="feature-icon">📍</span>
-        <div class="feature-name">Live GPS</div>
-        <div class="feature-desc">Track your collector in real time</div>
+  <!-- MAP page -->
+  <div class="page" id="page-map">
+    <div class="map-card">
+      <div class="map-card-label">Live Map</div>
+      <div class="map-wrap">
+        <div id="client-map"></div>
+        <button class="map-btn" onclick="centerMap()">🎯</button>
       </div>
-      <div class="feature-card">
-        <span class="feature-icon">📱</span>
-        <div class="feature-name">QR Scan</div>
-        <div class="feature-desc">Instant verification with your door sticker</div>
-      </div>
-      <div class="feature-card">
-        <span class="feature-icon">💳</span>
-        <div class="feature-name">Easy Pay</div>
-        <div class="feature-desc">Pay by card via CMI network</div>
-      </div>
-      <div class="feature-card">
-        <span class="feature-icon">🔔</span>
-        <div class="feature-name">Alerts</div>
-        <div class="feature-desc">Know when collector is nearby</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#1a7c3e"></div>My home</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#00695C"></div>Collector</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#FFD60A"></div>Ready</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(251,146,60,.4)"></div>300m zone</div>
       </div>
     </div>
   </div>
 
-  <!-- Footer -->
-  <div class="footer">
-    <div class="footer-links">
-      <a href="/admin/login">⚙️ Admin</a>
-      <a href="/syndic/register">📝 Become a Syndic</a>
+  <!-- HISTORY page -->
+  <div class="page" id="page-history">
+    <div class="history-card">
+      <div class="history-label">Collection History</div>
+      <div id="history-list">
+        <div style="text-align:center;color:#AEAEB2;padding:2rem;font-size:.85rem">Loading...</div>
+      </div>
     </div>
-    <div class="footer-copy">NqiZbali © 2026 · Marrakech, Morocco 🇲🇦</div>
+    <div class="qr-card">
+      <svg width="72" height="72" viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg">
+        <rect width="90" height="90" rx="10" fill="#F0FDF4"/>
+        <rect x="5" y="5" width="30" height="30" rx="3" fill="none" stroke="#1a7c3e" stroke-width="3"/>
+        <rect x="11" y="11" width="18" height="18" rx="2" fill="#1a7c3e"/>
+        <rect x="55" y="5" width="30" height="30" rx="3" fill="none" stroke="#1a7c3e" stroke-width="3"/>
+        <rect x="61" y="11" width="18" height="18" rx="2" fill="#1a7c3e"/>
+        <rect x="5" y="55" width="30" height="30" rx="3" fill="none" stroke="#1a7c3e" stroke-width="3"/>
+        <rect x="11" y="61" width="18" height="18" rx="2" fill="#1a7c3e"/>
+        <rect x="42" y="7" width="5" height="5" fill="#1a7c3e"/>
+        <rect x="42" y="14" width="5" height="5" fill="#1a7c3e"/>
+        <rect x="42" y="28" width="5" height="5" fill="#1a7c3e"/>
+        <rect x="55" y="42" width="5" height="5" fill="#1a7c3e"/>
+        <rect x="63" y="42" width="5" height="5" fill="#1a7c3e"/>
+        <rect x="71" y="42" width="5" height="5" fill="#1a7c3e"/>
+        <rect x="42" y="42" width="5" height="5" fill="#1a7c3e"/>
+        <rect x="42" y="58" width="5" height="5" fill="#1a7c3e"/>
+        <rect x="42" y="74" width="5" height="5" fill="#1a7c3e"/>
+      </svg>
+      <div>
+        <div class="qr-code" id="qr-code">—</div>
+        <div class="qr-addr" id="qr-addr">—</div>
+        <button class="qr-btn" onclick="showToast('📄 QR ready!')">📥 Download QR</button>
+      </div>
+    </div>
   </div>
 
-</div>
+  <!-- PROFILE page -->
+  <div class="page" id="page-profile">
+    <div class="profile-card">
+      <div class="profile-card-label">My Account</div>
+      <div class="profile-row-item">
+        <span class="profile-key">Name</span>
+        <span class="profile-val" id="p-name">—</span>
+      </div>
+      <div class="profile-row-item">
+        <span class="profile-key">Address</span>
+        <span class="profile-val" id="p-addr">—</span>
+      </div>
+      <div class="profile-row-item">
+        <span class="profile-key">Neighborhood</span>
+        <span class="profile-val" id="p-hood">—</span>
+      </div>
+      <div class="profile-row-item">
+        <span class="profile-key">QR Code</span>
+        <span class="profile-val" id="p-qr" style="color:#1a7c3e;font-family:monospace">—</span>
+      </div>
+      <div class="profile-row-item">
+        <span class="profile-key">Subscription</span>
+        <span class="profile-val" id="p-sub">—</span>
+      </div>
+    </div>
+    <div class="profile-card">
+      <div class="profile-card-label">App</div>
+      <div class="profile-row-item">
+        <span class="profile-key">Version</span>
+        <span class="profile-val">NqiZbali v2.0</span>
+      </div>
+      <div class="profile-row-item">
+        <span class="profile-key">City</span>
+        <span class="profile-val">Marrakech 🇲🇦</span>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="location.href='/resident/logout'">🚪 Log out</button>
+  </div>
 
-<script>
-  setTimeout(() => {
-    document.getElementById('splash').classList.add('out');
-    document.getElementById('main').classList.add('in');
-  }, 2000);
+  <!-- Bottom Nav -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" id="nav-home" onclick="switchTab('home')">
+      <div class="nav-icon-wrap">🏠</div>
+      <div class="nav-label">Home</div>
+    </button>
+    <button class="nav-item" id="nav-map" onclick="switchTab('map')">
+      <div class="nav-icon-wrap">🗺️</div>
+      <div class="nav-label">Map</div>
+    </button>
+    <button class="nav-item" id="nav-history" onclick="switchTab('history')">
+      <div class="nav-icon-wrap">📋</div>
+      <div class="nav-label">History</div>
+    </button>
+    <button class="nav-item" id="nav-profile" onclick="switchTab('profile')">
+      <div class="nav-icon-wrap">👤</div>
+      <div class="nav-label">Profile</div>
+    </button>
+  </nav>
 
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  <div class="toast" id="toast"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+  // Clock
+  function tick() {
+    const n = new Date();
+    document.getElementById('clock').textContent =
+      n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0');
   }
-</script>
+  tick(); setInterval(tick, 10000);
+
+  // Toast
+  function showToast(m) {
+    const t = document.getElementById('toast');
+    t.textContent = m; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  // Tabs
+  let mapInited = false;
+  function switchTab(tab) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('page-'+tab).classList.add('active');
+    document.getElementById('nav-'+tab).classList.add('active');
+    if (tab === 'map' && !mapInited && currentClient) {
+      setTimeout(() => { initMap(currentClient); mapInited = true; }, 80);
+    }
+    if (tab === 'history' && currentClient) loadHistory(currentClient.id);
+  }
+
+  // State
+  let currentClient = null, map = null, myMarker = null, collectorMarker = null;
+  let trashReady = false, nearbyAlerted = false;
+
+  function haversine(lat1,lng1,lat2,lng2) {
+    const R=6371000, d1=lat1*Math.PI/180, d2=lat2*Math.PI/180;
+    const dl=(lat2-lat1)*Math.PI/180, dg=(lng2-lng1)*Math.PI/180;
+    const a=Math.sin(dl/2)**2+Math.cos(d1)*Math.cos(d2)*Math.sin(dg/2)**2;
+    return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+  }
+
+  // Load
+  async function loadMe() {
+    try {
+      const r = await fetch('/api/client/me');
+      if (r.status === 401) { location.href='/resident/login'; return; }
+      currentClient = await r.json();
+      renderUI(currentClient);
+    } catch(e) { console.error(e); }
+  }
+
+  function renderUI(c) {
+    const init = c.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    document.getElementById('top-av').textContent   = init;
+    document.getElementById('s-av').textContent     = init;
+    document.getElementById('s-name').textContent   = c.name;
+    document.getElementById('s-addr').textContent   = '📍 '+c.address+', '+c.neighborhood;
+    document.getElementById('s-qr').textContent     = '🏷️ '+c.qr_code;
+    document.getElementById('qr-code').textContent  = c.qr_code;
+    document.getElementById('qr-addr').textContent  = c.address+' · '+c.neighborhood;
+    document.getElementById('p-name').textContent   = c.name;
+    document.getElementById('p-addr').textContent   = c.address;
+    document.getElementById('p-hood').textContent   = c.neighborhood;
+    document.getElementById('p-qr').textContent     = c.qr_code;
+
+    if (c.subscription_active) {
+      document.getElementById('s-sub').textContent  = '✅ Active';
+      document.getElementById('s-sub').className    = 'story-tag ok';
+      document.getElementById('p-sub').textContent  = '✅ Active';
+      document.getElementById('sub-alert').style.display = 'none';
+      document.getElementById('action-btn').disabled = false;
+      document.getElementById('action-btn').style.opacity = '1';
+    } else {
+      document.getElementById('s-sub').textContent  = '❌ Inactive';
+      document.getElementById('s-sub').className    = 'story-tag bad';
+      document.getElementById('p-sub').textContent  = '❌ Inactive';
+      document.getElementById('sub-alert').style.display = 'flex';
+      document.getElementById('action-btn').disabled = true;
+      document.getElementById('action-btn').style.opacity = '0.45';
+    }
+    trashReady = c.trash_ready;
+    renderBtn();
+    pollCollector();
+    setInterval(pollCollector, 5000);
+  }
+
+  function renderBtn() {
+    const btn = document.getElementById('action-btn');
+    const dot = document.getElementById('s-dot');
+    const title = document.getElementById('s-title');
+    const desc  = document.getElementById('s-desc');
+    const hint  = document.getElementById('action-hint');
+    if (trashReady) {
+      btn.className = 'action-btn cancel';
+      btn.innerHTML = '✅ Trash signalled — tap to cancel';
+      dot.className = 'status-indicator ready';
+      title.textContent = 'Ready for collection';
+      desc.textContent  = 'Collector has been notified';
+      hint.textContent  = 'Tap to cancel the signal';
+    } else {
+      btn.className = 'action-btn ready';
+      btn.innerHTML = '🗑️ My trash is ready';
+      dot.className = 'status-indicator idle';
+      title.textContent = 'Not ready';
+      desc.textContent  = 'Signal when your trash is outside';
+      hint.textContent  = 'Tap to notify your collector';
+    }
+  }
+
+  async function toggleTrash() {
+    if (!currentClient || !currentClient.subscription_active) {
+      showToast('⚠️ Subscription not active'); return;
+    }
+    try {
+      const r = await fetch('/api/trash_ready/'+currentClient.id, {method:'POST'});
+      const d = await r.json();
+      if (d.success) {
+        trashReady = !trashReady;
+        renderBtn(); updateMapMarker();
+        showToast(trashReady ? '✅ Collector notified!' : '↩️ Cancelled');
+      }
+    } catch(e) { showToast('❌ Error'); }
+  }
+
+  // History
+  async function loadHistory(id) {
+    try {
+      const r = await fetch('/api/collections/'+id);
+      const d = await r.json();
+      const list = document.getElementById('history-list');
+      if (!d.length) {
+        list.innerHTML = '<div style="text-align:center;color:#AEAEB2;padding:2rem;font-size:.85rem">No collections yet</div>';
+        return;
+      }
+      list.innerHTML = d.map(c => `
+        <div class="log-row">
+          <div class="log-icon ${c.status==='collected'?'ok':'bad'}">${c.status==='collected'?'✅':'⚠️'}</div>
+          <div><div class="log-main">${c.collector}</div><div class="log-sub">${c.date}</div></div>
+          <span class="log-chip ${c.status==='collected'?'ok':'bad'}">${c.status==='collected'?'Done':'Issue'}</span>
+        </div>`).join('');
+    } catch(e) {}
+  }
+
+  // Map
+  function initMap(c) {
+    if (map) return;
+    map = L.map('client-map').setView([c.lat,c.lng],15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19}).addTo(map);
+    const hi = L.divIcon({html:`<div style="background:#1a7c3e;color:white;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 4px 12px rgba(0,0,0,.25);border:3px solid white">🏠</div>`,className:'',iconSize:[36,36],iconAnchor:[18,18]});
+    myMarker = L.marker([c.lat,c.lng],{icon:hi}).addTo(map).bindPopup('<b>'+c.name+'</b><br>'+c.address);
+    L.circle([c.lat,c.lng],{radius:80,color:'#1a7c3e',fillColor:'#1a7c3e',fillOpacity:.08,weight:1}).addTo(map);
+    L.circle([c.lat,c.lng],{radius:300,color:'#FB923C',fillColor:'#FB923C',fillOpacity:.04,weight:1.5,dashArray:'6,6'}).addTo(map);
+  }
+
+  async function pollCollector() {
+    try {
+      const r = await fetch('/api/collector/location');
+      const d = await r.json();
+      if (!d.active || !currentClient) return;
+      if (map) {
+        const ti = L.divIcon({html:`<div style="background:#00695C;color:white;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 4px 12px rgba(0,0,0,.25);border:3px solid white">🚛</div>`,className:'',iconSize:[40,40],iconAnchor:[20,20]});
+        if (collectorMarker) collectorMarker.setLatLng([d.lat,d.lng]);
+        else collectorMarker = L.marker([d.lat,d.lng],{icon:ti}).addTo(map).bindPopup('<b>Collector</b><br>Live GPS');
+      }
+      const dist = haversine(currentClient.lat,currentClient.lng,d.lat,d.lng);
+      const card = document.getElementById('nearby-card');
+      if (dist<=300) {
+        card.style.display='flex';
+        document.getElementById('nearby-sub').textContent=Math.round(dist)+'m away — put your trash out now!';
+        if (!nearbyAlerted) { nearbyAlerted=true; showToast('🚛 Collector is '+Math.round(dist)+'m away!'); }
+      } else { card.style.display='none'; if(dist>500) nearbyAlerted=false; }
+    } catch(e) {}
+  }
+
+  function updateMapMarker() {
+    if (!myMarker) return;
+    const icon = L.divIcon({html:`<div style="background:${trashReady?'#FFD60A':'#1a7c3e'};color:${trashReady?'#111':'white'};border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 4px 12px rgba(0,0,0,.25);border:3px solid white">${trashReady?'🗑️':'🏠'}</div>`,className:'',iconSize:[36,36],iconAnchor:[18,18]});
+    myMarker.setIcon(icon);
+  }
+
+  function centerMap() {
+    if (map && currentClient) map.flyTo([currentClient.lat,currentClient.lng],16,{duration:.8});
+  }
+
+  loadMe();
+  </script>
 </body>
 </html>
