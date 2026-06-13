@@ -115,6 +115,18 @@ class Payment(db.Model):
 
 
 # ═══════════════════════════════════════════════════
+#  GPS TRACKING (in-memory)
+# ═══════════════════════════════════════════════════
+
+collector_location = {
+    'lat': 31.6258,
+    'lng': -8.0038,
+    'updated': None,
+    'active': False
+}
+
+
+# ═══════════════════════════════════════════════════
 #  HELPERS
 # ═══════════════════════════════════════════════════
 
@@ -180,16 +192,16 @@ def index():
 def collector_view():
     return render_template('collector.html')
 
-
-# ═══════════════════════════════════════════════════
-#  RESIDENT AUTH
-# ═══════════════════════════════════════════════════
-
 @app.route('/client')
 def client_view():
     if 'client_id' not in session:
         return redirect(url_for('resident_login'))
     return render_template('client.html')
+
+
+# ═══════════════════════════════════════════════════
+#  RESIDENT AUTH
+# ═══════════════════════════════════════════════════
 
 @app.route('/resident/login', methods=['GET', 'POST'])
 def resident_login():
@@ -201,18 +213,14 @@ def resident_login():
         if not client:
             error = 'QR code not found. Check the sticker on your door.'
         else:
-            # Save phone if first time
             if not client.phone:
                 client.phone = phone
-            # Generate OTP
             otp = str(random.randint(100000, 999999))
             client.otp_code   = otp
             client.otp_expiry = datetime.utcnow() + timedelta(minutes=5)
             db.session.commit()
             session['otp_client_id'] = client.id
-            # In production: send SMS here
-            # For now: store in session for display
-            session['dev_otp'] = otp
+            session['dev_otp']       = otp
             return redirect(url_for('resident_verify'))
     return render_template('resident_login.html', error=error)
 
@@ -233,7 +241,6 @@ def resident_verify():
         elif entered != client.otp_code:
             error = 'Incorrect code. Please try again.'
         else:
-            # Clear OTP
             client.otp_code   = None
             client.otp_expiry = None
             db.session.commit()
@@ -418,6 +425,24 @@ def dev_simulate_payment(ref):
 
 
 # ═══════════════════════════════════════════════════
+#  GPS API
+# ═══════════════════════════════════════════════════
+
+@app.route('/api/collector/location', methods=['POST'])
+def update_collector_location():
+    data = request.get_json() or {}
+    collector_location['lat']     = data.get('lat', 31.6258)
+    collector_location['lng']     = data.get('lng', -8.0038)
+    collector_location['updated'] = datetime.utcnow().isoformat()
+    collector_location['active']  = True
+    return jsonify({'success': True})
+
+@app.route('/api/collector/location', methods=['GET'])
+def get_collector_location():
+    return jsonify(collector_location)
+
+
+# ═══════════════════════════════════════════════════
 #  CLIENT / COLLECTOR API
 # ═══════════════════════════════════════════════════
 
@@ -462,12 +487,13 @@ def toggle_trash_ready(client_id):
 @app.route('/api/collect/<int:client_id>', methods=['POST'])
 def collect(client_id):
     client = Client.query.get_or_404(client_id)
-    client.status = 'collected'
+    client.status      = 'collected'
     client.trash_ready = False
     data = request.get_json() or {}
-    db.session.add(Collection(client_id=client_id,
-                              collector_name=data.get('collector', 'Collector'),
-                              status='collected'))
+    db.session.add(Collection(
+        client_id=client_id,
+        collector_name=data.get('collector', 'Collector'),
+        status='collected'))
     db.session.commit()
     return jsonify({'success': True})
 
@@ -476,10 +502,11 @@ def report_violation(client_id):
     client = Client.query.get_or_404(client_id)
     client.status = 'violation'
     data = request.get_json() or {}
-    db.session.add(Collection(client_id=client_id,
-                              collector_name=data.get('collector', 'Collector'),
-                              status='violation',
-                              violation_reason=data.get('reason', '')))
+    db.session.add(Collection(
+        client_id=client_id,
+        collector_name=data.get('collector', 'Collector'),
+        status='violation',
+        violation_reason=data.get('reason', '')))
     db.session.commit()
     return jsonify({'success': True})
 
@@ -489,9 +516,9 @@ def get_collections(client_id):
                .order_by(Collection.collected_at.desc()).limit(10).all()
     return jsonify([{
         'collector': c.collector_name,
-        'date': c.collected_at.strftime('%d/%m/%Y %H:%M'),
-        'status': c.status,
-        'reason': c.violation_reason
+        'date':      c.collected_at.strftime('%d/%m/%Y %H:%M'),
+        'status':    c.status,
+        'reason':    c.violation_reason
     } for c in cols])
 
 
