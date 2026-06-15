@@ -3,29 +3,32 @@
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>NqiZbali — Syndic Login</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#0d4f29,#1a7c3e);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem}
-    .card{background:#fff;border-radius:20px;box-shadow:0 8px 40px rgba(0,0,0,.25);width:100%;max-width:400px;overflow:hidden}
-    .header{background:linear-gradient(135deg,#1a7c3e,#25a25a);padding:2rem;text-align:center;color:#fff}
-    .logo{font-size:2.5rem;margin-bottom:.5rem}
-    .header h1{font-size:1.3rem;font-weight:700}
-    .header p{font-size:.82rem;opacity:.85;margin-top:.25rem}
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    body{font-family:'Inter',sans-serif;background:#F2F2F7;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem;-webkit-font-smoothing:antialiased}
+    .card{background:#fff;border-radius:28px;box-shadow:0 8px 40px rgba(0,0,0,.1);width:100%;max-width:400px;overflow:hidden}
+    .header{background:linear-gradient(145deg,#0a3d20,#1a7c3e);padding:2.5rem 2rem;text-align:center;color:#fff}
+    .logo{width:72px;height:72px;border-radius:22px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1rem;box-shadow:0 8px 24px rgba(0,0,0,.15)}
+    .header h1{font-size:1.4rem;font-weight:800;letter-spacing:-.3px}
+    .header p{font-size:.82rem;opacity:.7;margin-top:.3rem}
     .body{padding:2rem}
-    .field{margin-bottom:1.2rem}
-    label{display:block;font-size:.82rem;font-weight:600;color:#444;margin-bottom:.4rem}
-    input{width:100%;border:1.5px solid #ddd;border-radius:10px;padding:.75rem 1rem;font-size:.95rem;outline:none;transition:border-color .2s}
-    input:focus{border-color:#1a7c3e}
-    .btn{width:100%;background:linear-gradient(135deg,#1a7c3e,#25a25a);color:#fff;border:none;border-radius:10px;padding:.9rem;font-size:1rem;font-weight:700;cursor:pointer;transition:opacity .2s}
-    .btn:hover{opacity:.9}
-    .error{background:#fff0f0;border:1.5px solid #ffb3b3;border-radius:8px;padding:.7rem 1rem;font-size:.83rem;color:#c0392b;margin-bottom:1rem}
-    .footer-link{text-align:center;font-size:.82rem;color:#888;margin-top:1.2rem}
-    .footer-link a{color:#1a7c3e;text-decoration:none;font-weight:600}
-    .demo-box{background:#f0faf4;border:1.5px dashed #1a7c3e;border-radius:8px;padding:.75rem 1rem;font-size:.78rem;color:#1a7c3e;margin-bottom:1.2rem;line-height:1.6}
+    .field{margin-bottom:1.1rem}
+    label{display:block;font-size:.78rem;font-weight:700;color:#6C6C70;margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.5px}
+    input{width:100%;border:1.5px solid #E5E5EA;border-radius:14px;padding:.85rem 1rem;font-size:.95rem;outline:none;transition:border-color .2s,box-shadow .2s;font-family:inherit;background:#F9F9F9;color:#1C1C1E}
+    input:focus{border-color:#1a7c3e;box-shadow:0 0 0 4px rgba(26,124,62,.1);background:#fff}
+    .btn{width:100%;background:linear-gradient(135deg,#1a7c3e,#25a25a);color:#fff;border:none;border-radius:14px;padding:1rem;font-size:1rem;font-weight:800;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(26,124,62,.3);transition:transform .15s cubic-bezier(.34,1.56,.64,1)}
+    .btn:active{transform:scale(.97)}
+    .error{background:#FEE2E2;border:1.5px solid #FECACA;border-radius:12px;padding:.75rem 1rem;font-size:.82rem;color:#991B1B;margin-bottom:1rem}
+    .demo{background:#F0FDF4;border:1.5px dashed #1a7c3e;border-radius:12px;padding:.75rem 1rem;font-size:.78rem;color:#1a7c3e;margin-bottom:1.2rem;line-height:1.7}
+    .footer-link{text-align:center;font-size:.82rem;color:#AEAEB2;margin-top:1.2rem}
+    .footer-link a{color:#1a7c3e;text-decoration:none;font-weight:700}
+    .page-transition{position:fixed;inset:0;background:#fff;z-index:99999;pointer-events:none;opacity:0;transition:opacity .25s ease}
+    .page-transition.in{opacity:1}
   </style>
 </head>
 <body>
+  <div class="page-transition" id="pt"></div>
   <div class="card">
     <div class="header">
       <div class="logo">♻️</div>
@@ -33,10 +36,7 @@
       <p>Manage your building subscription</p>
     </div>
     <div class="body">
-      <div class="demo-box">
-        🔑 Demo account:<br>
-        <strong>syndic@nqizbali.ma</strong> / <strong>nqizbali2026</strong>
-      </div>
+      <div class="demo">🔑 Demo: <strong>syndic@nqizbali.ma</strong> / <strong>nqizbali2026</strong></div>
       {% if error %}<div class="error">{{ error }}</div>{% endif %}
       <form method="POST">
         <div class="field">
@@ -49,10 +49,9 @@
         </div>
         <button class="btn" type="submit">Log In</button>
       </form>
-      <div class="footer-link">
-        No account yet? <a href="/syndic/register">Register</a>
-      </div>
+      <div class="footer-link">No account? <a href="/syndic/register">Register</a></div>
     </div>
   </div>
+  <script src="{{ url_for('static', filename='js/transitions.js') }}"></script>
 </body>
 </html>
