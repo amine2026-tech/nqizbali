@@ -3,35 +3,54 @@
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>NqiZbali — Payment Confirmed</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Inter',sans-serif;background:#f0f9f0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem}
-    .card{background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(0,0,0,.1);max-width:420px;width:100%;padding:2.5rem 2rem;text-align:center}
-    .icon{font-size:4rem;margin-bottom:1rem;animation:pop .4s ease}
-    @keyframes pop{0%{transform:scale(.5);opacity:0}80%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
-    h1{font-size:1.4rem;font-weight:800;color:#0d4f29;margin-bottom:.5rem}
-    p{font-size:.88rem;color:#666;line-height:1.6}
-    .building-name{font-weight:700;color:#1a7c3e}
-    .approval{display:inline-block;background:#f0faf4;border:1.5px solid #d1f0dc;border-radius:8px;padding:.4rem .9rem;font-size:.76rem;color:#0d6e35;margin:.75rem 0 1.25rem}
-    .btn{display:inline-block;background:linear-gradient(135deg,#1a7c3e,#25a25a);color:#fff;text-decoration:none;border-radius:10px;padding:.75rem 1.75rem;font-size:.92rem;font-weight:700;margin-top:1rem}
+    body{font-family:'Inter',sans-serif;background:#F2F2F7;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem;-webkit-font-smoothing:antialiased}
+    .card{background:#fff;border-radius:28px;box-shadow:0 8px 40px rgba(0,0,0,.1);max-width:420px;width:100%;padding:2.5rem 2rem;text-align:center}
+    .icon-wrap{width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,#D1FAE5,#A7F3D0);display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;font-size:2.5rem;animation:popIn .5s cubic-bezier(.34,1.56,.64,1)}
+    @keyframes popIn{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+    h1{font-size:1.5rem;font-weight:900;color:#065F46;margin-bottom:.5rem;letter-spacing:-.3px}
+    p{font-size:.88rem;color:#6C6C70;line-height:1.6}
+    .building{font-weight:700;color:#1a7c3e}
+    .approval{display:inline-block;background:#F0FDF4;border:1.5px solid #D1FAE5;border-radius:10px;padding:.4rem 1rem;font-size:.75rem;color:#065F46;margin:.85rem 0 1.25rem;font-family:monospace;font-weight:700}
+    .btn{display:inline-block;background:linear-gradient(135deg,#1a7c3e,#25a25a);color:#fff;text-decoration:none;border-radius:16px;padding:.85rem 2rem;font-size:.95rem;font-weight:800;margin-top:.5rem;box-shadow:0 6px 20px rgba(26,124,62,.3);transition:transform .15s cubic-bezier(.34,1.56,.64,1)}
+    .btn:active{transform:scale(.97)}
+    .confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+    .c{position:absolute;width:8px;height:8px;border-radius:2px;animation:fall linear forwards}
+    @keyframes fall{to{transform:translateY(100vh) rotate(720deg);opacity:0}}
+    .page-transition{position:fixed;inset:0;background:#fff;z-index:99999;pointer-events:none;opacity:0;transition:opacity .25s ease}
+    .page-transition.in{opacity:1}
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="icon">✅</div>
+  <div class="page-transition" id="pt"></div>
+  <div class="confetti" id="confetti"></div>
+  <div class="card" style="position:relative;z-index:1">
+    <div class="icon-wrap">✅</div>
     <h1>Payment Confirmed!</h1>
     {% if building %}
-      <p>The subscription for <span class="building-name">{{ building.name }}</span> is now
-      <strong>active for 30 days</strong>.<br/>
-      Trash collection is unlocked for all residents.</p>
+      <p>The subscription for <span class="building">{{ building.name }}</span> is now <strong>active for 30 days</strong>. Trash collection is unlocked for all residents.</p>
     {% else %}
       <p>Your payment was approved. The subscription is now active.</p>
     {% endif %}
     {% if approval %}
       <div class="approval">CMI Code: {{ approval }}</div>
     {% endif %}
+    <br/>
     <a class="btn" href="/syndic/dashboard">Back to Dashboard</a>
   </div>
+  <script>
+    // Confetti
+    const colors=['#1a7c3e','#4CAF50','#FFD60A','#007AFF','#FF6B00','#A7F3D0'];
+    const container=document.getElementById('confetti');
+    for(let i=0;i<60;i++){
+      const c=document.createElement('div');
+      c.className='c';
+      c.style.cssText=`left:${Math.random()*100}%;top:-10px;background:${colors[Math.floor(Math.random()*colors.length)]};animation-duration:${1.5+Math.random()*2}s;animation-delay:${Math.random()*.8}s;transform:rotate(${Math.random()*360}deg)`;
+      container.appendChild(c);
+    }
+  </script>
+  <script src="{{ url_for('static', filename='js/transitions.js') }}"></script>
 </body>
 </html>
