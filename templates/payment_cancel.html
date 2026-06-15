@@ -6,20 +6,26 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Inter',sans-serif;background:#fff8f8;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem}
-    .card{background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(0,0,0,.08);max-width:400px;width:100%;padding:2.5rem 2rem;text-align:center}
-    .icon{font-size:3.5rem;margin-bottom:1rem}
-    h1{font-size:1.3rem;font-weight:800;color:#c0392b;margin-bottom:.5rem}
-    p{font-size:.88rem;color:#666;line-height:1.6;margin-bottom:1.25rem}
-    .btn{display:inline-block;background:linear-gradient(135deg,#1a7c3e,#25a25a);color:#fff;text-decoration:none;border-radius:10px;padding:.72rem 1.6rem;font-size:.9rem;font-weight:700}
+    body{font-family:'Inter',sans-serif;background:#F2F2F7;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem;-webkit-font-smoothing:antialiased}
+    .card{background:#fff;border-radius:28px;box-shadow:0 8px 40px rgba(0,0,0,.1);max-width:400px;width:100%;padding:2.5rem 2rem;text-align:center}
+    .icon-wrap{width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,#FEE2E2,#FECACA);display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;font-size:2.5rem;animation:popIn .5s cubic-bezier(.34,1.56,.64,1)}
+    @keyframes popIn{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+    h1{font-size:1.4rem;font-weight:900;color:#991B1B;margin-bottom:.5rem;letter-spacing:-.3px}
+    p{font-size:.88rem;color:#6C6C70;line-height:1.6;margin-bottom:1.5rem}
+    .btn{display:inline-block;background:linear-gradient(135deg,#1a7c3e,#25a25a);color:#fff;text-decoration:none;border-radius:16px;padding:.85rem 2rem;font-size:.92rem;font-weight:800;box-shadow:0 6px 20px rgba(26,124,62,.3);transition:transform .15s cubic-bezier(.34,1.56,.64,1)}
+    .btn:active{transform:scale(.97)}
+    .page-transition{position:fixed;inset:0;background:#fff;z-index:99999;pointer-events:none;opacity:0;transition:opacity .25s ease}
+    .page-transition.in{opacity:1}
   </style>
 </head>
 <body>
+  <div class="page-transition" id="pt"></div>
   <div class="card">
-    <div class="icon">❌</div>
+    <div class="icon-wrap">❌</div>
     <h1>Payment Cancelled</h1>
     <p>The payment was not completed.<br/>No amount was charged. You can try again at any time.</p>
     <a class="btn" href="/syndic/dashboard">Back to Dashboard</a>
   </div>
+  <script src="{{ url_for('static', filename='js/transitions.js') }}"></script>
 </body>
 </html>
