@@ -3,33 +3,36 @@
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>NqiZbali — Register</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#0d4f29,#1a7c3e);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem}
-    .card{background:#fff;border-radius:20px;box-shadow:0 8px 40px rgba(0,0,0,.25);width:100%;max-width:420px;overflow:hidden}
-    .header{background:linear-gradient(135deg,#1a7c3e,#25a25a);padding:1.75rem;text-align:center;color:#fff}
-    .logo{font-size:2rem;margin-bottom:.4rem}
-    .header h1{font-size:1.2rem;font-weight:700}
-    .header p{font-size:.8rem;opacity:.8;margin-top:.25rem}
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    body{font-family:'Inter',sans-serif;background:#F2F2F7;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem;-webkit-font-smoothing:antialiased}
+    .card{background:#fff;border-radius:28px;box-shadow:0 8px 40px rgba(0,0,0,.1);width:100%;max-width:420px;overflow:hidden}
+    .header{background:linear-gradient(145deg,#0a3d20,#1a7c3e);padding:2rem;text-align:center;color:#fff}
+    .logo{width:64px;height:64px;border-radius:20px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto .85rem;box-shadow:0 8px 24px rgba(0,0,0,.15)}
+    .header h1{font-size:1.2rem;font-weight:800;letter-spacing:-.3px}
+    .header p{font-size:.78rem;opacity:.7;margin-top:.25rem}
     .body{padding:1.75rem}
     .field{margin-bottom:1rem}
-    label{display:block;font-size:.82rem;font-weight:600;color:#444;margin-bottom:.35rem}
-    input{width:100%;border:1.5px solid #ddd;border-radius:10px;padding:.7rem 1rem;font-size:.93rem;outline:none;transition:border-color .2s;font-family:inherit}
-    input:focus{border-color:#1a7c3e}
-    .btn{width:100%;background:linear-gradient(135deg,#1a7c3e,#25a25a);color:#fff;border:none;border-radius:10px;padding:.85rem;font-size:.98rem;font-weight:700;cursor:pointer;transition:opacity .2s;margin-top:.5rem;font-family:inherit}
-    .btn:hover{opacity:.9}
-    .error{background:#fff0f0;border:1.5px solid #ffb3b3;border-radius:8px;padding:.65rem 1rem;font-size:.82rem;color:#c0392b;margin-bottom:1rem}
-    .success-box{background:#f0faf4;border:1.5px solid #1a7c3e;border-radius:12px;padding:1.5rem;text-align:center}
+    label{display:block;font-size:.75rem;font-weight:700;color:#6C6C70;margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.5px}
+    input{width:100%;border:1.5px solid #E5E5EA;border-radius:14px;padding:.8rem 1rem;font-size:.93rem;outline:none;transition:border-color .2s,box-shadow .2s;font-family:inherit;background:#F9F9F9;color:#1C1C1E}
+    input:focus{border-color:#1a7c3e;box-shadow:0 0 0 4px rgba(26,124,62,.1);background:#fff}
+    .btn{width:100%;background:linear-gradient(135deg,#1a7c3e,#25a25a);color:#fff;border:none;border-radius:14px;padding:.9rem;font-size:.98rem;font-weight:800;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(26,124,62,.3);transition:transform .15s cubic-bezier(.34,1.56,.64,1);margin-top:.5rem}
+    .btn:active{transform:scale(.97)}
+    .error{background:#FEE2E2;border:1.5px solid #FECACA;border-radius:12px;padding:.7rem 1rem;font-size:.82rem;color:#991B1B;margin-bottom:1rem}
+    .success-box{background:#F0FDF4;border:1.5px solid #D1FAE5;border-radius:18px;padding:1.5rem;text-align:center}
     .success-icon{font-size:2.5rem;margin-bottom:.75rem}
-    .success-title{font-size:1rem;font-weight:800;color:#0d4f29;margin-bottom:.5rem}
-    .success-desc{font-size:.83rem;color:#555;line-height:1.6}
-    .footer-link{text-align:center;font-size:.82rem;color:#888;margin-top:1rem}
-    .footer-link a{color:#1a7c3e;text-decoration:none;font-weight:600}
-    .info-box{background:#f0faf4;border:1.5px dashed #1a7c3e;border-radius:8px;padding:.75rem 1rem;font-size:.78rem;color:#0d4f29;margin-bottom:1.2rem;line-height:1.6}
+    .success-title{font-size:1rem;font-weight:800;color:#065F46;margin-bottom:.5rem}
+    .success-desc{font-size:.82rem;color:#6C6C70;line-height:1.6}
+    .info{background:#F0FDF4;border:1.5px dashed #1a7c3e;border-radius:12px;padding:.75rem 1rem;font-size:.78rem;color:#1a7c3e;margin-bottom:1.2rem;line-height:1.6}
+    .footer-link{text-align:center;font-size:.82rem;color:#AEAEB2;margin-top:1rem}
+    .footer-link a{color:#1a7c3e;text-decoration:none;font-weight:700}
+    .page-transition{position:fixed;inset:0;background:#fff;z-index:99999;pointer-events:none;opacity:0;transition:opacity .25s ease}
+    .page-transition.in{opacity:1}
   </style>
 </head>
 <body>
+  <div class="page-transition" id="pt"></div>
   <div class="card">
     <div class="header">
       <div class="logo">♻️</div>
@@ -40,45 +43,24 @@
       {% if success %}
         <div class="success-box">
           <div class="success-icon">⏳</div>
-          <div class="success-title">Request sent successfully!</div>
-          <div class="success-desc">
-            Your account is pending approval by the NqiZbali admin.<br><br>
-            You will be able to log in once your account is approved.<br><br>
-            Contact us at <strong>admin@nqizbali.ma</strong> for faster approval.
-          </div>
+          <div class="success-title">Request sent!</div>
+          <div class="success-desc">Your account is pending approval.<br>Contact <strong>admin@nqizbali.ma</strong> for faster approval.</div>
         </div>
-        <div class="footer-link" style="margin-top:1.5rem">
-          <a href="/syndic/login">← Back to login</a>
-        </div>
+        <div class="footer-link" style="margin-top:1.5rem"><a href="/syndic/login">← Back to login</a></div>
       {% else %}
-        <div class="info-box">
-          ℹ️ After registration your account will be <strong>reviewed and approved</strong> by the NqiZbali team before you can log in.
-        </div>
+        <div class="info">ℹ️ After registration your account will be <strong>reviewed</strong> before you can log in.</div>
         {% if error %}<div class="error">{{ error }}</div>{% endif %}
         <form method="POST">
-          <div class="field">
-            <label>Full Name</label>
-            <input name="name" required placeholder="Mohammed Alami"/>
-          </div>
-          <div class="field">
-            <label>Phone</label>
-            <input name="phone" required placeholder="06 XX XX XX XX"/>
-          </div>
-          <div class="field">
-            <label>Email</label>
-            <input type="email" name="email" required placeholder="syndic@email.com"/>
-          </div>
-          <div class="field">
-            <label>Password (min. 6 characters)</label>
-            <input type="password" name="password" required placeholder="••••••••"/>
-          </div>
+          <div class="field"><label>Full Name</label><input name="name" required placeholder="Mohammed Alami"/></div>
+          <div class="field"><label>Phone</label><input name="phone" required placeholder="06 XX XX XX XX"/></div>
+          <div class="field"><label>Email</label><input type="email" name="email" required placeholder="syndic@email.com"/></div>
+          <div class="field"><label>Password (min. 6 chars)</label><input type="password" name="password" required placeholder="••••••••"/></div>
           <button class="btn" type="submit">Send Request</button>
         </form>
-        <div class="footer-link">
-          Already approved? <a href="/syndic/login">Log in</a>
-        </div>
+        <div class="footer-link">Already approved? <a href="/syndic/login">Log in</a></div>
       {% endif %}
     </div>
   </div>
+  <script src="{{ url_for('static', filename='js/transitions.js') }}"></script>
 </body>
 </html>
