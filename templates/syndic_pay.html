@@ -3,67 +3,56 @@
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>NqiZbali — Payment</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Inter',sans-serif;background:#f0f9f0;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:2rem 1rem}
-    .card{background:#fff;border-radius:20px;box-shadow:0 4px 32px rgba(0,0,0,.12);max-width:460px;width:100%;overflow:hidden}
-    .header{background:linear-gradient(135deg,#0d4f29,#1a7c3e);padding:1.75rem 2rem;color:#fff;text-align:center}
-    .header h1{font-size:1.25rem;font-weight:800}
-    .header p{font-size:.82rem;opacity:.85;margin-top:.3rem}
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    body{font-family:'Inter',sans-serif;background:#F2F2F7;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:1.5rem 1rem 3rem;-webkit-font-smoothing:antialiased}
+    .card{background:#fff;border-radius:28px;box-shadow:0 8px 40px rgba(0,0,0,.1);max-width:460px;width:100%;overflow:hidden}
+    .header{background:linear-gradient(145deg,#0a3d20,#1a7c3e);padding:1.75rem 2rem;color:#fff;text-align:center}
+    .header h1{font-size:1.25rem;font-weight:800;letter-spacing:-.3px}
+    .header p{font-size:.8rem;opacity:.7;margin-top:.3rem}
     .body{padding:1.75rem}
-    .building-box{background:#f6fef8;border:1.5px solid #d1f0dc;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.4rem}
-    .building-box h3{font-size:.95rem;font-weight:700;color:#0d4f29}
-    .building-box p{font-size:.8rem;color:#666;margin-top:.25rem}
+    .building-box{background:#F0FDF4;border:1.5px solid #D1FAE5;border-radius:18px;padding:1rem 1.25rem;margin-bottom:1.4rem}
+    .building-name{font-size:.95rem;font-weight:800;color:#065F46;margin-bottom:.2rem}
+    .building-addr{font-size:.78rem;color:#6C6C70}
     .breakdown{margin-bottom:1.4rem}
-    .breakdown-row{display:flex;justify-content:space-between;align-items:center;padding:.55rem 0;border-bottom:1px solid #f0f0f0;font-size:.88rem}
-    .breakdown-row:last-child{border-bottom:none;font-weight:800;font-size:1rem;color:#0d4f29;padding-top:.75rem}
-    .breakdown-row span:first-child{color:#555}
-    .cmi-btn{width:100%;background:linear-gradient(135deg,#c8102e,#e8192c);color:#fff;border:none;border-radius:12px;padding:1rem;font-size:1rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.6rem;transition:opacity .2s}
-    .cmi-btn:hover{opacity:.92}
-    .cmi-logo{background:#fff;color:#c8102e;border-radius:4px;padding:.1rem .35rem;font-weight:900;font-size:.75rem}
-    .secure{text-align:center;font-size:.74rem;color:#aaa;margin-top:.8rem;display:flex;align-items:center;justify-content:center;gap:.35rem}
-    .bank-logos{display:flex;justify-content:center;gap:.6rem;flex-wrap:wrap;margin-top:1rem}
-    .bank-pill{background:#f4f4f4;border-radius:6px;padding:.3rem .7rem;font-size:.7rem;font-weight:600;color:#555}
-    .back{display:block;text-align:center;margin-top:1rem;font-size:.8rem;color:#888;text-decoration:none}
-    .back:hover{color:#1a7c3e}
-    .dev-box{background:#fffbe6;border:1.5px dashed #f39c12;border-radius:10px;padding:.85rem 1rem;margin-top:1.1rem;font-size:.78rem;color:#7a5c00}
-    .dev-box strong{display:block;margin-bottom:.35rem}
-    .dev-simulate{background:#f39c12;color:#fff;border:none;border-radius:7px;padding:.45rem .9rem;font-size:.78rem;font-weight:700;cursor:pointer;margin-top:.5rem}
+    .b-row{display:flex;justify-content:space-between;align-items:center;padding:.6rem 0;border-bottom:1px solid #F2F2F7;font-size:.88rem;color:#6C6C70}
+    .b-row:last-child{border-bottom:none;font-weight:900;font-size:1rem;color:#1C1C1E;padding-top:.85rem}
+    .b-row span:last-child{font-weight:700;color:#1C1C1E}
+    .b-row:last-child span:last-child{color:#1a7c3e;font-size:1.2rem}
+    .cmi-btn{width:100%;background:linear-gradient(135deg,#C8102E,#E8192C);color:#fff;border:none;border-radius:16px;padding:1rem;font-size:1rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.6rem;box-shadow:0 6px 20px rgba(200,16,46,.3);transition:transform .15s cubic-bezier(.34,1.56,.64,1);font-family:inherit}
+    .cmi-btn:active{transform:scale(.97)}
+    .cmi-logo{background:#fff;color:#C8102E;border-radius:6px;padding:.1rem .4rem;font-weight:900;font-size:.75rem}
+    .secure{text-align:center;font-size:.72rem;color:#AEAEB2;margin-top:.85rem;display:flex;align-items:center;justify-content:center;gap:.35rem}
+    .banks{display:flex;justify-content:center;gap:.5rem;flex-wrap:wrap;margin-top:1rem}
+    .bank{background:#F2F2F7;border-radius:8px;padding:.3rem .75rem;font-size:.68rem;font-weight:600;color:#6C6C70}
+    .dev-box{background:#FFFBEB;border:1.5px dashed #F59E0B;border-radius:16px;padding:.9rem 1rem;margin-top:1.1rem;font-size:.78rem;color:#92400E}
+    .dev-box strong{display:block;margin-bottom:.35rem;font-size:.82rem}
+    .dev-btn{background:#F59E0B;color:#fff;border:none;border-radius:10px;padding:.5rem 1rem;font-size:.78rem;font-weight:700;cursor:pointer;margin-top:.5rem;font-family:inherit;transition:transform .15s}
+    .dev-btn:active{transform:scale(.96)}
+    .back{display:block;text-align:center;margin-top:1rem;font-size:.8rem;color:#AEAEB2;text-decoration:none;font-weight:500}
+    .page-transition{position:fixed;inset:0;background:#fff;z-index:99999;pointer-events:none;opacity:0;transition:opacity .25s ease}
+    .page-transition.in{opacity:1}
   </style>
 </head>
 <body>
+  <div class="page-transition" id="pt"></div>
   <div class="card">
     <div class="header">
       <h1>♻️ NqiZbali — Payment</h1>
       <p>Monthly trash collection subscription</p>
     </div>
     <div class="body">
-
       <div class="building-box">
-        <h3>🏢 {{ building.name }}</h3>
-        <p>📍 {{ building.address }}, {{ building.neighborhood }}</p>
+        <div class="building-name">🏢 {{ building.name }}</div>
+        <div class="building-addr">📍 {{ building.address }}, {{ building.neighborhood }}</div>
       </div>
-
       <div class="breakdown">
-        <div class="breakdown-row">
-          <span>Price per apartment</span>
-          <span>60 DH</span>
-        </div>
-        <div class="breakdown-row">
-          <span>Number of apartments</span>
-          <span>× {{ building.nb_apartments }}</span>
-        </div>
-        <div class="breakdown-row">
-          <span>Duration</span>
-          <span>1 month</span>
-        </div>
-        <div class="breakdown-row">
-          <span>Total to pay</span>
-          <span>{{ payment.amount_mad }} DH</span>
-        </div>
+        <div class="b-row"><span>Price per apartment</span><span>60 DH</span></div>
+        <div class="b-row"><span>Number of apartments</span><span>× {{ building.nb_apartments }}</span></div>
+        <div class="b-row"><span>Duration</span><span>1 month</span></div>
+        <div class="b-row"><span>Total to pay</span><span>{{ payment.amount_mad }} DH</span></div>
       </div>
-
       <form id="cmiForm" action="{{ cmi_url }}" method="POST">
         {% for key, val in cmi_params.items() %}
           <input type="hidden" name="{{ key }}" value="{{ val }}"/>
@@ -73,37 +62,27 @@
           Pay {{ payment.amount_mad }} DH by bank card
         </button>
       </form>
-
-      <div class="secure">🔒 Secure payment · CMI Network · 3D Secure</div>
-
-      <div class="bank-logos">
-        <span class="bank-pill">Attijariwafa</span>
-        <span class="bank-pill">CIH Bank</span>
-        <span class="bank-pill">Banque Populaire</span>
-        <span class="bank-pill">BMCE</span>
-        <span class="bank-pill">BMCI</span>
-        <span class="bank-pill">Société Générale</span>
-        <span class="bank-pill">Crédit Agricole</span>
+      <div class="secure">🔒 Secure · CMI Network · 3D Secure</div>
+      <div class="banks">
+        <span class="bank">Attijariwafa</span><span class="bank">CIH</span>
+        <span class="bank">Banque Populaire</span><span class="bank">BMCE</span>
+        <span class="bank">BMCI</span><span class="bank">Société Générale</span>
       </div>
-
       <div class="dev-box">
-        <strong>🧪 Test mode — Simulate approved payment</strong>
-        Reference: <code>{{ payment.ref }}</code>
-        <br/>
-        <button class="dev-simulate" onclick="simulatePay()">✅ Simulate CMI approval</button>
+        <strong>🧪 Test mode — Simulate payment</strong>
+        Ref: <code>{{ payment.ref }}</code>
+        <br/><button class="dev-btn" onclick="simPay()">✅ Simulate CMI approval</button>
       </div>
-
-      <a class="back" href="/syndic/dashboard">← Cancel and return to dashboard</a>
+      <a class="back" href="/syndic/dashboard">← Cancel and return</a>
     </div>
   </div>
-
   <script>
-    async function simulatePay() {
-      const ref = '{{ payment.ref }}';
-      const r   = await fetch(`/dev/simulate-payment/${ref}`, {method: 'POST'});
-      const d   = await r.json();
-      if (d.success) window.location.href = '/cmi/ok?oid=' + ref + '&AuthCode=TEST-CMI-OK';
+    async function simPay(){
+      const r=await fetch('/dev/simulate-payment/{{ payment.ref }}',{method:'POST'});
+      const d=await r.json();
+      if(d.success)window.location.href='/cmi/ok?oid={{ payment.ref }}&AuthCode=TEST-CMI-OK';
     }
   </script>
+  <script src="{{ url_for('static', filename='js/transitions.js') }}"></script>
 </body>
 </html>
