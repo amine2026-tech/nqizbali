@@ -3,105 +3,144 @@
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>NqiZbali — Admin</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-    body{font-family:'Inter',sans-serif;background:#F2F2F7;color:#1C1C1E;-webkit-font-smoothing:antialiased;min-height:100vh}
+    :root{
+      --g1:#064e20;--g2:#0f6b2f;--g3:#1a8c42;--g4:#22a855;--g5:#34d369;
+      --g-pale:#e8faf0;
+      --gray1:#1c1c1e;--gray4:#636366;--gray5:#8e8e93;--gray6:#aeaeb2;
+      --gray9:#e5e5ea;--gray10:#f2f2f7;--white:#ffffff;
+      --red:#ff3b30;--orange:#ff9f0a;--blue:#0a84ff;--purple:#5e5ce6;
+      --glass:rgba(255,255,255,0.85);--blur:blur(20px);
+      --s1:0 1px 3px rgba(0,0,0,.04),0 2px 8px rgba(0,0,0,.06);
+      --s2:0 4px 16px rgba(0,0,0,.08),0 1px 4px rgba(0,0,0,.04);
+      --spring:cubic-bezier(.34,1.56,.64,1);
+      --ease-out:cubic-bezier(.16,1,.3,1);
+      --r4:20px;--r5:24px;--r6:32px;--rf:9999px;
+    }
+    body{font-family:'Inter',-apple-system,sans-serif;background:var(--gray10);color:var(--gray1);-webkit-font-smoothing:antialiased;min-height:100vh}
 
-    nav{background:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;border-bottom:1px solid rgba(0,0,0,.06)}
+    /* Nav */
+    nav{background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;border-bottom:.5px solid rgba(0,0,0,.07)}
     .nav-left{display:flex;align-items:center;gap:10px}
-    .nav-icon{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,#1a7c3e,#25a25a);display:flex;align-items:center;justify-content:center;font-size:1.1rem;box-shadow:0 3px 10px rgba(26,124,62,.25)}
-    .nav-brand{font-size:1rem;font-weight:800;color:#1C1C1E;letter-spacing:-.3px}
-    .nav-sub{font-size:.65rem;color:#AEAEB2;margin-top:1px}
+    .nav-icon{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,var(--g3),var(--g4));display:flex;align-items:center;justify-content:center;font-size:1.1rem;box-shadow:0 4px 12px rgba(26,140,66,.3)}
+    .nav-brand{font-size:1rem;font-weight:800;color:var(--gray1);letter-spacing:-.3px}
+    .nav-sub{font-size:.65rem;color:var(--gray5);margin-top:1px}
     .nav-right{display:flex;align-items:center;gap:8px}
-    .nav-chip{border-radius:99px;padding:.3rem .8rem;font-size:.7rem;font-weight:700}
-    .nav-chip.green{background:#D1FAE5;color:#065F46}
-    .nav-chip.red  {background:#FEE2E2;color:#991B1B}
-    .nav-logout{background:#F2F2F7;border:none;border-radius:99px;padding:.4rem 1rem;color:#1C1C1E;font-size:.75rem;font-weight:600;text-decoration:none;cursor:pointer;font-family:inherit}
+    .nav-chip{border-radius:var(--rf);padding:.3rem .8rem;font-size:.7rem;font-weight:700}
+    .nav-chip.green{background:#d1fae5;color:#065f46}
+    .nav-chip.red{background:#fee2e2;color:#991b1b}
+    .nav-logout{background:var(--gray10);border:none;border-radius:var(--rf);padding:.4rem 1rem;color:var(--gray1);font-size:.75rem;font-weight:600;text-decoration:none;cursor:pointer;font-family:inherit;transition:background .15s,transform .15s var(--spring)}
+    .nav-logout:active{transform:scale(.96)}
 
-    .container{max-width:900px;margin:0 auto;padding:20px 16px 40px}
-    .page-title{font-size:1.5rem;font-weight:900;color:#1C1C1E;letter-spacing:-.5px;margin-bottom:20px}
+    /* Container */
+    .container{max-width:960px;margin:0 auto;padding:20px 16px 48px}
+    .page-title{font-size:1.5rem;font-weight:900;color:var(--gray1);letter-spacing:-.04em;margin-bottom:20px}
 
     /* Pending banner */
-    .pending-banner{background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border:2px solid #FCD34D;border-radius:22px;padding:16px 18px;margin-bottom:20px;display:flex;align-items:center;gap:14px;box-shadow:0 4px 20px rgba(252,211,77,.2)}
-    .pending-banner-icon{font-size:2rem;flex-shrink:0}
-    .pending-banner-title{font-size:.9rem;font-weight:800;color:#92400E;margin-bottom:.15rem}
-    .pending-banner-sub{font-size:.75rem;color:#B45309}
+    .pending-banner{background:linear-gradient(135deg,#fffbeb,#fef3c7);border:2px solid #fcd34d;border-radius:22px;padding:16px 18px;margin-bottom:20px;display:flex;align-items:center;gap:14px;box-shadow:0 4px 20px rgba(252,211,77,.2);animation:fadeUp .38s var(--ease-out)}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+    .pb-icon{font-size:2rem;flex-shrink:0}
+    .pb-title{font-size:.9rem;font-weight:800;color:#92400e;margin-bottom:.15rem}
+    .pb-sub{font-size:.75rem;color:#b45309}
 
-    /* Stats */
-    .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px}
+    /* Stats grid */
+    .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
     @media(min-width:600px){.stats-grid{grid-template-columns:repeat(4,1fr)}}
-    .stat-card{background:#fff;border-radius:22px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);position:relative;overflow:hidden}
+    .stat-card{background:var(--white);border-radius:var(--r4);padding:16px;box-shadow:var(--s1);position:relative;overflow:hidden;transition:transform .18s var(--spring)}
+    .stat-card:hover{transform:translateY(-2px)}
     .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0}
-    .stat-card.c1::before{background:linear-gradient(90deg,#1a7c3e,#4CAF50)}
-    .stat-card.c2::before{background:linear-gradient(90deg,#007AFF,#5AC8FA)}
-    .stat-card.c3::before{background:linear-gradient(90deg,#5856D6,#AF52DE)}
-    .stat-card.c4::before{background:linear-gradient(90deg,#FF6B00,#FF9500)}
-    .stat-val{font-size:1.8rem;font-weight:900;color:#1C1C1E;line-height:1}
-    .stat-lbl{font-size:.68rem;color:#AEAEB2;margin-top:.3rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
-    .stat-sub{font-size:.68rem;color:#AEAEB2;margin-top:.15rem}
+    .stat-card.c1::before{background:linear-gradient(90deg,var(--g3),var(--g5))}
+    .stat-card.c2::before{background:linear-gradient(90deg,var(--blue),#5ac8fa)}
+    .stat-card.c3::before{background:linear-gradient(90deg,var(--purple),#bf5af2)}
+    .stat-card.c4::before{background:linear-gradient(90deg,var(--orange),#ffd60a)}
+    .stat-val{font-size:1.875rem;font-weight:900;color:var(--gray1);line-height:1;letter-spacing:-.04em}
+    .stat-lbl{font-size:.68rem;color:var(--gray6);margin-top:.3rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+    .stat-sub{font-size:.68rem;color:var(--gray6);margin-top:.15rem}
+
+    /* KPI row */
+    .kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+    .kpi-card{background:var(--white);border-radius:var(--r4);padding:14px;box-shadow:var(--s1);text-align:center}
+    .kpi-icon{font-size:1.5rem;margin-bottom:8px;display:block}
+    .kpi-val{font-size:1.375rem;font-weight:900;color:var(--gray1);letter-spacing:-.03em;line-height:1}
+    .kpi-lbl{font-size:.62rem;color:var(--gray6);margin-top:.25rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+
+    /* Charts */
+    .charts-grid{display:grid;grid-template-columns:1fr;gap:14px;margin-bottom:24px}
+    @media(min-width:600px){.charts-grid{grid-template-columns:1fr 1fr}}
+    .chart-card{background:var(--white);border-radius:var(--r5);padding:18px;box-shadow:var(--s2)}
+    .chart-title{font-size:.875rem;font-weight:700;color:var(--gray1);margin-bottom:.25rem;letter-spacing:-.01em}
+    .chart-sub{font-size:.72rem;color:var(--gray5);margin-bottom:14px}
+    .chart-wrap{position:relative;height:180px}
 
     /* Section */
-    .section{margin-bottom:28px}
-    .section-title{font-size:.9rem;font-weight:800;color:#1C1C1E;margin-bottom:14px;display:flex;align-items:center;gap:.5rem}
+    .section{margin-bottom:24px}
+    .sec-title{font-size:.9rem;font-weight:800;color:var(--gray1);margin-bottom:14px;display:flex;align-items:center;gap:.5rem;letter-spacing:-.02em}
 
     /* Syndic cards */
     .syndic-grid{display:grid;grid-template-columns:1fr;gap:12px}
     @media(min-width:600px){.syndic-grid{grid-template-columns:repeat(2,1fr)}}
-    .syndic-card{background:#fff;border-radius:24px;padding:18px;box-shadow:0 2px 12px rgba(0,0,0,.06);border-top:3px solid #1a7c3e;transition:transform .15s}
-    .syndic-card.pending{border-top-color:#FCD34D;background:#FFFDE7}
+    .syndic-card{background:var(--white);border-radius:var(--r5);padding:18px;box-shadow:var(--s2);border-top:3px solid var(--g3);transition:transform .18s var(--spring)}
+    .syndic-card.pending{border-top-color:#fcd34d;background:#fffde7}
     .syndic-card:hover{transform:translateY(-2px)}
-    .syndic-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
-    .syndic-name{font-size:.95rem;font-weight:800;color:#1C1C1E;margin-bottom:.2rem}
-    .syndic-email{font-size:.72rem;color:#AEAEB2}
-    .s-badge{display:inline-flex;align-items:center;gap:.35rem;padding:.3rem .8rem;border-radius:99px;font-size:.68rem;font-weight:700}
-    .s-badge.ok {background:#D1FAE5;color:#065F46}
-    .s-badge.pnd{background:#FEF3C7;color:#92400E}
-    .syndic-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
-    .ss{background:#F2F2F7;border-radius:12px;padding:10px;text-align:center}
-    .ss-val{font-size:1.1rem;font-weight:800;color:#1a7c3e}
-    .ss-lbl{font-size:.6rem;color:#AEAEB2;margin-top:.1rem;font-weight:500}
-    .syndic-tags{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:12px}
-    .syndic-tag{background:#F0FDF4;border:1px solid #D1FAE5;border-radius:8px;padding:.2rem .65rem;font-size:.68rem;color:#1a7c3e;font-weight:600}
+    .sc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+    .sc-name{font-size:.95rem;font-weight:800;color:var(--gray1);margin-bottom:.2rem;letter-spacing:-.02em}
+    .sc-email{font-size:.72rem;color:var(--gray5)}
+    .s-chip{display:inline-flex;align-items:center;gap:.35rem;padding:.3rem .8rem;border-radius:var(--rf);font-size:.68rem;font-weight:700}
+    .s-chip.ok {background:#d1fae5;color:#065f46}
+    .s-chip.pnd{background:#fef3c7;color:#92400e}
+    .sc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+    .ss{background:var(--gray10);border-radius:12px;padding:10px;text-align:center}
+    .ss-val{font-size:1.1rem;font-weight:800;color:var(--g3);letter-spacing:-.03em}
+    .ss-lbl{font-size:.6rem;color:var(--gray6);margin-top:.1rem;font-weight:500}
+    .sc-tags{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:12px}
+    .sc-tag{background:var(--g-pale);border:1px solid rgba(26,140,66,.2);border-radius:8px;padding:.2rem .65rem;font-size:.68rem;color:var(--g3);font-weight:600}
     .approve-row{display:flex;gap:.5rem}
-    .btn-ok{flex:1;background:linear-gradient(135deg,#1a7c3e,#25a25a);color:#fff;border:none;border-radius:12px;padding:.65rem;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 4px 12px rgba(26,124,62,.25);transition:transform .15s}
-    .btn-ok:active{transform:scale(.97)}
-    .btn-no{flex:1;background:#fff;color:#FF3B30;border:1.5px solid #FFCDD2;border-radius:12px;padding:.65rem;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s}
-    .btn-no:active{background:#FFF5F5}
+    .btn-ok{flex:1;background:linear-gradient(135deg,var(--g3),var(--g4));color:#fff;border:none;border-radius:12px;padding:.65rem;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 4px 12px rgba(26,140,66,.25);transition:transform .15s var(--spring)}
+    .btn-ok:active{transform:scale(.96)}
+    .btn-no{flex:1;background:var(--white);color:var(--red);border:1.5px solid #ffcdd2;border-radius:12px;padding:.65rem;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s,transform .15s var(--spring)}
+    .btn-no:active{background:#fff5f5;transform:scale(.96)}
 
     /* Table */
-    .table-wrap{background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+    .table-wrap{background:var(--white);border-radius:var(--r5);overflow:hidden;box-shadow:var(--s2)}
     table{width:100%;border-collapse:collapse}
-    th{background:#F9F9F9;font-size:.68rem;font-weight:700;color:#6C6C70;padding:.75rem 1rem;text-align:left;border-bottom:1px solid #F2F2F7;white-space:nowrap;text-transform:uppercase;letter-spacing:.5px}
-    td{font-size:.78rem;padding:.75rem 1rem;border-bottom:1px solid #F9F9F9;color:#3A3A3C}
+    th{background:#fafafa;font-size:.68rem;font-weight:700;color:var(--gray5);padding:.75rem 1rem;text-align:left;border-bottom:.5px solid var(--gray10);white-space:nowrap;text-transform:uppercase;letter-spacing:.05em}
+    td{font-size:.78rem;padding:.75rem 1rem;border-bottom:.5px solid var(--gray10);color:var(--gray4)}
     tr:last-child td{border-bottom:none}
-    tr:hover td{background:#FAFAFA}
+    tr:hover td{background:#fafafa}
 
     /* Chips */
-    .chip{display:inline-block;border-radius:99px;padding:.2rem .7rem;font-size:.65rem;font-weight:700}
-    .chip-green{background:#D1FAE5;color:#065F46}
-    .chip-red  {background:#FEE2E2;color:#991B1B}
-    .chip-amber{background:#FEF3C7;color:#92400E}
-    .chip-gray {background:#F2F2F7;color:#6C6C70}
+    .chip{display:inline-block;border-radius:var(--rf);padding:.2rem .7rem;font-size:.65rem;font-weight:700}
+    .chip-green{background:#d1fae5;color:#065f46}
+    .chip-red  {background:#fee2e2;color:#991b1b}
+    .chip-amber{background:#fef3c7;color:#92400e}
+    .chip-gray {background:var(--gray10);color:var(--gray5)}
 
-    /* Revenue */
-    .rev-card{background:#fff;border-radius:22px;padding:18px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+    /* Revenue bars */
+    .rev-card{background:var(--white);border-radius:var(--r5);padding:18px;box-shadow:var(--s2)}
     .rev-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
     .rev-row:last-child{margin-bottom:0}
-    .rev-name{font-size:.78rem;color:#3A3A3C;font-weight:600;width:130px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .rev-track{flex:1;background:#F2F2F7;border-radius:99px;height:10px;overflow:hidden}
-    .rev-fill{height:100%;background:linear-gradient(90deg,#1a7c3e,#4CAF50);border-radius:99px;transition:width .8s ease}
-    .rev-amt{font-size:.78rem;font-weight:800;color:#1a7c3e;width:65px;text-align:right;flex-shrink:0}
+    .rev-name{font-size:.78rem;color:var(--gray4);font-weight:600;width:130px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .rev-track{flex:1;background:var(--gray10);border-radius:var(--rf);height:10px;overflow:hidden}
+    .rev-fill{height:100%;background:linear-gradient(90deg,var(--g3),var(--g5));border-radius:var(--rf);transition:width .8s var(--ease-out)}
+    .rev-amt{font-size:.78rem;font-weight:800;color:var(--g3);width:65px;text-align:right;flex-shrink:0}
 
     /* Empty */
-    .empty{text-align:center;padding:2.5rem;color:#AEAEB2;font-size:.85rem}
+    .empty{text-align:center;padding:2.5rem;color:var(--gray6);font-size:.875rem}
 
     /* Toast */
-    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(28,28,30,.92);backdrop-filter:blur(10px);color:#fff;padding:.65rem 1.25rem;border-radius:99px;font-size:.8rem;font-weight:600;z-index:9999;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.2);transition:transform .4s cubic-bezier(.34,1.56,.64,1),opacity .3s;opacity:0;pointer-events:none}
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(28,28,30,.92);backdrop-filter:blur(20px);color:#fff;padding:11px 20px;border-radius:var(--rf);font-size:.875rem;font-weight:600;z-index:9999;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.25);border:.5px solid rgba(255,255,255,.1);transition:transform .4s var(--spring),opacity .3s ease;opacity:0;pointer-events:none}
     .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+    /* Page transition */
+    .pto{position:fixed;inset:0;background:#fff;z-index:99999;pointer-events:none;opacity:0;transition:opacity .22s ease}
+    .pto.show{opacity:1}
   </style>
 </head>
 <body>
+<div class="pto" id="pto"></div>
 
 <nav>
   <div class="nav-left">
@@ -125,14 +164,15 @@
 
   {% if pending_syndics > 0 %}
   <div class="pending-banner">
-    <div class="pending-banner-icon">⏳</div>
+    <div class="pb-icon">⏳</div>
     <div>
-      <div class="pending-banner-title">{{ pending_syndics }} syndic{{ 's' if pending_syndics > 1 }} waiting for approval</div>
-      <div class="pending-banner-sub">Review and approve or reject their accounts below.</div>
+      <div class="pb-title">{{ pending_syndics }} syndic{{ 's' if pending_syndics > 1 }} waiting for approval</div>
+      <div class="pb-sub">Review and approve or reject their accounts below.</div>
     </div>
   </div>
   {% endif %}
 
+  <!-- Stats -->
   <div class="stats-grid">
     <div class="stat-card c1">
       <div class="stat-val">{{ syndics|length }}</div>
@@ -145,7 +185,7 @@
       <div class="stat-sub">{{ active_buildings }} active</div>
     </div>
     <div class="stat-card c3">
-      <div class="stat-val" style="font-size:1.3rem;color:#1a7c3e">{{ total_revenue }} DH</div>
+      <div class="stat-val" style="font-size:1.3rem;color:var(--g3)">{{ total_revenue }} DH</div>
       <div class="stat-lbl">Revenue</div>
       <div class="stat-sub">Approved only</div>
     </div>
@@ -156,9 +196,54 @@
     </div>
   </div>
 
+  <!-- KPI -->
+  {% set total_apts = buildings|sum(attribute='nb_apartments') %}
+  {% set active_rate = ((active_buildings / buildings|length * 100)|int) if buildings|length > 0 else 0 %}
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <span class="kpi-icon">🏠</span>
+      <div class="kpi-val">{{ total_apts }}</div>
+      <div class="kpi-lbl">Total Apts</div>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-icon">👥</span>
+      <div class="kpi-val">{{ clients|length }}</div>
+      <div class="kpi-lbl">Residents</div>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-icon">📈</span>
+      <div class="kpi-val">{{ active_rate }}%</div>
+      <div class="kpi-lbl">Active Rate</div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-title">💰 Revenue by Syndic</div>
+      <div class="chart-sub">Approved payments in DH</div>
+      <div class="chart-wrap"><canvas id="revenueChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">🏢 Building Status</div>
+      <div class="chart-sub">Active vs Inactive</div>
+      <div class="chart-wrap"><canvas id="buildingChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">💳 Payment Status</div>
+      <div class="chart-sub">All time breakdown</div>
+      <div class="chart-wrap"><canvas id="paymentChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">🏠 Residents per Building</div>
+      <div class="chart-sub">Distribution</div>
+      <div class="chart-wrap"><canvas id="residentsChart"></canvas></div>
+    </div>
+  </div>
+
   <!-- Syndics -->
   <div class="section">
-    <div class="section-title">👤 Syndics ({{ syndics|length }})</div>
+    <div class="sec-title">👤 Syndics ({{ syndics|length }})</div>
     {% if syndics %}
     <div class="syndic-grid">
       {% for s in syndics %}
@@ -167,27 +252,19 @@
       {% set sr = sp|sum(attribute='amount_mad') %}
       {% set sa = sb|selectattr('is_active')|list|length %}
       <div class="syndic-card {% if not s.approved %}pending{% endif %}">
-        <div class="syndic-top">
-          <div>
-            <div class="syndic-name">{{ s.name }}</div>
-            <div class="syndic-email">{{ s.email }}</div>
-          </div>
-          {% if s.approved %}
-            <span class="s-badge ok">✅ Approved</span>
-          {% else %}
-            <span class="s-badge pnd">⏳ Pending</span>
-          {% endif %}
+        <div class="sc-top">
+          <div><div class="sc-name">{{ s.name }}</div><div class="sc-email">{{ s.email }}</div></div>
+          {% if s.approved %}<span class="s-chip ok">✅ Approved</span>
+          {% else %}<span class="s-chip pnd">⏳ Pending</span>{% endif %}
         </div>
-        <div class="syndic-stats">
+        <div class="sc-stats">
           <div class="ss"><div class="ss-val">{{ sb|length }}</div><div class="ss-lbl">Buildings</div></div>
           <div class="ss"><div class="ss-val">{{ sa }}</div><div class="ss-lbl">Active</div></div>
           <div class="ss"><div class="ss-val" style="font-size:.85rem">{{ sr }} DH</div><div class="ss-lbl">Paid</div></div>
         </div>
         {% if sb %}
-        <div class="syndic-tags">
-          {% for b in sb %}
-          <span class="syndic-tag">{{ b.name }} {% if b.is_active %}✅{% else %}❌{% endif %}</span>
-          {% endfor %}
+        <div class="sc-tags">
+          {% for b in sb %}<span class="sc-tag">{{ b.name }} {% if b.is_active %}✅{% else %}❌{% endif %}</span>{% endfor %}
         </div>
         {% endif %}
         {% if not s.approved %}
@@ -199,14 +276,12 @@
       </div>
       {% endfor %}
     </div>
-    {% else %}
-    <div class="empty">No syndics yet.</div>
-    {% endif %}
+    {% else %}<div class="empty">No syndics yet.</div>{% endif %}
   </div>
 
-  <!-- Buildings -->
+  <!-- Buildings table -->
   <div class="section">
-    <div class="section-title">🏢 Buildings ({{ buildings|length }})</div>
+    <div class="sec-title">🏢 Buildings ({{ buildings|length }})</div>
     {% if buildings %}
     <div class="table-wrap">
       <table>
@@ -214,10 +289,10 @@
         <tbody>
           {% for b in buildings %}
           <tr>
-            <td><strong>{{ b.name }}</strong><br><span style="font-size:.68rem;color:#AEAEB2">{{ b.neighborhood }}</span></td>
+            <td><strong style="color:var(--gray1)">{{ b.name }}</strong><br><span style="font-size:.68rem;color:var(--gray6)">{{ b.neighborhood }}</span></td>
             <td>{{ b.syndic.name }}</td>
-            <td style="text-align:center;font-weight:700">{{ b.nb_apartments }}</td>
-            <td><strong>{{ b.monthly_total }} DH</strong></td>
+            <td style="text-align:center;font-weight:700;color:var(--gray1)">{{ b.nb_apartments }}</td>
+            <td><strong style="color:var(--gray1)">{{ b.monthly_total }} DH</strong></td>
             <td>{% if b.is_active %}<span class="chip chip-green">✅ Active</span>{% else %}<span class="chip chip-red">❌ Inactive</span>{% endif %}</td>
           </tr>
           {% endfor %}
@@ -227,10 +302,10 @@
     {% else %}<div class="empty">No buildings yet.</div>{% endif %}
   </div>
 
-  <!-- Revenue -->
+  <!-- Revenue bars -->
   {% if syndics %}
   <div class="section">
-    <div class="section-title">💰 Revenue by Syndic</div>
+    <div class="sec-title">💰 Revenue by Syndic</div>
     <div class="rev-card">
       {% set max_rev = namespace(val=1) %}
       {% for s in syndics %}
@@ -251,7 +326,7 @@
 
   <!-- Payments -->
   <div class="section">
-    <div class="section-title">💳 Payments ({{ payments|length }})</div>
+    <div class="sec-title">💳 Payments ({{ payments|length }})</div>
     {% if payments %}
     <div class="table-wrap">
       <table>
@@ -262,12 +337,8 @@
             <td style="white-space:nowrap">{{ p.created_at.strftime('%d/%m/%Y') }}</td>
             <td>{{ p.syndic.name }}</td>
             <td>{{ p.building.name }}</td>
-            <td><strong>{{ p.amount_mad }} DH</strong></td>
-            <td>
-              {% if p.status=='approved' %}<span class="chip chip-green">✅ Done</span>
-              {% elif p.status=='pending' %}<span class="chip chip-amber">⏳ Pending</span>
-              {% else %}<span class="chip chip-red">❌ Failed</span>{% endif %}
-            </td>
+            <td><strong style="color:var(--gray1)">{{ p.amount_mad }} DH</strong></td>
+            <td>{% if p.status=='approved' %}<span class="chip chip-green">✅ Done</span>{% elif p.status=='pending' %}<span class="chip chip-amber">⏳ Pending</span>{% else %}<span class="chip chip-red">❌ Failed</span>{% endif %}</td>
           </tr>
           {% endfor %}
         </tbody>
@@ -278,7 +349,7 @@
 
   <!-- Residents -->
   <div class="section">
-    <div class="section-title">🏠 Residents ({{ clients|length }})</div>
+    <div class="sec-title">🏠 Residents ({{ clients|length }})</div>
     {% if clients %}
     <div class="table-wrap">
       <table>
@@ -286,16 +357,11 @@
         <tbody>
           {% for c in clients %}
           <tr>
-            <td><strong>{{ c.name }}</strong></td>
-            <td style="font-family:monospace;font-size:.7rem;color:#1a7c3e;font-weight:700">{{ c.qr_code }}</td>
+            <td><strong style="color:var(--gray1)">{{ c.name }}</strong></td>
+            <td style="font-family:monospace;font-size:.7rem;color:var(--g3);font-weight:700">{{ c.qr_code }}</td>
             <td style="font-size:.72rem">{{ c.building.name if c.building else '—' }}</td>
             <td>{% if c.subscription_active %}<span class="chip chip-green">✅</span>{% else %}<span class="chip chip-red">❌</span>{% endif %}</td>
-            <td>
-              {% if c.status=='collected' %}<span class="chip chip-green">Done</span>
-              {% elif c.status=='ready'    %}<span class="chip chip-amber">Ready</span>
-              {% elif c.status=='violation'%}<span class="chip chip-red">⚠️</span>
-              {% else %}<span class="chip chip-gray">Waiting</span>{% endif %}
-            </td>
+            <td>{% if c.status=='collected' %}<span class="chip chip-green">Done</span>{% elif c.status=='ready' %}<span class="chip chip-amber">Ready</span>{% elif c.status=='violation' %}<span class="chip chip-red">⚠️</span>{% else %}<span class="chip chip-gray">Waiting</span>{% endif %}</td>
           </tr>
           {% endfor %}
         </tbody>
@@ -309,6 +375,41 @@
 <div class="toast" id="toast"></div>
 
 <script>
+Chart.defaults.font.family='Inter';Chart.defaults.color='#8e8e93';
+
+const G='#1a8c42',G2='#22a855',G3='#34d369',BLUE='#0a84ff',AMB='#ff9f0a',RED='#ff3b30',PUR='#5e5ce6',GRAY='#e5e5ea';
+
+// Revenue chart
+new Chart(document.getElementById('revenueChart'),{
+  type:'bar',
+  data:{
+    labels:[{% for s in syndics %}'{{ s.name.split()[0] }}',{% endfor %}],
+    datasets:[{data:[{% for s in syndics %}{{ payments|selectattr('syndic_id','equalto',s.id)|selectattr('status','equalto','approved')|sum(attribute='amount_mad') }},{% endfor %}],backgroundColor:[G,BLUE,PUR,AMB,RED],borderRadius:10,borderSkipped:false}]
+  },
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},border:{display:false}},y:{grid:{color:'#f2f2f7'},border:{display:false},ticks:{callback:v=>v+' DH'}}}}
+});
+
+// Building status
+new Chart(document.getElementById('buildingChart'),{
+  type:'doughnut',
+  data:{labels:['Active','Inactive'],datasets:[{data:[{{ active_buildings }},{{ buildings|length - active_buildings }}],backgroundColor:[G3,GRAY],borderWidth:0,hoverOffset:6}]},
+  options:{responsive:true,maintainAspectRatio:false,cutout:'72%',plugins:{legend:{position:'bottom',labels:{padding:16,usePointStyle:true,pointStyleWidth:8}}}}
+});
+
+// Payment status
+new Chart(document.getElementById('paymentChart'),{
+  type:'doughnut',
+  data:{labels:['Approved','Pending','Failed'],datasets:[{data:[{{ payments|selectattr('status','equalto','approved')|list|length }},{{ payments|selectattr('status','equalto','pending')|list|length }},{{ payments|selectattr('status','equalto','failed')|list|length }}],backgroundColor:[G3,AMB,RED],borderWidth:0,hoverOffset:6}]},
+  options:{responsive:true,maintainAspectRatio:false,cutout:'72%',plugins:{legend:{position:'bottom',labels:{padding:16,usePointStyle:true,pointStyleWidth:8}}}}
+});
+
+// Residents per building
+new Chart(document.getElementById('residentsChart'),{
+  type:'bar',
+  data:{labels:[{% for b in buildings %}'{{ b.name[:12] }}',{% endfor %}],datasets:[{data:[{% for b in buildings %}{{ b.clients|length }},{% endfor %}],backgroundColor:BLUE,borderRadius:8,borderSkipped:false}]},
+  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'#f2f2f7'},border:{display:false},ticks:{stepSize:1}},y:{grid:{display:false},border:{display:false}}}}
+});
+
 function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800)}
 
 async function approveSyndic(id,btn){
@@ -326,6 +427,16 @@ async function rejectSyndic(id,btn){
   const d=await r.json();
   if(d.success){showToast('❌ Rejected');setTimeout(()=>location.reload(),1000)}
 }
+
+document.addEventListener('click',e=>{
+  const a=e.target.closest('a[href]');
+  if(!a)return;
+  const h=a.getAttribute('href');
+  if(!h||h.startsWith('#')||h.startsWith('http')||a.target==='_blank')return;
+  e.preventDefault();
+  const o=document.getElementById('pto');o.classList.add('show');
+  setTimeout(()=>{location.href=h},220);
+});
 </script>
 </body>
 </html>
